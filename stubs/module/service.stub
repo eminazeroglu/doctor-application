@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Services\Module;
+
+use App\Repositories\Module\{{ class }}Repository;
+use App\Services\BaseCrudService;
+
+class {{ class }}Service extends BaseCrudService
+{
+    public function __construct({{ class }}Repository $repository)
+    {
+        parent::__construct($repository);
+    }
+
+    // Add any additional methods here
+}

@@ -1,0 +1,15 @@
+{
+    "tag": "Ümumi",
+    "description": "Ümumi funksiyalar ilə əlaqəli API-lər",
+    "endpoints": [
+        {
+            "path": "/common/start",
+            "method": "get",
+            "summary": "Başlanğıc üçün lazım olan siyahı",
+            "description": "Başlanğıc üçün lazım olan bütün məlumatları qaytarır",
+            "response": {
+                "languages": []
+            }
+        }
+    ]
+}

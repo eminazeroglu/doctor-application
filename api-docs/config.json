@@ -1,0 +1,14 @@
+{
+    "info": {
+        "title": "Doctap Project",
+        "version": "1.0.0",
+        "description": "API Documentation"
+    },
+    "servers": [
+        {
+            "url": "http:\/\/laravel-structur.test\/api",
+            "description": "API Server"
+        }
+    ],
+    "authorization": "bearerToken"
+}

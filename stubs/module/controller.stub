@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\ApiController;
+use App\Services\Module\{{ class }}Service;
+use Illuminate\Http\Request;
+
+class {{ class }}Controller extends ApiController
+{
+    public function __construct({{ class }}Service $service)
+    {
+        parent::__construct($service, '{{ permission }}');
+    }
+
+    // Add any additional methods here
+
+    public function commonRules(): array
+    {
+        return [
+            // Add validation rules for store method
+        ];
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "tag": "Səhifələr",
+    "description": "Səhifələr ilə əlaqəli API endpoint-ləri",
+    "endpoints": [
+        {
+            "path": "/app/pages",
+            "method": "get",
+            "summary": "Pages siyahısı",
+            "description": "Bütün pages siyahısını qaytarır",
+            "authorization": true
+        },
+        {
+            "path": "/app/pages/{slug}",
+            "method": "get",
+            "summary": "Səhifə detalları",
+            "description": "Səhifə detallarını qaytarır",
+            "authorization": true
+        }
+    ]
+}

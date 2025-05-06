@@ -1,0 +1,441 @@
+{
+    "enums": {
+        "man": "Kişi",
+        "woman": "Qadın",
+        "credential_types": {
+            "email": "Email",
+            "phone": "Telefon nömrəsi",
+            "ip": "IP ünvanı"
+        },
+        "price": {
+            "discount": "Endirimli"
+        },
+        "credential_remaining": {
+            "permanent": "Daimi",
+            "expired": "Müddəti bitdi"
+        },
+        "seo_types": {
+            "page": "Səhifə",
+            "listing": "Elan",
+            "category": "Kateqoriya"
+        },
+        "image_watermark_position": {
+            "top_left": "Yuxar sol",
+            "top": "Yuxar",
+            "top_right": "Yuxar sağ",
+            "left": "Sol",
+            "center": "Mərkəz",
+            "right": "Sağ",
+            "bottom_left": "Aşağı sol",
+            "bottom": "Aşağı",
+            "bottom_right": "Aşağı sağ"
+        },
+        "notification_priorities": {
+            "low": "Aşağı",
+            "normal": "Normal",
+            "high": "Yüksək"
+        },
+        "notification_types": {
+            "welcome": "Xoş gəlmisiniz",
+            "password_reset": "Şifrə yeniləmə",
+            "login_alert": "Giriş xəbərdarlığı",
+            "profile_update": "Profil yeniləmə",
+            "new_message": "Yeni mesaj",
+            "system_alert": "Sistem xəbərdarlığı",
+            "referral_bonus_added": "Referral bonusu əlavə edildi",
+            "referral_completed": "Dəvət tamamlandı",
+            "welcome_description": "Platformamıza xoş gəldiniz! Hesabınız uğurla yaradıldı və indi bütün xidmətlərimizdən istifadə edə bilərsiniz. Platformanı kəşf etməyə başlamaq üçün dashboarda keçid edin.",
+            "password_reset_description": "Hesabınızın şifrəsi uğurla yeniləndi. Təhlükəsizliyiniz üçün bu əməliyyat haqqında sizə məlumat veririk. Əgər bu əməliyyatı siz etməmisinizsə, dərhal bizimlə əlaqə saxlayın.",
+            "login_alert_description": "Hesabınıza yeni bir giriş cəhdi aşkar edildi. Bu giriş {location} məkanından, {device} cihazından edilib. Əgər bu siz deyilsinizsə, təcili olaraq təhlükəsizlik tənzimləmələrinizi yoxlayın.",
+            "profile_update_description": "Profil məlumatlarınızda dəyişiklik edildi. Yenilənmiş məlumatları yoxlamaq və ya əlavə dəyişikliklər etmək üçün profil səhifənizi ziyarət edin.",
+            "new_message_description": "'{sender}' adlı istifadəçidən yeni bir mesajınız var. Mesajın mövzusu: '{subject}'. Mesajı oxumaq üçün mesajlar bölməsinə keçin.",
+            "system_alert_description": "Diqqət! Sistemdə vacib bir yeniləmə və ya xəbərdarlıq var: {message}. Zəhmət olmasa, bu bildirişi diqqətlə oxuyun və lazımi tədbirləri görün.",
+            "referral_bonus_added_description": "Dəvət etdiyiniz {referee_name} istifadəçisinin aktivliyinə görə balansınıza {amount} AZN əlavə edildi",
+            "referral_completed_description": "{referee_name} adlı istifadəçinin dəvəti tamamlandı və balansınıza {amount} AZN əlavə edildi",
+            "listing_created": "Elan yaradıldı",
+            "listing_approved": "Elan təsdiqləndi",
+            "listing_rejected": "Elan rədd edildi",
+            "listing_expired": "Elanın müddəti bitdi",
+            "listing_deleted": "Elan silindi",
+            "listing_status_changed": "Elan statusu dəyişdi",
+            "listing_suspended": "Elan dayandırıldı",
+            "listing_archived": "Elan arxivləşdirildi",
+            "listing_views_milestone": "Elanınıza yeni baxış rekordu",
+            "listing_price_updated": "Elanın qiyməti yeniləndi",
+            "listing_favorited": "Elanınız seçilmişlərə əlavə edildi",
+            "listing_reported": "Elanınız haqqında şikayət",
+            "listing_premium_expiring": "Premium xidmət müddəti bitir",
+            "listing_comment_received": "Elanınıza yeni şərh",
+            "listing_created_description": "{listing.title} başlıqlı elanınız uğurla yaradıldı və yoxlama gözləyir.",
+            "listing_approved_description": "{listing.title} başlıqlı elanınız moderatorlar tərəfindən yoxlanıldı və təsdiqləndi.",
+            "listing_rejected_description": "{listing.title} başlıqlı elanınız moderatorlar tərəfindən rədd edildi. Səbəb: {reason}",
+            "listing_expired_description": "{listing.title} başlıqlı elanınızın müddəti bitdi. Elanı yeniləmək üçün keçid edin.",
+            "listing_deleted_description": "{listing.code} kodlu '{listing.title}' başlıqlı elanınız silindi. Köməyə ehtiyacınız varsa, dəstək xidməti ilə əlaqə saxlaya bilərsiniz.",
+            "listing_status_changed_description": "{listing.title} başlıqlı elanınızın statusu {old_status}-dan {new_status}-a dəyişdirildi",
+            "listing_suspended_description": "{listing.title} başlıqlı elanınız {reason} səbəbindən dayandırıldı. Dəstək xidmətinə müraciət edə bilərsiniz",
+            "listing_archived_description": "{listing.title} başlıqlı elanınız arxivə göndərildi",
+            "listing_views_milestone_description": "Təbriklər! {listing.title} başlıqlı elanınız {count} baxış sayına çatdı!",
+            "listing_price_updated_description": "{listing.title} başlıqlı elanınızın qiyməti {old_price} {currency}-dən {new_price} {currency}-ə yeniləndi",
+            "listing_favorited_description": "{user.fullname} istifadəçisi {listing.title} başlıqlı elanınızı seçilmişlərə əlavə etdi",
+            "listing_reported_description": "{listing.title} başlıqlı elanınız haqqında şikayət edildi. Səbəb: {reason}",
+            "listing_premium_expiring_description": "{listing.title} başlıqlı elanınızın {service_type} xidmətinin müddətinin bitməsinə {time_left} qalıb",
+            "listing_comment_received_description": "Hörmətli istifadəçi, {listing.title} başlıqlı elanınıza {author.name} tərəfindən yeni şərh yazıldı: \"{comment.content}\"",
+            "complaint_reply": "Şikayyət mesajı",
+            "complaint_reply_description": "{title} başlıqlı şikayyətinizə baxıldı və sizə bir mesaj var",
+            "complaint_resolved": "Şikayyətin həll edildi",
+            "complaint_resolved_description": "{title} başlıqlı şikayyətiniz həll edildi. Yükun qərarı {resolution_note}",
+            "complaint_reject": "Şikayyət rədd edildi",
+            "complaint_reject_description": "{title} başlıqlı şikayyətiniz rədd edildi. Yükun qərarı {resolution_note}",
+            "complaint_closed": "Şikayyət bağlandı",
+            "complaint_closed_description": "{title} başlıqlı şikayyətinizə bağlandı.",
+            "complaint_progress": "Şikayyət baxılır",
+            "complaint_progress_description": "{title} başlıqlı şikayyətinizə baxılır. Ən qısa zamanda sizə geri dönüş ediləcək",
+
+            "email_verified": "Email təsdiqləndi",
+            "email_verified_description": "Email ünvanınız uğurla təsdiqləndi.",
+            "account_blocked": "Hesab bloklandı",
+            "account_blocked_description": "Təhlükəsizlik səbəbindən hesabınız bloklandı. Dəstək xidməti ilə əlaqə saxlayın.",
+            "payment_received": "Ödəniş qəbul edildi",
+            "payment_received_description": "Ödənişiniz ({amount} {currency}) uğurla qəbul edildi.",
+            "payment_failed": "Ödəniş uğursuz oldu",
+            "payment_failed_description": "Ödəniş zamanı xəta baş verdi. Yenidən cəhd edin.",
+            "balance_updated": "Balans yeniləndi",
+            "balance_updated_description": "Balansınız {amount} {currency} məbləğində yeniləndi.",
+            "subscription_expiring": "Abunəlik bitir",
+            "subscription_expiring_description": "Abunəliyinizin müddətinin bitməsinə {days} gün qalıb.",
+            "chat_request": "Söhbət tələbi",
+            "chat_request_description": "{user.name} sizinlə söhbət etmək istəyir.",
+            "message_read": "Mesaj oxundu",
+            "message_read_description": "{user.name} mesajınızı oxudu.",
+            "security_alert": "Təhlükəsizlik xəbərdarlığı",
+            "security_alert_description": "Hesabınızla bağlı təhlükəsizlik xəbərdarlığı. IP: {ip_address}",
+            "suspicious_login": "Şübhəli giriş",
+            "suspicious_login_description": "Hesabınıza {location} məkanından şübhəli giriş cəhdi.",
+            "maintenance_scheduled": "Planlı texniki işlər",
+            "maintenance_scheduled_description": "{start_time} - {end_time} aralığında texniki işlər aparılacaq.",
+            "system_error": "Sistem xətası",
+            "system_error_description": "Sistemdə xəta baş verdi. Texniki dəstək məsələni araşdırır.",
+            "api_limit_warning": "API limit xəbərdarlığı",
+            "api_limit_warning_description": "API sorğu limitinizin {percent}%-i istifadə olunub."
+        },
+        "expense_status": {
+            "pending": "Gözləmədə",
+            "approved": "Təsdiqlənib",
+            "rejected": "Rədd edilib",
+            "paid": "Ödənilib",
+            "cancelled": "Ləğv edilib"
+        },
+        "income_status": {
+            "pending": "Gözləmədə",
+            "approved": "Təsdiqlənib",
+            "rejected": "Rədd edilib",
+            "Received": "Alınıb",
+            "cancelled": "Ləğv edilib"
+        },
+        "payment_status": {
+            "pending": "Gözləmədə",
+            "completed": "Tamamlanıb",
+            "failed": "Uğursuz",
+            "refunded": "Geri qaytarılıb"
+        },
+        "payment_method": {
+            "card": "Kartla",
+            "balance": "Daxil balans"
+        },
+        "advertisement_positions": {
+            "web_top": "Üst (Veb - hündürlük 160px)",
+            "mobile_top": "Üst (Mobil)",
+            "listing_top": "Elan (Üst)",
+            "listing_bottom": "Elan (Alt)",
+            "listing_right": "Elan (Sağ)",
+            "listing_mobile_top": "Elan (Mobil üst)",
+            "listing_mobile_bottom": "Elan (Mobil alt)",
+            "listing_mobile_right": "Elan (Mobil sağ)",
+            "similar_after_mobile": "Bənzər elanlardan sonra (Mobil)",
+            "similar_after_web": "Bənzər elanlardan sonra (Web)",
+            "latest_listings": "Son elanlarda"
+        },
+        "advertisement_display_types": {
+            "home_only": "Yalnız əsas səhifədə",
+            "all_pages": "Bütün səhifələrdə",
+            "selected_categories": "Yalnız seçilmiş kateqoriyalarda"
+        },
+        "comment_type": {
+            "company": "Şirkət",
+            "listing": "Elan",
+            "user": "İstifadəçi"
+        },
+        "comment_reaction_type": {
+            "like": "Bəyənmə",
+            "dislike": "Bəyənməmə",
+            "heart": "Ürək",
+            "laugh": "Gülüş",
+            "wow": "Təəccüb",
+            "sad": "Kədər",
+            "angry": "Qəzəb",
+            "support": "Dəstək"
+        },
+        "complaint_message_status": {
+            "pending": "Gözləyir",
+            "read": "Oxunub",
+            "responded": "Cavablandırılıb",
+            "hidden": "Gizlədilib"
+        },
+        "complaint_status": {
+            "pending": "Gözləyir",
+            "processing": "Baxılır",
+            "resolved": "Həll edilib",
+            "rejected": "Rədd edilib",
+            "closed": "Bağlanıb"
+        },
+        "complaint_type": {
+            "user": "İstifadəçi şikayəti",
+            "company": "Şirkət şikayəti",
+            "listing": "Elan şikayəti"
+        },
+        "activity_log": {
+            "action": {
+                "created": "Yaradıldı",
+                "updated": "Yeniləndi",
+                "deleted": "Silindi",
+                "restored": "Bərpa edildi",
+                "login_failed": "Giriş uğursuz oldu",
+                "login_blocked": "Giriş bloklanması",
+                "login_success": "Giriş etdi",
+                "login_error": "Giriş xətası",
+                "register": "Qeydiyyatdan keçdi",
+                "social_login": "Sosial şəbəkə girişi",
+                "logout": "Çıxış etdi",
+                "viewed": "Baxış etdi",
+                "downloaded": "Yüklədi",
+                "exported": "İxrac etdi",
+                "imported": "İdxal etdi",
+                "server_error": "Server xətası",
+                "register_blocked": "Qeydiyyat bloklandı",
+                "register_error": "Qeydiyyat xətası",
+                "password_reset_success": "Şifrə uğurla yeniləndi",
+                "password_reset_failed": "Şifrə yeniləmə uğursuz oldu",
+                "password_reset_error": "Şifrə yeniləmə xətası",
+                "email_verify_success": "Email uğurla təsdiqləndi",
+                "email_verify_failed": "Email təsdiqləmə uğursuz oldu",
+                "email_verify_error": "Email təsdiqləmə xətası",
+                "image_upload_success": "Şəkil yükləndi",
+                "image_upload_error": "Şəkil yüklənmə xətası",
+                "image_delete_success": "Şəkil silindi",
+                "image_delete_error": "Şəkil silinmə xətası",
+                "api_read": "API məlumat oxuma",
+                "api_create": "API məlumat yaratma",
+                "api_update": "API məlumat yeniləmə",
+                "api_delete": "API məlumat silmə",
+                "api_error": "API xətası",
+                "api_other": "API digər əməliyyat",
+                "referral_limit_exceeded": "Referral müraciət limiti",
+                "database_error": "Verilənlər bazası xətası",
+                "foreign_key_error": "Əlaqəli məlumat xətası",
+                "duplicate_entry": "Təkrarlanan məlumat xətası",
+                "not_found": "Məlumat tapılmadı",
+                "validation_error": "Validasiya xətası",
+                "unauthorized": "İcazəsiz giriş",
+                "forbidden": "Giriş qadağandır",
+                "login": "Giriş",
+                "auth_failed": "Autentifikasiya xətası",
+                "referral_bonus_added": "Bonusu əlavə edildi",
+                "referral_rejected": "Müraciət (Referral) rədd edildi",
+                "referral_code_generated": "Müraciət (Referral) rədd edildi",
+                "referral_completed": "Müraciət (Referral) tamamlandı",
+                "unauthorized_api_access": "İcazəsiz API girişi",
+                "invalid_api_key": "Yanlış API açarı",
+                "api_abuse_detected": "API sui-istifadəsi aşkarlandı"
+            },
+            "status": {
+                "success": "Uğurlu",
+                "error": "Xəta",
+                "pending": "Gözləmədə",
+                "cancelled": "Ləğv edildi"
+            }
+        },
+        "attributePosition": {
+            "only-more-search": "Yalnız ətraflı axtarışda",
+            "only-listing": "Yalnız elanda",
+            "every-where": "Hər yerdə"
+        },
+        "attributeType": {
+            "text": "Mətn",
+            "textarea": "Uzun mətn",
+            "html": "HTML mətn",
+            "email": "E-poçt",
+            "phone": "Telefon",
+            "url": "Url",
+            "integer": "Tam rəqəm",
+            "decimal": "Kəsr rəqəm",
+            "price": "Qiymət",
+            "range": "Aralıq",
+            "select": "Tək seçim",
+            "multiSelect": "Çoxlu seçim",
+            "radio": "Radio düymələri",
+            "checkbox": "Seçim qutuları",
+            "date": "Tarix",
+            "time": "Vaxt",
+            "dateTime": "Tarix və vaxt",
+            "year": "İl",
+            "month": "Ay",
+            "image": "Şəkil",
+            "gallery": "Qalereya",
+            "file": "Fayl",
+            "color": "Rəng",
+            "location": "Yer (xəritə)",
+            "boolean": "Bəli/Xeyr"
+        },
+        "permissions": {
+            "groups": {
+                "active_log": "Log",
+                "config": "Ayarlar",
+                "language": "Dillər",
+                "permission": "Rollar və içazələr",
+                "seo": "SEO",
+                "translation": "Tərçümələr",
+                "user": "İstifadəçilər"
+            },
+            "actions": {
+                "create": "Yaratmaq",
+                "update": "Yeniləmək",
+                "read": "Oxumaq",
+                "delete": "Silmək",
+                "status": "Statusunu dəyişmək",
+                "terminal": "Terminalı görmək",
+                "monitoring": "Sistemi monitoring etmək"
+            }
+        },
+        "user_status": {
+            "active": "Aktiv",
+            "inactive": "Aktiv deyil",
+            "pending": "Mail təstiqi gözləyir",
+            "profile": "Profil təstiqi gözləyir",
+            "block": "Bloklanmış"
+        },
+        "user_story_type": {
+            "store": "Mağaza",
+            "regular_user": "İstifadəçi"
+        },
+        "mail": {
+            "category": {
+                "system": "Sistem emailləri",
+                "marketing": "Marketinq emailləri",
+                "notification": "Bildirişlər",
+                "transactional": "Tranzaksiya emailləri"
+            },
+            "status": {
+                "draft": "Qaralama",
+                "scheduled": "Planlaşdırılıb",
+                "running": "İcra olunur",
+                "completed": "Tamamlandı",
+                "failed": "Uğursuz",
+                "pending": "Gözləmədə",
+                "cancelled": "Ləğv edildi"
+            },
+            "delivery_status": {
+                "pending": "Gözləmədə",
+                "sent": "Göndərildi",
+                "delivered": "Çatdırıldı",
+                "opened": "Açıldı",
+                "clicked": "Klikləndi",
+                "bounced": "Geri qayıtdı",
+                "failed": "Uğursuz"
+            },
+            "list_type": {
+                "users": "İstifadəçilər",
+                "stores": "Mağazalar",
+                "excel": "Excel siyahısı",
+                "custom": "Xüsusi siyahı"
+            }
+        },
+        "payment_service": {
+            "hour": ":count dəfə (6 saatdan bir) / :amount AZN",
+            "day": ":count gün / :amount AZN"
+        },
+        "section_type": {
+            "category": "Kateqoriya",
+            "vip": "VIP Elanlar",
+            "premium": "Premium Elanla",
+            "company": "Şirkət Elanları",
+            "action": "Aksiyalar",
+            "last_listing": "Son elanlar"
+        },
+        "listing_payment_service_renewal_status": {
+            "success": "Uğurlu",
+            "failed": "Uğursuz oldu",
+            "pending": "Gözləyir"
+        },
+        "payment_service_key": {
+            "vip": "VIP",
+            "premium": "Premium",
+            "bump": "İrəli çək",
+            "color_frame": "Rəngli çərçivə",
+            "large_frame": "Böyük çərçivə (x2)",
+            "all_in_one": "Hamsı birində"
+        },
+        "report_status": {
+            "spam": "Spam/Təkrar elan",
+            "offensive": "Təhqiramiz məzmun",
+            "fake": "Saxta elan",
+            "scam": "Fırıldaqçılıq",
+            "wrong_category": "Yanlış kateqoriya",
+            "prohibited": "Qadağan olunmuş məzmun",
+            "other": "Digər"
+        },
+        "report_type": {
+            "pending": "Gözləmədə",
+            "reviewing": "Baxılır",
+            "resolved": "Həll edilib",
+            "rejected": "Rədd edilib"
+        },
+        "referral_status": {
+            "pending": "Gözləmədə",
+            "rejected": "Rədd edilib",
+            "completed": "Tamamlandı"
+        }
+    },
+    "notification": {
+        "user_not_found": "İstifadəçi tapılmadı",
+        "user_invalid_credential": "Email və ya şifrə yanlışdır",
+        "user_status": {
+            "inactive": "Sizin hesab sistemdə aktiv deyil",
+            "block": "Sizin hesab sistem tərəfindən bloklanmışdır",
+            "pending_mail": "Siz hesabınızı email vəsitəsi ilə təstiqləməmisiniz. Zəhmət olmasa hesabınızı təstiqləyin",
+            "pending_profile": "Hesabınızda etdiyiniz dəyişikliklərə görə hesabınız sistem tərəfindən təstiqə göndərilib"
+        },
+        "ip_blocked": "IP ünvanınız bloklanıb",
+        "email_blocked": "Email ünvanınız bloklanıb",
+        "account_blocked": "Hesabınız çoxlu uğursuz cəhd səbəbindən bloklanıb",
+        "too_many_attempts": "Çoxlu uğursuz giriş cəhdi",
+        "story_daily_limit_alert": "Gündəlik hekayə limiti keçildi. Gündə :limit hekayə paylaşa bilərsiniz.",
+        "story_limit_alert": "Media limiti keçildi. Hər paylaşım :limit media faylı qəbul edir.",
+        "mail": {
+            "template_not_found": "Email şablonu tapılmadı",
+            "invalid_campaign_status": "Kampaniyanın statusu bu əməliyyat üçün uyğun deyil",
+            "campaign_already_started": "Kampaniya artıq başladılıb",
+            "campaign_already_completed": "Kampaniya artıq tamamlanıb",
+            "campaign_not_found": "Kampaniya tapılmadı",
+            "list_not_found": "Mail siyahısı tapılmadı",
+            "invalid_template": "Yanlış email şablonu",
+            "invalid_recipient": "Yanlış email ünvanı",
+            "email_blacklisted": "Bu email ünvanı qara siyahıdadır",
+            "send_limit_exceeded": "Göndərmə limiti aşıldı",
+            "invalid_list_type": "Yanlış siyahı növü",
+            "template_inactive": "Mail şablonu aktiv deyil",
+            "list_inactive": "Mail siyahısı aktiv deyil",
+            "campaign_not_running": "Kampaniya hazırda aktiv deyil",
+            "empty_recipient_list": "Boş alıcı siyahısı"
+        }
+    },
+    "validation": {
+        "password": {
+            "min_length": "Şifrə minimum :length simvol olmalıdır",
+            "require_uppercase": "Şifrədə ən azı bir böyük hərf olmalıdır",
+            "require_numeric": "Şifrədə ən azı bir rəqəm olmalıdır",
+            "require_special_chars": "Şifrədə ən azı bir xüsusi simvol olmalıdır"
+        },
+        "invalidImageType": "Şəkil formatı yalnız :format olmalıdır",
+        "invalidImageSize": "Şəklin həcmi :size-dan çox ola bilməz"
+    }
+}

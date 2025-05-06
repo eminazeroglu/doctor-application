@@ -1,0 +1,62 @@
+{
+    "tag": "Şərhlər",
+    "description": "Şərhlər ilə əlaqəli API-lər",
+    "endpoints": [
+        {
+            "path": "/app/comments/save",
+            "method": "post",
+            "summary": "Yeni şərh",
+            "description": "Yeni şərh əlavə edir",
+            "authorization": true,
+            "formBody": {
+                "type": {
+                    "type": "text",
+                    "required": true,
+                    "description": "Bu nə üçün şərh yazıldığını göstərir. Elan, Şirkət və ya istifadəçi (listing, company, user)"
+                },
+                "commentable_uuid": {
+                    "type": "text",
+                    "required": true,
+                    "description": "Bu şərh yazılan (listing, company, user) nədirsə onun uuid nömrəsidir."
+                },
+                "content": {
+                    "type": "text",
+                    "required": true,
+                    "description": "Şərhin məzmunu"
+                }
+            },
+            "responses": {
+                "200": {
+                    "id": 1,
+                    "name": "Example name",
+                    "description": "Example description",
+                    "status": "active",
+                    "created_at": "2024-01-01 00:00:00"
+                },
+                "422": {
+                    "type": "Zəhmət olmasa boş buraxmayın",
+                    "commentable_uuid": "Zəhmət olmasa boş buraxmayın",
+                    "content": "Zəhmət olmasa boş buraxmayın"
+                }
+            }
+        },
+        {
+            "path": "/app/comments/{uuid}/delete",
+            "method": "delete",
+            "summary": "Şərh silmə",
+            "description": "Şərh məlumatını silir",
+            "authorization": true,
+            "responses": {
+                "200": {
+                    "message": "Məlumat uğurla silindi"
+                },
+                "404": {
+                    "message": "Məlumat tapılmadı"
+                },
+                "500": {
+                    "message": "Şərhi silmək mümkün olmadı"
+                }
+            }
+        }
+    ]
+}

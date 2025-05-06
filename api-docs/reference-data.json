@@ -1,0 +1,250 @@
+{
+    "tag": "İstinad məlumatları",
+    "description": "İstinad məlumatları ilə əlaqəli API-lər",
+    "endpoints": [
+        {
+            "path": "/reference-data/genders",
+            "method": "get",
+            "summary": "Cinsiyyət siyahısı",
+            "description": "Bütün cinsiyyət siyahısını qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": "male",
+                        "name": "Kişi"
+                    },
+                    {
+                        "id": "female",
+                        "name": "Qadın"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/languages",
+            "method": "get",
+            "summary": "Dillərin siyahısı",
+            "description": "Bütün dillərin siyahısını qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Azərbaycan"
+                    },
+                    {
+                        "id": 2,
+                        "name": "English"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Русский"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/languages/{locale}/translates",
+            "method": "get",
+            "summary": "Tərcümələr siyahısı",
+            "description": "Seçilmiş dilin tərcümələrini qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Azərbaycan"
+                    },
+                    {
+                        "id": 2,
+                        "name": "English"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Русский"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/countries",
+            "method": "get",
+            "summary": "Ölkələrin siyahısı",
+            "description": "Bütün ölkələrin siyahısını qaytarır",
+            "query": {
+                "withCity": {
+                    "type": "boolean",
+                    "description": "Şəhər ilə birlikdə istəyiriksə true göndəririk",
+                    "required": false
+                },
+                "withFull": {
+                    "type": "boolean",
+                    "description": "Bütün məkan məlumatlarını əldə etmək istəyiriksə true göndəririk",
+                    "required": false
+                }
+            },
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Azərbaycan",
+                        "uuid": "df113b1e-007a-4a27-bccd-9c8053ffefb3",
+                        "slug": "azerbaycan"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/countries/{uuid}/cities",
+            "method": "get",
+            "summary": "Ölkələrə görə şəhərlər siyahısı",
+            "description": "Bütün şəhərlər siyahısını ölkələrə görə qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Bakı",
+                        "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                        "slug": "baki"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Sumqayıt",
+                        "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                        "slug": "sumqayit"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/cities",
+            "method": "get",
+            "summary": "Şəhərlər siyahısı",
+            "description": "Bütün şəhərlər siyahısını qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Bakı",
+                        "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                        "slug": "baki"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Sumqayıt",
+                        "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                        "slug": "sumqayit"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/cities/{uuid}/regions",
+            "method": "get",
+            "summary": "Şəhərə görə rayonların siyahısı",
+            "description": "Bütün rayonların siyahısını şəhərə görə qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Binəqədi",
+                        "uuid": "f046df76-64b1-4f30-a33f-71c00c9b0060",
+                        "slug": "bineqedi"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Qaradağ",
+                        "uuid": "f11f03be-0b55-4b45-aa79-3038bb318d0d",
+                        "slug": "qaradag"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/cities/{uuid}/subways",
+            "method": "get",
+            "summary": "Şəhərə görə metro stansiyalarının siyahısı",
+            "description": "Bütün metro stansiyalarının siyahısını şəhərə görə qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Bakı",
+                        "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                        "slug": "baki"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Sumqayıt",
+                        "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                        "slug": "sumqayit"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/regions",
+            "method": "get",
+            "summary": "Rayonların siyahısı",
+            "description": "Bütün rayonların siyahısını qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Bakı",
+                        "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                        "slug": "baki"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Sumqayıt",
+                        "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                        "slug": "sumqayit"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/regions/{uuid}/subways",
+            "method": "get",
+            "summary": "Rayona görə metro stansiyalarının siyahısı",
+            "description": "Bütün metro stansiyalarının siyahısını rayona görə qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Azadlıq Prospekti",
+                        "uuid": "2e47bea0-b67b-4c56-ad44-8d43c136a0ce",
+                        "slug": "azadliq-prospekti"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Nəsimi",
+                        "uuid": "39cabb9c-9f7a-4472-bcd0-bfd6132ffde8",
+                        "slug": "nesimi"
+                    }
+                ]
+            }
+        },
+        {
+            "path": "/reference-data/subways",
+            "method": "get",
+            "summary": "Metro stansiyalarının siyahısı",
+            "description": "Bütün metro stansiyalarının siyahısını qaytarır",
+            "responses": {
+                "200": [
+                    {
+                        "id": 1,
+                        "name": "Azadlıq Prospekti",
+                        "uuid": "2e47bea0-b67b-4c56-ad44-8d43c136a0ce",
+                        "slug": "azadliq-prospekti"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Nəsimi",
+                        "uuid": "39cabb9c-9f7a-4472-bcd0-bfd6132ffde8",
+                        "slug": "nesimi"
+                    }
+                ]
+            }
+        }
+    ]
+}

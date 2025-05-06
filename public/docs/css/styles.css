@@ -1,0 +1,133 @@
+.error-notification {
+    animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 4.7s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Transitions */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(2px);
+}
+
+/* Dark mode loading state */
+.dark .loading::after {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* JSON viewer əsas container */
+.json-viewer {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    line-height: 1.5;
+}
+
+/* Kollaps edilə bilən bloklar */
+.json-collapsible {
+    position: relative;
+    margin: 2px 0;
+}
+
+/* Kollaps düyməsi və onun container-i */
+.json-collapsible .collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin-right: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Kollaps düyməsinin ikonu */
+.json-collapsible .collapse-toggle svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+/* İkonun rotate edilmiş vəziyyəti */
+.json-collapsible .collapse-toggle svg.rotate-90 {
+    transform: rotate(90deg);
+}
+
+/* Məzmun container-i */
+.json-collapsible .content {
+    position: relative;
+    margin-left: 4px;
+    padding-left: 16px;
+    border-left: 1px solid rgb(226 232 240); /* slate-200 */
+}
+
+/* Dark mode üçün border rəngi */
+.dark .json-collapsible .content {
+    border-left-color: rgb(51 65 85); /* slate-700 */
+}
+
+/* Gizli content */
+.json-collapsible .content.hidden {
+    display: none;
+}
+
+/* Hover effektləri */
+.json-collapsible .collapse-toggle:hover {
+    background-color: rgb(241 245 249); /* slate-100 */
+}
+
+.dark .json-collapsible .collapse-toggle:hover {
+    background-color: rgb(51 65 85); /* slate-700 */
+}
+
+/* Açar və dəyərlərin görünüşü */
+.json-collapsible .key {
+    color: rgb(37 99 235); /* blue-600 */
+    font-weight: 500;
+}
+
+.dark .json-collapsible .key {
+    color: rgb(96 165 250); /* blue-400 */
+}
+
+/* Nəticə zənciri */
+.json-collapsible > .content > .json-collapsible {
+    margin-top: 4px;
+}
+
+/* Son element üçün border-bottom silmək */
+.json-collapsible:last-child > .content {
+    border-left: none;
+}

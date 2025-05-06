@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Services\Module;
+
+use App\Enums\CompanyBannerPositionEnum;
+use App\Enums\CompanyStatusEnum;
+use App\Enums\GenderEnum;
+use App\Enums\ImageWatermarkPositionEnum;
+use App\Enums\SectionTypeEnum;
+use App\Http\Resources\Admin\BaseResource;
+use App\Models\Language;
+use App\Models\Role;
+use App\Repositories\Module\AttributeRepository;
+use App\Repositories\Module\CategoryRepository;
+use App\Repositories\Module\CityRepository;
+use App\Repositories\Module\CountryRepository;
+use App\Repositories\Module\CurrencyRepository;
+use App\Repositories\Module\LanguageRepository;
+use App\Repositories\Module\PaymentServiceRepository;
+use App\Repositories\Module\RegionRepository;
+use App\Repositories\Module\SubwayRepository;
+use App\Repositories\Module\VotingSystemRepository;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class ReferenceDataService
+{
+    protected CategoryRepository $categoryRepository;
+    protected PaymentServiceRepository $paymentServiceRepository;
+    protected CountryRepository $countryRepository;
+    protected CityRepository $cityRepository;
+    protected RegionRepository $regionRepository;
+    protected SubwayRepository $subwayRepository;
+
+    public function __construct(
+        CategoryRepository       $categoryRepository,
+        PaymentServiceRepository $paymentServiceRepository,
+        CountryRepository        $countryRepository,
+        CityRepository           $cityRepository,
+        RegionRepository         $regionRepository,
+        SubwayRepository         $subwayRepository,
+    )
+    {
+        $this->categoryRepository = $categoryRepository;
+        $this->paymentServiceRepository = $paymentServiceRepository;
+        $this->countryRepository = $countryRepository;
+        $this->cityRepository = $cityRepository;
+        $this->regionRepository = $regionRepository;
+        $this->subwayRepository = $subwayRepository;
+    }
+
+    /*
+     * Permissions
+     * */
+    public function fetchPermissions(): AnonymousResourceCollection
+    {
+        return BaseResource::collection(Role::query()->get());
+    }
+
+    /*
+     * Genders
+     * */
+    public function fetchGenders(): \Illuminate\Support\Collection
+    {
+        return collect(GenderEnum::getValues())->map(fn($i) => [
+            'id' => $i,
+            'name' => GenderEnum::getDescription($i)
+        ]);
+    }
+
+
+    /*
+     * Languages
+     * */
+    public function fetchLanguages()
+    {
+        return Language::query()->active()->get();
+    }
+
+    /*
+     * Languages With Translates
+     * */
+    public function fetchLanguagesWithTranslates($locale)
+    {
+        return app(LanguageRepository::class)->getLanguagesWithTranslates($locale);
+    }
+
+    /**
+     *
+     */
+    public function fetchImageWatermarkPosition(): \Illuminate\Support\Collection
+    {
+        return collect(ImageWatermarkPositionEnum::getValues())->map(fn($i) => [
+            'id' => $i,
+            'name' => ImageWatermarkPositionEnum::getDescription($i)
+        ]);
+    }
+
+    /**
+     * Active kateqoriyaları gətirir
+     */
+    public function fetchCategories(): Collection
+    {
+        return $this->categoryRepository->fetchCategoryByParent();
+    }
+
+    /**
+     * Kateqoriyaya aid atributları və onların optionlarını qaytarır
+     */
+    public function fetchCategoryAttributes(int $id)
+    {
+        return $this->categoryRepository->getCategoryWithAttributes($id);
+    }
+
+    /**
+     * Ödəniş xidmətlərini tipinə görə
+     * əldə etmək
+     * */
+    public function fetchPaymentServiceByType($type): Collection
+    {
+        return $this->paymentServiceRepository->findListByType($type);
+    }
+
+    public function fetchCountries(): Collection
+    {
+        return $this->countryRepository->findActiveList();
+    }
+
+    public function fetchCountryWithCities($uuid): Collection
+    {
+        return $this->countryRepository->fetchByUuidWithCities($uuid);
+    }
+
+    public function fetchCities(): Collection
+    {
+        return $this->cityRepository->findActiveList();
+    }
+
+    public function fetchCityWithRegions($uuid): Collection
+    {
+        return $this->cityRepository->fetchByUuidWithRegions($uuid);
+    }
+
+    public function fetchCityWithSubways($uuid): Collection
+    {
+        return $this->cityRepository->fetchByUuidWithSubways($uuid);
+    }
+
+    public function fetchRegions(): Collection
+    {
+        return $this->regionRepository->findActiveList();
+    }
+
+    public function fetchRegionWithSubways($uuid): Collection
+    {
+        return $this->regionRepository->fetchByUuidWithSubways($uuid);
+    }
+
+    public function fetchSubways(): Collection
+    {
+        return $this->subwayRepository->findActiveList();
+    }
+
+}

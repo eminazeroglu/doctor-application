@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Models;
+
+class {{ class }} extends BaseModel
+{
+    protected $fillable = [
+        // Add fillable fields here
+    ];
+
+    // Add any additional methods or relationships here
+}

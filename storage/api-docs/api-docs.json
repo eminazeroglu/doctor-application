@@ -1,0 +1,1948 @@
+{
+    "config": {
+        "info": {
+            "title": "Mənim Saytım Documentation",
+            "version": "1.0.0",
+            "description": "API Documentation"
+        },
+        "servers": [
+            {
+                "url": "http://laravel-structur.test/api",
+                "description": "API Server"
+            }
+        ],
+        "authorization": "bearerToken"
+    },
+    "elements": [
+        {
+            "tag": "Autentifikasiya",
+            "description": "İstifadəçi giriş, qeydiyyat, çıxış və s. əməliyyatları üçün API-lər",
+            "endpoints": {
+                "/auth/register": {
+                    "post": {
+                        "summary": "Yeni İstifadəçi",
+                        "description": "Yeni istifadəçi əlavə edir",
+                        "formBody": {
+                            "name": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin adı.",
+                                "default": "John"
+                            },
+                            "surname": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin soyadı",
+                                "default": "Doe"
+                            },
+                            "email": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin email ünvanı",
+                                "default": "user1@example.com"
+                            },
+                            "password": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin şifrəsi",
+                                "default": "12345678"
+                            },
+                            "password_confirmation": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin şifrə təkrarı",
+                                "default": "12345678"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "message": "Hesabınız uğurla yaradıldı! Təsdiq üçün email ünvanınıza link göndərildi"
+                            },
+                            "422": {
+                                "name": "Zəhmət olmasa boş buraxmayın",
+                                "surname": "Zəhmət olmasa boş buraxmayın",
+                                "email": "Zəhmət olmasa boş buraxmayın",
+                                "password": "Zəhmət olmasa boş buraxmayın",
+                                "password_confirmation": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/auth/login": {
+                    "post": {
+                        "summary": "İstifadəçinin daxil olması",
+                        "description": "İstifadəçinin sistemə daxil olması",
+                        "formBody": {
+                            "email": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin email ünvanı",
+                                "default": "user@example.com"
+                            },
+                            "password": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin şifrəsi",
+                                "default": "password123"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "token": "1|4WHKo6K0AZNGiPiL9QWs1qXZ2CwnYbaCQyfUYr8M1f224977",
+                                "user": {
+                                    "uuid": "92d1472d-6905-4bdf-9229-3fcac1988a6c",
+                                    "fullname": "John Doe",
+                                    "name": "John",
+                                    "surname": "Doe",
+                                    "username": "john-doe",
+                                    "code": "LR3XII",
+                                    "email": "user@example.com",
+                                    "gender": "",
+                                    "phone": "(731) 902-6895",
+                                    "photo": "https://gojob-az.test/uploads/photos/user/photo-3.jpg",
+                                    "is_active": true,
+                                    "is_block": false,
+                                    "role": "user"
+                                }
+                            },
+                            "422": {
+                                "email": "Zəhmət olmasa boş buraxmayın",
+                                "password": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/auth/logout": {
+                    "post": {
+                        "summary": "İstifadəçinin hesabdan çıxması",
+                        "description": "İstifadəçinin sistemdən çıxış etməsi",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "message": "Hesabdan uğurla çıxdınız"
+                            }
+                        }
+                    }
+                },
+                "/auth/user": {
+                    "get": {
+                        "summary": "Daxil olan istifadəçi məlumatları",
+                        "description": "Daxil olan istifadəçinin sistemdə olan məlumatları",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "uuid": "92d1472d-6905-4bdf-9229-3fcac1988a6c",
+                                "fullname": "John Doe",
+                                "name": "John",
+                                "surname": "Doe",
+                                "username": "john-doe",
+                                "code": "LR3XII",
+                                "email": "user@example.com",
+                                "gender": "",
+                                "phone": "(731) 902-6895",
+                                "photo": "https://gojob-az.test/uploads/photos/user/photo-3.jpg",
+                                "is_active": true,
+                                "is_block": false,
+                                "role": "user"
+                            }
+                        }
+                    }
+                },
+                "/auth/refresh": {
+                    "post": {
+                        "summary": "İstifadəçinin tokenini yeniləmək",
+                        "description": "İstifadəçinin sistemdə tokenini yeniləyir",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "token": "6|fqvImeIpeX1svxO5XK3giLlcNWWaOqdQz5SMcKBIc8660478"
+                            }
+                        }
+                    }
+                },
+                "/auth/forgot-password": {
+                    "post": {
+                        "summary": "Şifrəmi unutdum",
+                        "description": "Şifrəsini unutmuş istifadəçi üçün istifadə olunur",
+                        "formBody": {
+                            "email": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin email ünvanı",
+                                "default": "user@example.com"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "message": "Şifrə dəyişmə linki uğurla göndərildi"
+                            },
+                            "422": {
+                                "email": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/auth/reset-password": {
+                    "post": {
+                        "summary": "Şifrəni yeniləmək",
+                        "description": "Şifrəsini yeniləmək istəyən istifadəçi üçün istifadə olunur",
+                        "formBody": {
+                            "token": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Emaildən gələn token"
+                            },
+                            "password": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin şifrəsi",
+                                "default": "12345678"
+                            },
+                            "password_confirmation": {
+                                "type": "text",
+                                "required": true,
+                                "description": "İstifadəçinin şifrə təkrarı",
+                                "default": "12345678"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "token": "7|5jcZjSljmeQ59J2qUssD0gxXuU3WG4y625piz9lW29e005f4",
+                                "user": {
+                                    "uuid": "92d1472d-6905-4bdf-9229-3fcac1988a6c",
+                                    "fullname": "John Doe",
+                                    "name": "John",
+                                    "surname": "Doe",
+                                    "username": "john-doe",
+                                    "code": "LR3XII",
+                                    "email": "user@example.com",
+                                    "gender": "",
+                                    "phone": "(731) 902-6895",
+                                    "photo": "https://gojob-az.test/uploads/photos/user/photo-3.jpg",
+                                    "is_active": true,
+                                    "is_block": false,
+                                    "role": "user"
+                                }
+                            },
+                            "422": {
+                                "token": "Zəhmət olmasa boş buraxmayın",
+                                "password": "Zəhmət olmasa boş buraxmayın",
+                                "password_confirmation": "Zəhmət olmasa boş buraxmayın"
+                            },
+                            "400": {
+                                "error": "BaseException",
+                                "message": "Token etibarsızdır və ya istifadə müddəti bitib."
+                            }
+                        }
+                    }
+                },
+                "/auth/email/verify": {
+                    "post": {
+                        "summary": "Email təsdiqləmək",
+                        "description": "Emaildən gələn key parametri ilə istifadəçinin email ünvanını təsdiqləməsi",
+                        "formBody": {
+                            "key": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Emaildən gələn key"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "message": "Email uğurla təsdiqləndi"
+                            },
+                            "422": {
+                                "key": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/auth/email/resend": {
+                    "post": {
+                        "summary": "Emailə yenidən təsdiq linki göndərmək",
+                        "description": "Emailə yenidən təsdiq linki göndərmək üçün istifadə olunur",
+                        "responses": {
+                            "200": {
+                                "message": "Təsdiq emaili uğurla yenidən göndərildi"
+                            },
+                            "422": {
+                                "key": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Kateqoriyalar",
+            "description": "Kateqoriyalar ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/categories": {
+                    "get": {
+                        "summary": "Atributların siyahısııı",
+                        "description": "Bütün atributların siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "uuid": "68b4580b-f16a-46ab-93a3-a5af7186f461",
+                                    "name": "Uşaq aləmi",
+                                    "slug": "usaq-alemi",
+                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
+                                },
+                                {
+                                    "uuid": "5aae8636-4563-4ced-92b7-17d9163d6c2b",
+                                    "name": "Şəxsi əşyalar",
+                                    "slug": "sexsi-esyalar",
+                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/app/categories/{uuid}/children": {
+                    "get": {
+                        "summary": "Alt kateqoriyaların siyahısı",
+                        "description": "Seçilmiş kateqoriyanın bütün alt kateqoriyalarını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "uuid": "3e79732e-c143-49f7-9fd1-df604e30aaae",
+                                    "name": "Geyim və ayaqqabılar",
+                                    "slug": "geyim-ve-ayaqqabilar",
+                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
+                                },
+                                {
+                                    "uuid": "350cb69e-52f7-4d5b-811c-aca8a8c7924c",
+                                    "name": "Saat və zinət əşyaları",
+                                    "slug": "saat-ve-zinet-esyalari",
+                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/app/categories/{uuid}/attributes": {
+                    "get": {
+                        "summary": "Kateqoriya atributlarının siyahısı",
+                        "description": "Seçilmiş kateqoriyanın bütün atributlarını qaytarır",
+                        "responses": {
+                            "200": []
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Şərhlər",
+            "description": "Şərhlər ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/comments/save": {
+                    "post": {
+                        "summary": "Yeni şərh",
+                        "description": "Yeni şərh əlavə edir",
+                        "authorization": true,
+                        "formBody": {
+                            "type": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Bu nə üçün şərh yazıldığını göstərir. Elan, Şirkət və ya istifadəçi (listing, company, user)"
+                            },
+                            "commentable_uuid": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Bu şərh yazılan (listing, company, user) nədirsə onun uuid nömrəsidir."
+                            },
+                            "content": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Şərhin məzmunu"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "id": 1,
+                                "name": "Example name",
+                                "description": "Example description",
+                                "status": "active",
+                                "created_at": "2024-01-01 00:00:00"
+                            },
+                            "422": {
+                                "type": "Zəhmət olmasa boş buraxmayın",
+                                "commentable_uuid": "Zəhmət olmasa boş buraxmayın",
+                                "content": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/app/comments/{uuid}/delete": {
+                    "delete": {
+                        "summary": "Şərh silmə",
+                        "description": "Şərh məlumatını silir",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "message": "Məlumat uğurla silindi"
+                            },
+                            "404": {
+                                "message": "Məlumat tapılmadı"
+                            },
+                            "500": {
+                                "message": "Şərhi silmək mümkün olmadı"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Ümumi",
+            "description": "Ümumi funksiyalar ilə əlaqəli API-lər",
+            "endpoints": {
+                "/common/start": {
+                    "get": {
+                        "summary": "Başlanğıc üçün lazım olan siyahı",
+                        "description": "Başlanğıc üçün lazım olan bütün məlumatları qaytarır",
+                        "response": {
+                            "languages": []
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Şirkətlər",
+            "description": "Şirkətlər ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/companies": {
+                    "get": {
+                        "summary": "Şirkətlər siyahısı",
+                        "description": "Bütün şirkətlərin siyahısını qaytarır",
+                        "query": {
+                            "search": {
+                                "type": "text",
+                                "description": "Axtarış"
+                            },
+                            "category": {
+                                "type": "text",
+                                "description": "Kateqoriya filtri"
+                            },
+                            "page": {
+                                "type": "number",
+                                "description": "Səhifə nömrəsi",
+                                "default": 1
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Səhifə limiti",
+                                "default": 20
+                            }
+                        }
+                    },
+                    "post": {
+                        "summary": "Yeni şirkət",
+                        "description": "Yeni şirkət əlavə edir",
+                        "authorization": true,
+                        "formBody": {
+                            "name": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Ad"
+                            },
+                            "description": {
+                                "type": "text",
+                                "description": "Açıqlama"
+                            },
+                            "status": {
+                                "type": "text",
+                                "description": "Status",
+                                "default": "active"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "id": 1,
+                                "name": "Example name",
+                                "description": "Example description",
+                                "status": "active",
+                                "created_at": "2024-01-01 00:00:00"
+                            },
+                            "422": {
+                                "name": "Zəhmət olmasa boş buraxmayın"
+                            }
+                        }
+                    }
+                },
+                "/app/companies/{slug}": {
+                    "get": {
+                        "summary": "Şirkət məlumatları",
+                        "description": "Şirkətə aid bütün məlumatları slug dəyəri ilə əldə etmək üçün istifadə olunur"
+                    },
+                    "put": {
+                        "summary": "Şirkət yeniləmə",
+                        "description": "Şirkət məlumatlarını yeniləyir",
+                        "authorization": true,
+                        "formBody": {
+                            "name": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Ad"
+                            },
+                            "description": {
+                                "type": "text",
+                                "description": "Açıqlama"
+                            },
+                            "status": {
+                                "type": "text",
+                                "description": "Status",
+                                "default": "active"
+                            }
+                        }
+                    }
+                },
+                "/app/companies/{slug}/comments": {
+                    "get": {
+                        "summary": "Şirkətin şərhləri",
+                        "description": "Şirkətə aid bütün şərhləri slug dəyəri ilə əldə etmək üçün istifadə olunur"
+                    }
+                },
+                "/app/companies/{slug}/listings": {
+                    "get": {
+                        "summary": "Şirkət elanları",
+                        "description": "Şirkətə aid bütün elanları slug dəyəri ilə əldə etmək üçün istifadə olunur",
+                        "query": {
+                            "limit": {
+                                "type": "number",
+                                "description": "Elan sayı",
+                                "default": 4
+                            }
+                        }
+                    }
+                },
+                "/app/companies/packages": {
+                    "get": {
+                        "summary": "Şirkət paketləri",
+                        "description": "Şirkətə aid bütün paket məlumatlarını əldə etmək üçün istifadə olunur"
+                    }
+                },
+                "/app/companies/benefits": {
+                    "get": {
+                        "summary": "Şirkət benefitləri",
+                        "description": "Şirkətə aid bütün benefitlərin məlumatlarını əldə etmək üçün istifadə olunur"
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Elanlar",
+            "description": "Elanlar ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/listings/search": {
+                    "post": {
+                        "summary": "Elanların axtarışı",
+                        "description": "Müxtəlif filterlər istifadə edərək elanları axtarır və nəticələri qaytarır",
+                        "formBody": {
+                            "search": {
+                                "type": "string",
+                                "description": "Açar sözlər ilə axtarış"
+                            },
+                            "category_id": {
+                                "type": "number",
+                                "description": "Kateqoriya ID-si"
+                            },
+                            "min_price": {
+                                "type": "number",
+                                "description": "Minimum qiymət"
+                            },
+                            "max_price": {
+                                "type": "number",
+                                "description": "Maksimum qiymət"
+                            },
+                            "currency": {
+                                "type": "string",
+                                "description": "Valyuta (AZN, USD, EUR)"
+                            },
+                            "country_id": {
+                                "type": "number",
+                                "description": "Ölkə ID-si"
+                            },
+                            "city_id": {
+                                "type": "number",
+                                "description": "Şəhər ID-si"
+                            },
+                            "region_id": {
+                                "type": "number",
+                                "description": "Rayon ID-si"
+                            },
+                            "subway_id": {
+                                "type": "number",
+                                "description": "Metro ID-si"
+                            },
+                            "radius": {
+                                "type": "object",
+                                "description": "Radius əsaslı axtarış - müəyyən mərkəz nöqtəsindən (lat, lng) müəyyən məsafədə (distance) olan elanları tapır. Məsələn: {\"lat\": 40.3792, \"lng\": 49.8473, \"distance\": 3} - 28 May metrosunun 3 km radiusunda elanları tapacaq."
+                            },
+                            "attributes": {
+                                "type": "object",
+                                "description": "Dinamik atributlar üzrə axtarış. Açar kimi atribut ID-si, dəyər kimi seçim ID-si və ya dəyər istifadə olunur. Məsələn: {\"1\": 5} - Atribut ID 1 (Marka), Option ID 5 (BMW); {\"2\": 12} - Model, X5; {\"3\": \"2018-2022\"} - İl aralığı; {\"4\": [2,5,7]} - Çoxlu seçim halında (məs: Rənglər)."
+                            },
+                            "is_new": {
+                                "type": "boolean",
+                                "description": "Yeni məhsul"
+                            },
+                            "is_exchange": {
+                                "type": "boolean",
+                                "description": "Barter mümkündür"
+                            },
+                            "is_credit": {
+                                "type": "boolean",
+                                "description": "Kredit mümkündür"
+                            },
+                            "is_delivery": {
+                                "type": "boolean",
+                                "description": "Çatdırılma mövcuddur"
+                            },
+                            "is_negotiable": {
+                                "type": "boolean",
+                                "description": "Qiymət razılaşma yolu ilə"
+                            },
+                            "is_action": {
+                                "type": "boolean",
+                                "description": "Endirimli elanlar"
+                            },
+                            "date_range": {
+                                "type": "object",
+                                "description": "Yaradılma tarix aralığı. Məsələn: {\"from\": \"2023-01-01\", \"to\": \"2023-12-31\"}"
+                            },
+                            "published_at": {
+                                "type": "object",
+                                "description": "Dərc edilmə tarix aralığı. Məsələn: {\"from\": \"2023-01-01\", \"to\": \"2023-12-31\"}"
+                            },
+                            "user_id": {
+                                "type": "number",
+                                "description": "Müəyyən istifadəçinin elanları"
+                            },
+                            "company_id": {
+                                "type": "number",
+                                "description": "Müəyyən şirkətin elanları"
+                            },
+                            "min_views": {
+                                "type": "number",
+                                "description": "Minimum baxış sayı"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Elanların statusu"
+                            },
+                            "is_expired": {
+                                "type": "boolean",
+                                "description": "Müddəti bitmiş/bitməmiş elanlar"
+                            },
+                            "premium": {
+                                "type": "boolean",
+                                "description": "Premium xidmətli elanlar"
+                            },
+                            "payment_service": {
+                                "type": "string",
+                                "description": "Müəyyən ödəniş xidməti növü olan elanlar"
+                            },
+                            "sort": {
+                                "type": "string",
+                                "description": "Sıralama meyarı (newest, oldest, price_asc, price_desc, most_viewed, relevance)"
+                            },
+                            "page": {
+                                "type": "number",
+                                "description": "Səhifə nömrəsi",
+                                "default": 1
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Səhifə başına elan sayı",
+                                "default": 20
+                            }
+                        }
+                    }
+                },
+                "/app/listings/by-uuids": {
+                    "post": {
+                        "summary": "Elanlar siyahısı",
+                        "description": "Bütün elanların siyahısını qaytarır",
+                        "formBody": {
+                            "uuids": {
+                                "type": "array",
+                                "required": true,
+                                "description": "Elanın uuid-lərini burada massiv olaraq göndəririk",
+                                "default": []
+                            },
+                            "category": {
+                                "type": "string",
+                                "description": "Kateqoriyaya görə filtirləmək istədikdə kateqoriya slug göndəririk",
+                                "default": ""
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": [
+                                    {
+                                        "uuid": "bf0c4117-004c-4a65-8480-68092b13a96a",
+                                        "code": "7FM2OL6",
+                                        "slug": "nomreler-ve-sim-kartlar-19-466-usd-nigde",
+                                        "name": "Nömrələr və SIM-kartlar 19 466 USD, Niğde",
+                                        "price": 19466,
+                                        "old_price": null,
+                                        "currency": "USD",
+                                        "is_negotiable": false,
+                                        "is_exchange": false,
+                                        "is_credit": false,
+                                        "is_delivery": true,
+                                        "is_new": true,
+                                        "is_vip": false,
+                                        "is_premium": true,
+                                        "is_bumped": false,
+                                        "is_color_frame": false,
+                                        "is_large_frame": false,
+                                        "is_company": false,
+                                        "is_favorite": null,
+                                        "is_action": true,
+                                        "action_start_date": "2025-01-28T19:10:32.000000Z",
+                                        "action_end_date": "2025-04-30T19:10:32.000000Z",
+                                        "created_at": "2025-03-05T23:10:32+04:00",
+                                        "published_at": null,
+                                        "expires_at": null,
+                                        "images": [
+                                            {
+                                                "url": "https://advert-application.test/uploads/photos/listing/01-01-2025/photo-8.jpg",
+                                                "thumbnail_url": "https://advert-application.test/uploads/photos/listing/01-01-2025/thumbnail/photo-8.jpg"
+                                            }
+                                        ],
+                                        "views_count": 0,
+                                        "favorites_count": 1
+                                    }
+                                ],
+                                "total": 1
+                            }
+                        }
+                    }
+                },
+                "/app/listings/{slug}/all": {
+                    "get": {
+                        "summary": "Elan məlumatları",
+                        "description": "Elanın slug dəyərinə görə bütün məlumatlarını qaytarır"
+                    }
+                },
+                "/app/listings/{slug}/comments": {
+                    "get": {
+                        "summary": "Elan şərhləri",
+                        "description": "Elanın slug dəyərinə görə bütün şərhlərini qaytarır"
+                    }
+                },
+                "/app/listings/{slug}/related": {
+                    "get": {
+                        "summary": "Əlaqəli elanlar",
+                        "description": "Elanın slug dəyərinə görə əlaqəli elanları qaytarır"
+                    }
+                },
+                "/app/listings/payment-services": {
+                    "get": {
+                        "summary": "Ödəniş xidmətləri",
+                        "description": "Elanlara aid olan bütün ödəniş xidmətlərini siyahılayır"
+                    }
+                },
+                "/app/listings/{slug}/complaint": {
+                    "post": {
+                        "summary": "Elanı şikayət et",
+                        "description": "Bu API vasitəsi ilə elanı şikayət edə bilirik",
+                        "authorization": true,
+                        "formBody": {
+                            "title": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Şikayət başlığı"
+                            },
+                            "description": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Şikayətin məzmunu"
+                            }
+                        }
+                    }
+                },
+                "/app/listings/create": {
+                    "post": {
+                        "summary": "Ödəniş xidmətləri",
+                        "description": "Elanlara aid olan bütün ödəniş xidmətlərini siyahılayır",
+                        "formData": true,
+                        "formBody": {
+                            "category_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Kateqoriya ID-si",
+                                "default": 1
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "required": true,
+                                "description": "Elanın ətraflı məzmunu",
+                                "rows": 4
+                            },
+                            "country_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Ölkə ID-si",
+                                "default": 1
+                            },
+                            "city_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Şəhər ID-si",
+                                "default": 1
+                            },
+                            "contact[name]": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Əlaqə saxlanılacaq şəxsin adı"
+                            },
+                            "contact[phones][]": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Əlaqə telefonu",
+                                "isArray": true
+                            },
+                            "location[address]": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Ünvan"
+                            },
+                            "location[coordinates][latitude]": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Enlik dərəcəsi"
+                            },
+                            "location[coordinates][longitude]": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Uzunluq dərəcəsi"
+                            },
+                            "is_negotiable": {
+                                "type": "boolean",
+                                "description": "Qiymət danışıq yolu ilə",
+                                "default": "0"
+                            },
+                            "is_new": {
+                                "type": "boolean",
+                                "description": "Yeni",
+                                "default": "0"
+                            },
+                            "is_exchange": {
+                                "type": "boolean",
+                                "description": "Mübadilə mümkündür",
+                                "default": "0"
+                            },
+                            "is_credit": {
+                                "type": "boolean",
+                                "description": "Kreditdədir",
+                                "default": "0"
+                            },
+                            "is_delivery": {
+                                "type": "boolean",
+                                "description": "Çatdırılma mövcuddur",
+                                "default": "0"
+                            },
+                            "show_price": {
+                                "type": "boolean",
+                                "description": "Qiyməti göstərmək",
+                                "default": "0"
+                            },
+                            "attributes[22]": {
+                                "type": "number",
+                                "description": "Atribut 22 üçün dəyər",
+                                "default": 110
+                            },
+                            "attributes[1]": {
+                                "type": "string",
+                                "description": "Atribut 1 üçün dəyər"
+                            },
+                            "images": {
+                                "type": "file",
+                                "description": "Elan şəkilləri",
+                                "multiple": true,
+                                "isArray": true,
+                                "accept": "image/*"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Mesajlaşma",
+            "description": "Mesajlaşma ilə əlaqəli API endpoint-ləri",
+            "endpoints": {
+                "/app/messaging/conversations": {
+                    "get": {
+                        "summary": "Söhbətlər siyahısı",
+                        "description": "İstifadəçinin bütün söhbətlərini qaytarır",
+                        "authorization": true,
+                        "query": {
+                            "status": {
+                                "type": "string",
+                                "description": "Söhbətin statusu (active, archived, blocked)",
+                                "default": "active"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": [
+                                    {
+                                        "id": 1,
+                                        "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
+                                        "type": "private",
+                                        "status": "active",
+                                        "is_pinned": true,
+                                        "participant": {
+                                            "id": 2,
+                                            "name": "Ülvi",
+                                            "surname": "Əzizov",
+                                            "fullname": "Ülvi Əzizov",
+                                            "username": "ulvi",
+                                            "photo": "https://example.com/photos/ulvi.jpg"
+                                        },
+                                        "last_message": {
+                                            "content": "Dünən hardaydın. Zəng çatmırdı sənə salamatçılıxdır?",
+                                            "sent_at": "02.10.2024 12:43",
+                                            "sender_id": 2
+                                        },
+                                        "last_activity_at": "2024-10-02T12:43:00Z",
+                                        "created_at": "2024-09-15T10:30:00Z",
+                                        "unread_count": 3
+                                    }
+                                ],
+                                "success": true
+                            },
+                            "401": {
+                                "message": "Unauthenticated"
+                            }
+                        }
+                    },
+                    "post": {
+                        "summary": "Yeni söhbət yaratma",
+                        "description": "Yeni söhbət yaradır və ilk mesajı göndərir",
+                        "authorization": true,
+                        "formBody": {
+                            "receiver_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Söhbətin qarşı tərəfi (istifadəçi ID)"
+                            },
+                            "content": {
+                                "type": "textarea",
+                                "required": true,
+                                "description": "İlk mesaj mətni",
+                                "rows": 3
+                            },
+                            "type": {
+                                "type": "select",
+                                "description": "Söhbət növü bunlar ola biler: private(Şəxsi), listing (Elanla bağlı), support (Dəstəl söhbəti)",
+                                "default": "private"
+                            },
+                            "conversationable_id": {
+                                "type": "number",
+                                "description": "Söhbətin aid olduğu model ID-si"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": {
+                                    "id": 2,
+                                    "uuid": "9f9e9d9c-9b9a-9968-9766-956463926160",
+                                    "type": "private",
+                                    "status": "active",
+                                    "is_pinned": false,
+                                    "participant": {
+                                        "id": 3,
+                                        "name": "Kamran",
+                                        "surname": "Haqverdiyev",
+                                        "fullname": "Kamran Haqverdiyev",
+                                        "username": "kamran",
+                                        "photo": "https://example.com/photos/kamran.jpg"
+                                    },
+                                    "last_message": {
+                                        "content": "Salam, necəsən?",
+                                        "sent_at": "02.10.2024 14:00",
+                                        "sender_id": 1
+                                    },
+                                    "last_activity_at": "2024-10-02T14:00:00Z",
+                                    "created_at": "2024-10-02T14:00:00Z",
+                                    "unread_count": 0
+                                },
+                                "success": true
+                            },
+                            "422": {
+                                "receiver_id": "Alıcı istifadəçi mütləqdir",
+                                "content": "İlk mesaj mətni mütləqdir"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/conversations/{uuid}": {
+                    "get": {
+                        "summary": "Söhbət detalları",
+                        "description": "Verilmiş UUID ilə söhbət məlumatlarını və mesajlarını qaytarır",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "data": {
+                                    "id": 1,
+                                    "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
+                                    "type": "private",
+                                    "status": "active",
+                                    "is_pinned": true,
+                                    "participant": {
+                                        "id": 2,
+                                        "name": "Ülvi",
+                                        "surname": "Əzizov",
+                                        "fullname": "Ülvi Əzizov",
+                                        "username": "ulvi",
+                                        "photo": "https://example.com/photos/ulvi.jpg"
+                                    },
+                                    "messages": [
+                                        {
+                                            "id": 101,
+                                            "uuid": "6f6e6d6c-6b6a-6968-6766-656463626160",
+                                            "sender": {
+                                                "id": 1,
+                                                "name": "Şahin",
+                                                "surname": "Əliyev",
+                                                "fullname": "Şahin Əliyev",
+                                                "username": "shahin",
+                                                "photo": "https://example.com/photos/shahin.jpg"
+                                            },
+                                            "content": "Salam, necəsən?",
+                                            "type": "text",
+                                            "status": "read",
+                                            "is_edited": false,
+                                            "is_system": false,
+                                            "is_from_current_user": true,
+                                            "created_at": "2024-10-01T14:20:00Z",
+                                            "formatted_created_at": "01.10.2024 14:20"
+                                        },
+                                        {
+                                            "id": 102,
+                                            "uuid": "7f7e7d7c-7b7a-7968-7766-756463726170",
+                                            "sender": {
+                                                "id": 2,
+                                                "name": "Ülvi",
+                                                "surname": "Əzizov",
+                                                "fullname": "Ülvi Əzizov",
+                                                "username": "ulvi",
+                                                "photo": "https://example.com/photos/ulvi.jpg"
+                                            },
+                                            "content": "Dünən hardaydın. Zəng çatmırdı sənə salamatçılıxdır?",
+                                            "type": "text",
+                                            "status": "sent",
+                                            "is_edited": false,
+                                            "is_system": false,
+                                            "is_from_current_user": false,
+                                            "created_at": "2024-10-02T12:43:00Z",
+                                            "formatted_created_at": "02.10.2024 12:43"
+                                        }
+                                    ],
+                                    "last_activity_at": "2024-10-02T12:43:00Z",
+                                    "created_at": "2024-09-15T10:30:00Z"
+                                },
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbətə icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/conversations/{uuid}/messages": {
+                    "get": {
+                        "summary": "Söhbət mesajları",
+                        "description": "Verilmiş söhbətin mesajlarını səhifələnmiş şəkildə qaytarır",
+                        "authorization": true,
+                        "query": {
+                            "page": {
+                                "type": "number",
+                                "description": "Səhifə nömrəsi",
+                                "default": 1
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Səhifə limiti",
+                                "default": 20
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": [
+                                    {
+                                        "id": 101,
+                                        "uuid": "6f6e6d6c-6b6a-6968-6766-656463626160",
+                                        "sender": {
+                                            "id": 1,
+                                            "name": "Şahin",
+                                            "surname": "Əliyev",
+                                            "fullname": "Şahin Əliyev",
+                                            "username": "shahin",
+                                            "photo": "https://example.com/photos/shahin.jpg"
+                                        },
+                                        "content": "Salam, necəsən?",
+                                        "type": "text",
+                                        "status": "read",
+                                        "is_edited": false,
+                                        "is_system": false,
+                                        "is_from_current_user": true,
+                                        "created_at": "2024-10-01T14:20:00Z",
+                                        "formatted_created_at": "01.10.2024 14:20"
+                                    }
+                                ],
+                                "meta": {
+                                    "current_page": 1,
+                                    "last_page": 5,
+                                    "per_page": 20,
+                                    "total": 98
+                                },
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbətə icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/send": {
+                    "post": {
+                        "summary": "Mesaj göndərmə",
+                        "description": "Mövcud söhbətə yeni mesaj göndərir",
+                        "authorization": true,
+                        "formData": true,
+                        "formBody": {
+                            "conversation_id": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Söhbətin UUID-si"
+                            },
+                            "content": {
+                                "type": "textarea",
+                                "required": false,
+                                "description": "Mesaj mətni",
+                                "rows": 3
+                            },
+                            "type": {
+                                "type": "select",
+                                "description": "Mesaj növü",
+                                "default": "text",
+                                "options": [
+                                    {
+                                        "value": "text",
+                                        "label": "Mətn"
+                                    },
+                                    {
+                                        "value": "image",
+                                        "label": "Şəkil"
+                                    },
+                                    {
+                                        "value": "file",
+                                        "label": "Fayl"
+                                    },
+                                    {
+                                        "value": "voice",
+                                        "label": "Səs yazısı"
+                                    }
+                                ]
+                            },
+                            "attachments[]": {
+                                "type": "file",
+                                "description": "Fayl əlavələri (şəkil, sənəd və s.)",
+                                "isArray": true,
+                                "multiple": true,
+                                "accept": "*/*"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": {
+                                    "id": 103,
+                                    "uuid": "8f8e8d8c-8b8a-8968-8766-856463826160",
+                                    "conversation_id": 1,
+                                    "sender": {
+                                        "id": 1,
+                                        "name": "Şahin",
+                                        "surname": "Əliyev",
+                                        "fullname": "Şahin Əliyev",
+                                        "username": "shahin",
+                                        "photo": "https://example.com/photos/shahin.jpg"
+                                    },
+                                    "content": "15 dəqiqə əvvəl",
+                                    "type": "text",
+                                    "status": "sent",
+                                    "is_edited": false,
+                                    "is_system": false,
+                                    "is_from_current_user": true,
+                                    "created_at": "2024-10-02T13:00:00Z",
+                                    "formatted_created_at": "02.10.2024 13:00"
+                                },
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbətə mesaj göndərmək icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            },
+                            "422": {
+                                "conversation_id": "Söhbət ID-si mütləqdir",
+                                "content": "Mətn və ya fayl göndərilməlidir"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/conversations/{uuid}/pin": {
+                    "post": {
+                        "summary": "Söhbəti pinləmə/pin ləğv etmə",
+                        "description": "Söhbətin pinlənmiş (sabitlənmiş) vəziyyətini dəyişir",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "data": {
+                                    "id": 1,
+                                    "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
+                                    "is_pinned": false
+                                },
+                                "message": "Söhbət pin-dən çıxarıldı",
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbəti pinləmək icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/conversations/{uuid}/archive": {
+                    "post": {
+                        "summary": "Söhbəti arxivləşdirmə",
+                        "description": "Söhbəti arxivə göndərir",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "message": "Söhbət arxivləşdirildi",
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbəti arxivləşdirmək icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/conversations/{uuid}/unarchive": {
+                    "post": {
+                        "summary": "Söhbəti arxivdən çıxarma",
+                        "description": "Söhbəti arxivdən çıxarır və aktiv edir",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "message": "Söhbət arxivdən çıxarıldı",
+                                "success": true
+                            },
+                            "403": {
+                                "message": "Bu söhbəti arxivdən çıxarmaq icazəniz yoxdur"
+                            },
+                            "404": {
+                                "message": "Söhbət tapılmadı"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/mark-as-read": {
+                    "post": {
+                        "summary": "Mesajları oxundu kimi işarələmək",
+                        "description": "Verilən mesajları oxundu kimi işarələyir",
+                        "authorization": true,
+                        "formBody": {
+                            "message_uuids": {
+                                "type": "array",
+                                "required": true,
+                                "description": "Mesaj UUID-lərinin siyahısı"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "message": "Mesajlar oxundu kimi işarələndi",
+                                "success": true
+                            },
+                            "422": {
+                                "message_uuids": "Mesaj UUID-ləri mütləqdir"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/search-users": {
+                    "get": {
+                        "summary": "İstifadəçi axtarışı",
+                        "description": "Yeni söhbət başlatmaq üçün istifadəçi axtarışı",
+                        "authorization": true,
+                        "query": {
+                            "search": {
+                                "type": "string",
+                                "required": true,
+                                "description": "Axtarış sözü (ad, soyad və ya istifadəçi adı)"
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Maksimum nəticə sayı",
+                                "default": 10
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "data": [
+                                    {
+                                        "id": 2,
+                                        "name": "Ülvi",
+                                        "surname": "Əzizov",
+                                        "fullname": "Ülvi Əzizov",
+                                        "username": "ulvi",
+                                        "photo": "https://example.com/photos/ulvi.jpg"
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "Kamran",
+                                        "surname": "Haqverdiyev",
+                                        "fullname": "Kamran Haqverdiyev",
+                                        "username": "kamran",
+                                        "photo": "https://example.com/photos/kamran.jpg"
+                                    }
+                                ],
+                                "success": true
+                            },
+                            "422": {
+                                "search": "Axtarış sözü ən azı 2 simvol olmalıdır"
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/unread-count": {
+                    "get": {
+                        "summary": "Oxunmamış mesaj sayı",
+                        "description": "İstifadəçinin oxunmamış mesajlarının ümumi sayını qaytarır",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "data": {
+                                    "unread_count": 5,
+                                    "unread_conversations": 2
+                                },
+                                "success": true
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/block-user": {
+                    "post": {
+                        "summary": "İstifadəçini bloklama",
+                        "description": "Cari istifadəçi digər bir istifadəçini bloklayır",
+                        "authorization": true,
+                        "formBody": {
+                            "user_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Bloklanacaq istifadəçinin ID-si"
+                            },
+                            "reason": {
+                                "type": "textarea",
+                                "required": false,
+                                "description": "Bloklama səbəbi",
+                                "rows": 2
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "success": true,
+                                "message": "İstifadəçi uğurla bloklandı"
+                            },
+                            "400": {
+                                "success": false,
+                                "message": "Özünüzü bloklaya bilməzsiniz"
+                            },
+                            "404": {
+                                "success": false,
+                                "message": "İstifadəçi tapılmadı"
+                            },
+                            "409": {
+                                "success": false,
+                                "message": "Bu istifadəçi artıq bloklanıb"
+                            },
+                            "422": {
+                                "success": false,
+                                "errors": {
+                                    "user_id": "İstifadəçi ID-si mütləqdir"
+                                }
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/unblock-user": {
+                    "post": {
+                        "summary": "İstifadəçi blokunu ləğv etmə",
+                        "description": "Cari istifadəçi əvvəlcədən bloklanmış istifadəçinin blokunu ləğv edir",
+                        "authorization": true,
+                        "formBody": {
+                            "user_id": {
+                                "type": "number",
+                                "required": true,
+                                "description": "Bloku ləğv ediləcək istifadəçinin ID-si"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "success": true,
+                                "message": "İstifadəçi bloku uğurla ləğv edildi"
+                            },
+                            "404": {
+                                "success": false,
+                                "message": "İstifadəçi tapılmadı"
+                            },
+                            "422": {
+                                "success": false,
+                                "errors": {
+                                    "user_id": "İstifadəçi ID-si mütləqdir"
+                                }
+                            }
+                        }
+                    }
+                },
+                "/app/messaging/blocked-users": {
+                    "get": {
+                        "summary": "Bloklanmış istifadəçilər siyahısı",
+                        "description": "Cari istifadəçinin bloklamış olduğu bütün istifadəçilərin siyahısını qaytarır",
+                        "authorization": true,
+                        "responses": {
+                            "200": {
+                                "success": true,
+                                "data": [
+                                    {
+                                        "id": 2,
+                                        "name": "Ülvi",
+                                        "surname": "Əzizov",
+                                        "fullname": "Ülvi Əzizov",
+                                        "username": "ulvi",
+                                        "photo": "https://example.com/photos/ulvi.jpg",
+                                        "blocked_at": "2024-10-02T14:30:00Z",
+                                        "reason": "Lazımsız mesajlar göndərirdi"
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "Nicat",
+                                        "surname": "Məmmədov",
+                                        "fullname": "Nicat Məmmədov",
+                                        "username": "nicat",
+                                        "photo": "https://example.com/photos/nicat.jpg",
+                                        "blocked_at": "2024-09-15T08:20:00Z",
+                                        "reason": null
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Səhifələr",
+            "description": "Səhifələr ilə əlaqəli API endpoint-ləri",
+            "endpoints": {
+                "/app/pages": {
+                    "get": {
+                        "summary": "Pages siyahısı",
+                        "description": "Bütün pages siyahısını qaytarır",
+                        "authorization": true
+                    }
+                },
+                "/app/pages/{slug}": {
+                    "get": {
+                        "summary": "Səhifə detalları",
+                        "description": "Səhifə detallarını qaytarır",
+                        "authorization": true
+                    }
+                }
+            }
+        },
+        {
+            "tag": "İstinad məlumatları",
+            "description": "İstinad məlumatları ilə əlaqəli API-lər",
+            "endpoints": {
+                "/reference-data/genders": {
+                    "get": {
+                        "summary": "Cinsiyyət siyahısı",
+                        "description": "Bütün cinsiyyət siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": "male",
+                                    "name": "Kişi"
+                                },
+                                {
+                                    "id": "female",
+                                    "name": "Qadın"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/languages": {
+                    "get": {
+                        "summary": "Dillərin siyahısı",
+                        "description": "Bütün dillərin siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Azərbaycan"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "English"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": "Русский"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/languages/{locale}/translates": {
+                    "get": {
+                        "summary": "Tərcümələr siyahısı",
+                        "description": "Seçilmiş dilin tərcümələrini qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Azərbaycan"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "English"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": "Русский"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/countries": {
+                    "get": {
+                        "summary": "Ölkələrin siyahısı",
+                        "description": "Bütün ölkələrin siyahısını qaytarır",
+                        "query": {
+                            "withCity": {
+                                "type": "boolean",
+                                "description": "Şəhər ilə birlikdə istəyiriksə true göndəririk",
+                                "required": false
+                            },
+                            "withFull": {
+                                "type": "boolean",
+                                "description": "Bütün məkan məlumatlarını əldə etmək istəyiriksə true göndəririk",
+                                "required": false
+                            }
+                        },
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Azərbaycan",
+                                    "uuid": "df113b1e-007a-4a27-bccd-9c8053ffefb3",
+                                    "slug": "azerbaycan"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/countries/{uuid}/cities": {
+                    "get": {
+                        "summary": "Ölkələrə görə şəhərlər siyahısı",
+                        "description": "Bütün şəhərlər siyahısını ölkələrə görə qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Bakı",
+                                    "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                                    "slug": "baki"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Sumqayıt",
+                                    "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                                    "slug": "sumqayit"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/cities": {
+                    "get": {
+                        "summary": "Şəhərlər siyahısı",
+                        "description": "Bütün şəhərlər siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Bakı",
+                                    "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                                    "slug": "baki"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Sumqayıt",
+                                    "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                                    "slug": "sumqayit"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/cities/{uuid}/regions": {
+                    "get": {
+                        "summary": "Şəhərə görə rayonların siyahısı",
+                        "description": "Bütün rayonların siyahısını şəhərə görə qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Binəqədi",
+                                    "uuid": "f046df76-64b1-4f30-a33f-71c00c9b0060",
+                                    "slug": "bineqedi"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Qaradağ",
+                                    "uuid": "f11f03be-0b55-4b45-aa79-3038bb318d0d",
+                                    "slug": "qaradag"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/cities/{uuid}/subways": {
+                    "get": {
+                        "summary": "Şəhərə görə metro stansiyalarının siyahısı",
+                        "description": "Bütün metro stansiyalarının siyahısını şəhərə görə qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Bakı",
+                                    "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                                    "slug": "baki"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Sumqayıt",
+                                    "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                                    "slug": "sumqayit"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/regions": {
+                    "get": {
+                        "summary": "Rayonların siyahısı",
+                        "description": "Bütün rayonların siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Bakı",
+                                    "uuid": "61be1b56-e5d9-40e6-8044-6ea48d325cf9",
+                                    "slug": "baki"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Sumqayıt",
+                                    "uuid": "7c153a6a-a0ba-454a-b2e9-4cd42d3b5dea",
+                                    "slug": "sumqayit"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/regions/{uuid}/subways": {
+                    "get": {
+                        "summary": "Rayona görə metro stansiyalarının siyahısı",
+                        "description": "Bütün metro stansiyalarının siyahısını rayona görə qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Azadlıq Prospekti",
+                                    "uuid": "2e47bea0-b67b-4c56-ad44-8d43c136a0ce",
+                                    "slug": "azadliq-prospekti"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Nəsimi",
+                                    "uuid": "39cabb9c-9f7a-4472-bcd0-bfd6132ffde8",
+                                    "slug": "nesimi"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/subways": {
+                    "get": {
+                        "summary": "Metro stansiyalarının siyahısı",
+                        "description": "Bütün metro stansiyalarının siyahısını qaytarır",
+                        "responses": {
+                            "200": [
+                                {
+                                    "id": 1,
+                                    "name": "Azadlıq Prospekti",
+                                    "uuid": "2e47bea0-b67b-4c56-ad44-8d43c136a0ce",
+                                    "slug": "azadliq-prospekti"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "Nəsimi",
+                                    "uuid": "39cabb9c-9f7a-4472-bcd0-bfd6132ffde8",
+                                    "slug": "nesimi"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "/reference-data/currencies": {
+                    "get": {
+                        "summary": "Valyutaların siyahısı",
+                        "description": "Bütün valyutaların siyahısını qaytarır"
+                    }
+                }
+            }
+        },
+        {
+            "tag": "Bölmələr",
+            "description": "Bölmələr ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/sections": {
+                    "get": {
+                        "summary": "Bölmələr siyahısı",
+                        "description": "Bütün bölmələrin siyahısını qaytarır",
+                        "authorization": true,
+                        "query": {
+                            "page": {
+                                "type": "number",
+                                "description": "Səhifə nömrəsi",
+                                "default": 1
+                            },
+                            "per_page": {
+                                "type": "number",
+                                "description": "Hər səhifədə neçə bölmə olacağını təyin edir",
+                                "default": 2
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Bölmədəki elan sayını təyin edir (Göndərilməsə admin tərəfindən təyin olunur)"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "sections": [
+                                    {
+                                        "uuid": "10aa7ba5-68e3-4cbc-a770-3acded6cfb22",
+                                        "type": "category",
+                                        "type_text": "Kateqoriya",
+                                        "order": 1,
+                                        "total_listings": 8,
+                                        "name": "Uşaq aləmi",
+                                        "listings": [
+                                            {
+                                                "uuid": "ca6c15e7-182b-4f73-8039-39e19d48edcf",
+                                                "code": "E88BTO4",
+                                                "slug": "usaq-geyimi-9-600-usd-derbent",
+                                                "name": "Uşaq geyimi 9 600 USD, Derbent",
+                                                "price": 9600,
+                                                "old_price": null,
+                                                "currency": "USD",
+                                                "is_negotiable": false,
+                                                "is_exchange": false,
+                                                "is_credit": false,
+                                                "is_delivery": true,
+                                                "is_new": false,
+                                                "is_vip": false,
+                                                "is_premium": false,
+                                                "is_bumped": false,
+                                                "is_color_frame": false,
+                                                "is_large_frame": false,
+                                                "is_company": true,
+                                                "is_favorite": true,
+                                                "is_action": true,
+                                                "action_start_date": "2025-02-08T19:10:34.000000Z",
+                                                "action_end_date": "2025-04-19T19:10:34.000000Z",
+                                                "published_at": "2025-02-27T02:16:55.000000Z",
+                                                "images": [
+                                                    {
+                                                        "url": "https://advert-application.test/uploads/photos/listing/01-01-2025/photo-3.jpg",
+                                                        "thumbnail_url": "https://advert-application.test/uploads/photos/listing/01-01-2025/thumbnail/photo-3.jpg"
+                                                    },
+                                                    {
+                                                        "url": "https://advert-application.test/uploads/photos/listing/01-01-2025/photo-2.jpg",
+                                                        "thumbnail_url": "https://advert-application.test/uploads/photos/listing/01-01-2025/thumbnail/photo-2.jpg"
+                                                    },
+                                                    {
+                                                        "url": "https://advert-application.test/uploads/photos/listing/01-01-2025/photo-5.jpg",
+                                                        "thumbnail_url": "https://advert-application.test/uploads/photos/listing/01-01-2025/thumbnail/photo-5.jpg"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "tag": "İstifadəçilər",
+            "description": "İstifadəçilər ilə əlaqəli API-lər",
+            "endpoints": {
+                "/common/user/profile": {
+                    "get": {
+                        "summary": "İstifadəçi məlumatlarını qaytarır",
+                        "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
+                    },
+                    "put": {
+                        "summary": "İstifadəçi məlumatlarını yeniləyir",
+                        "description": "İstifadəçiyə aid məlumatları yeniləyir",
+                        "formBody": {
+                            "name": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Ad"
+                            },
+                            "surname": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Soyad"
+                            },
+                            "phone": {
+                                "type": "text",
+                                "description": "Telefon"
+                            }
+                        }
+                    }
+                },
+                "/app/users/favorites": {
+                    "get": {
+                        "summary": "İstifadəçinin sevimli elanlarını əldə edir",
+                        "description": "İstifadəçiyə aid bütün sevimli elanların məlumatlarını qaytarır",
+                        "query": {
+                            "category": {
+                                "type": "string",
+                                "description": "Kateqoriyaya görə filtirləmək istədikdə kateqoriya slug göndəririk",
+                                "default": ""
+                            }
+                        }
+                    },
+                    "post": {
+                        "summary": "İstifadəçinin sevimlilərə elan əlavə etməsini təmin edir",
+                        "description": "İstifadəçiyə aid sevimlilərə elan əlavə etməyi və çıxartmağı təmin edir",
+                        "formBody": {
+                            "uuid": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Elanın uuid nömrəsi"
+                            }
+                        }
+                    }
+                },
+                "/app/users/listings": {
+                    "get": {
+                        "summary": "İstifadəçinin elanları",
+                        "description": "İstifadəçiyə aid elanları status parametrinə görə əldə edirik",
+                        "query": {
+                            "status": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Elanın statusu göndərilir. (active, pending, expired, rejected, suspended, archive)"
+                            }
+                        }
+                    }
+                },
+                "/app/users/listings/total": {
+                    "get": {
+                        "summary": "İstifadəçinin elanları saylarını əldə edirik",
+                        "description": "İstifadəçiyə aid elanları statusa görə toplam saylarını əldə edirik"
+                    }
+                },
+                "/app/users/balance": {
+                    "get": {
+                        "summary": "İstifadəçinin balansı",
+                        "description": "İstifadəçiyə aid balans məlumatlarını əldə edirik"
+                    }
+                },
+                "/app/users/referrals": {
+                    "get": {
+                        "summary": "İstifadəçinin referral məlumatı",
+                        "description": "İstifadəçiyə aid referral məlumatlarını əldə edirik"
+                    }
+                },
+                "/app/users/payment-histories": {
+                    "get": {
+                        "summary": "İstifadəçinin ödəniş tarixcəsi",
+                        "description": "İstifadəçiyə aid ödənişlərin məlumatlarını əldə edirik"
+                    }
+                },
+                "/app/users/company-galleries": {
+                    "get": {
+                        "summary": "İstifadəçinin şirkət şəkilləri",
+                        "description": "İstifadəçiyə aid şirkətin qalereyasının məlumatlarını əldə edirik"
+                    }
+                },
+                "/app/users/company-gallery/delete": {
+                    "post": {
+                        "summary": "İstifadəçinin şirkət şəkilini silir",
+                        "description": "İstifadəçiyə aid şirkətin qalereyasından verilən şəkil name görə şəkli silir",
+                        "formBody": {
+                            "path": {
+                                "type": "string",
+                                "description": "Şəklin linkinini burda göndəririk"
+                            }
+                        }
+                    }
+                },
+                "/app/users/company-gallery/upload": {
+                    "post": {
+                        "summary": "İstifadəçinin şirkət şəkilərinə şəkil əlavə edir",
+                        "description": "İstifadəçiyə aid şirkətin qalereyasına yeni bir şəkil əlavə edir",
+                        "formBody": {
+                            "photo": {
+                                "type": "string",
+                                "description": "Şəkli base64 formatında göndəririk"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

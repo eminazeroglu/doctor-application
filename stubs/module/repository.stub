@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Repositories\Module;
+
+use App\Models\{{ class }};
+use App\Repositories\BaseRepository;
+use App\Services\Filter\{{ class }}Filter;
+
+class {{ class }}Repository extends BaseRepository
+{
+    public function __construct({{ class }} $model)
+    {
+        parent::__construct($model);
+        $this->setFilter(new {{ class }}Filter(request()));
+    }
+
+    // Add any additional methods here
+}
