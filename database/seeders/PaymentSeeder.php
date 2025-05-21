@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Models\Payment;
-use App\Models\ListingPaymentService;
 use App\Services\Module\UserService;
 use Carbon\Carbon;
 use Faker\Factory;
@@ -41,7 +40,7 @@ class PaymentSeeder extends Seeder
     public function createPayments(): void
     {
         // Mövcud ListingPaymentService qeydlərini alırıq (əgər varsa)
-        $listingServices = ListingPaymentService::all();
+        $listingServices = [];
 
         foreach (range(1, 50) as $i) {
             $user = $this->users->random();
@@ -56,7 +55,7 @@ class PaymentSeeder extends Seeder
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'paymentable_type' => 'App\\Models\\ListingPaymentService',
-                'paymentable_id' => $listingServices->count() > 0 ? $listingServices->random()->id : null,
+                'paymentable_id' => 1,
                 'amount' => $this->faker->randomFloat(2, 10, 500),
                 'currency' => $this->faker->randomElement(['AZN', 'USD', 'EUR']),
                 'status' => $status,
@@ -73,12 +72,6 @@ class PaymentSeeder extends Seeder
                 'updated_at' => $paymentDate,
             ]);
 
-            // Əgər ListingPaymentService varsa, payment_id-ni yeniləyirik
-            if ($listingServices->count() > 0 && $payment->paymentable_id) {
-                $listingService = ListingPaymentService::find($payment->paymentable_id);
-                $listingService->payment_id = $payment->id;
-                $listingService->save();
-            }
         }
     }
 }

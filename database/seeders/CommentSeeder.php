@@ -3,12 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\CommentReactionType;
-use App\Enums\CompanyStatusEnum;
-use App\Enums\ListingStatusEnum;
 use App\Enums\UserStatusEnum;
 use App\Models\Comment;
-use App\Models\Company;
-use App\Models\Listing;
 use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
@@ -70,8 +66,6 @@ class CommentSeeder extends Seeder
 
         // Hər bir model tipi üçün şərhlər yaradırıq
         $this->createUserComments();
-        $this->createListingComments();
-        $this->createCompanyComments();
 
         $this->command->info('Comments seeded successfully!');
         Schema::enableForeignKeyConstraints();
@@ -136,140 +130,6 @@ class CommentSeeder extends Seeder
         }
 
         $this->command->info("Created {$count} user profile comments");
-    }
-
-    /**
-     * Elanlara şərhlər yaradır
-     */
-    public function createListingComments(): void
-    {
-        $count = 0;
-        $targetCount = rand(100, 300);
-
-        // Aktiv elanları əldə edirik
-        $listings = Listing::where('status', ListingStatusEnum::ACTIVE)
-            ->take(100) // İlk 50 elanı seçirik
-            ->get();
-
-        if ($listings->isEmpty()) {
-            $this->command->info('No active listings found. Skipping listing comments.');
-            return;
-        }
-
-        foreach ($listings as $listing) {
-            // Hər bir elana 1-10 şərh
-            $commentsCount = rand(1, 10);
-
-            for ($i = 0; $i < $commentsCount && $count < $targetCount; $i++) {
-                // Təsadüfi istifadəçi seçirik
-                $authorId = $this->faker->randomElement($this->userIds);
-
-                // Parent şərh yaradırıq
-                $parentComment = $this->createComment(
-                    authorId: $authorId,
-                    commentableId: $listing->id,
-                    commentableType: Listing::class,
-                    isListingComment: true
-                );
-
-                // 60% ehtimalla şərhə 1-5 cavab əlavə edirik (elanların şərhləri daha çox müzakirə olur)
-                if ($this->faker->boolean(60)) {
-                    $repliesCount = rand(1, 5);
-
-                    for ($j = 0; $j < $repliesCount; $j++) {
-                        // Cavabı yazacaq təsadüfi istifadəçi
-                        $replyAuthorId = $this->faker->randomElement($this->userIds);
-
-                        $this->createComment(
-                            authorId: $replyAuthorId,
-                            commentableId: $listing->id,
-                            commentableType: Listing::class,
-                            parentId: $parentComment->id,
-                            isListingComment: true,
-                            isReply: true
-                        );
-
-                        $count++;
-                    }
-                }
-
-                $count++;
-
-                // Hədəf sayına çatdıqda dayandırırıq
-                if ($count >= $targetCount) {
-                    break;
-                }
-            }
-        }
-
-        $this->command->info("Created {$count} listing comments");
-    }
-
-    /**
-     * Şirkətlərə şərhlər yaradır
-     */
-    public function createCompanyComments(): void
-    {
-        $count = 0;
-        $targetCount = rand(80, 250);
-
-        // Aktiv şirkətləri əldə edirik
-        $companies = Company::where('status', CompanyStatusEnum::Active)
-            ->take(100) // İlk 40 şirkəti seçirik
-            ->get();
-
-        if ($companies->isEmpty()) {
-            $this->command->info('No active companies found. Skipping company comments.');
-            return;
-        }
-
-        foreach ($companies as $company) {
-            // Hər bir şirkətə 1-8 şərh
-            $commentsCount = rand(1, 8);
-
-            for ($i = 0; $i < $commentsCount && $count < $targetCount; $i++) {
-                // Təsadüfi istifadəçi seçirik
-                $authorId = $this->faker->randomElement($this->userIds);
-
-                // Parent şərh yaradırıq
-                $parentComment = $this->createComment(
-                    authorId: $authorId,
-                    commentableId: $company->id,
-                    commentableType: Company::class,
-                    isCompanyComment: true
-                );
-
-                // 50% ehtimalla şərhə 1-4 cavab əlavə edirik
-                if ($this->faker->boolean(50)) {
-                    $repliesCount = rand(1, 4);
-
-                    for ($j = 0; $j < $repliesCount; $j++) {
-                        // Cavabı yazacaq təsadüfi istifadəçi
-                        $replyAuthorId = $this->faker->randomElement($this->userIds);
-
-                        $this->createComment(
-                            authorId: $replyAuthorId,
-                            commentableId: $company->id,
-                            commentableType: Company::class,
-                            parentId: $parentComment->id,
-                            isCompanyComment: true,
-                            isReply: true
-                        );
-
-                        $count++;
-                    }
-                }
-
-                $count++;
-
-                // Hədəf sayına çatdıqda dayandırırıq
-                if ($count >= $targetCount) {
-                    break;
-                }
-            }
-        }
-
-        $this->command->info("Created {$count} company comments");
     }
 
     /**
