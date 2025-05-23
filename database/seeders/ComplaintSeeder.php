@@ -5,10 +5,7 @@ namespace Database\Seeders;
 use App\Enums\ComplaintStatusEnum;
 use App\Enums\ComplaintMessageStatusEnum;
 use App\Models\Complaint;
-use App\Models\ComplaintMessage;
 use App\Models\User;
-use App\Models\Company;
-use App\Models\Listing;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -30,11 +27,9 @@ class ComplaintSeeder extends Seeder
         // Mövcud istifadəçiləri, şirkətləri və elanları alırıq
         $users = User::where('is_system', false)->get(); // Sistem istifadəçiləri xaric
         $admins = User::where('is_system', true)->get(); // Adminlər
-        $companies = Company::all();
-        $listings = Listing::all();
 
         // Əgər heç bir məlumat yoxdursa, xəbərdarlıq edib çıxaq
-        if ($users->isEmpty() || $companies->isEmpty() || $listings->isEmpty() || $admins->isEmpty()) {
+        if ($users->isEmpty() ||  $admins->isEmpty()) {
             $this->command->info("Xəta: Mövcud User, Company, Listing və ya admin yoxdur. Əvvəlcə bu cədvəlləri doldurun.\n");
             return;
         }
@@ -75,13 +70,13 @@ class ComplaintSeeder extends Seeder
         for ($i = 1; $i <= 500; $i++) {
             $user = $users->random();
             $type = $this->getRandomComplaintableType();
-            $complaintable = $this->getRandomComplaintable($type, $users, $companies, $listings);
+            $complaintable = $this->getRandomComplaintable($type, $users);
             $status = $this->getRandomStatus();
             $date = Carbon::now()->subDays(rand(1, 180)); // Son 6 ay ərzində
 
             $complaint = Complaint::create([
                 'user_id' => $user->id,
-                'complaintable_type' => $type === 'user' ? User::class : ($type === 'company' ? Company::class : Listing::class),
+                'complaintable_type' => User::class,
                 'complaintable_id' => $complaintable->id,
                 'title' => $titles[array_rand($titles)],
                 'description' => $descriptions[array_rand($descriptions)],
@@ -121,11 +116,9 @@ class ComplaintSeeder extends Seeder
      */
     private function getRandomComplaintableType(): string
     {
-        $random = rand(1, 3);
+        $random = 1;
         return match ($random) {
-            1 => 'user',
-            2 => 'company',
-            3 => 'listing',
+            1 => 'user'
         };
     }
 
@@ -133,12 +126,10 @@ class ComplaintSeeder extends Seeder
      * Metodun məqsədi: Verilən tipə uyğun random complaintable obyekti qaytarır.
      * Mövcud məlumatlardan seçir.
      */
-    private function getRandomComplaintable(string $type, $users, $companies, $listings)
+    private function getRandomComplaintable(string $type, $users)
     {
         return match ($type) {
             'user' => $users->random(),
-            'company' => $companies->random(),
-            'listing' => $listings->random(),
         };
     }
 

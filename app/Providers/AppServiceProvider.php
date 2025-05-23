@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\MailTemplate;
-use App\Observers\MailTemplateObserver;
 use Exception;
 use Illuminate\Routing\ResourceRegistrar;
 use Illuminate\Support\Facades\Config;

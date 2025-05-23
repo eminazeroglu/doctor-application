@@ -2,11 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Attribute;
 use App\Models\Category;
-use App\Models\CategoryAttribute;
 use App\Models\SeoLink;
-use App\Services\Module\AttributeService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -17,7 +14,6 @@ class CategorySeeder extends Seeder
     {
         // Əvvəlcə cədvəli təmizləyirik
         Schema::disableForeignKeyConstraints();
-        CategoryAttribute::query()->truncate();
         Category::truncate();
         SeoLink::query()->where('seoable_type', 'App\Models\Category')->delete();
         $this->createCategoryStructure();
@@ -207,15 +203,15 @@ class CategorySeeder extends Seeder
             'is_active' => true
         ]);
 
-        $attributes = Attribute::query()->active()->inRandomOrder()->limit(rand(5, 10))->get()->pluck('id')->toArray();
-
-        foreach ($attributes as $attribute) {
-            $category->attributes()->create([
-                'attribute_id' => $attribute,
-                'is_required'  => rand(10, 50) % 3 === 0,
-                'is_visible'  => rand(10, 50) % 10 === 0,
-            ]);
-        }
+//        $attributes = Attribute::query()->active()->inRandomOrder()->limit(rand(5, 10))->get()->pluck('id')->toArray();
+//
+//        foreach ($attributes as $attribute) {
+//            $category->attributes()->create([
+//                'attribute_id' => $attribute,
+//                'is_required'  => rand(10, 50) % 3 === 0,
+//                'is_visible'  => rand(10, 50) % 10 === 0,
+//            ]);
+//        }
 
         return $category;
     }
