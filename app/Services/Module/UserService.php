@@ -126,7 +126,6 @@ class UserService
         return [
             'stats' => $this->getStats(),
             'recent_activity' => $this->getRecentActivity(),
-            'referral_stats' => $this->getReferralStats(),
             'activity_logs' => $this->getActivityLogs(),
             'distributions' => $this->getDistributions(),
             'balances' => $this->getBalances(),

@@ -7,6 +7,8 @@ use App\Traits\Model\HasSeoLink;
 use App\Traits\Model\HasTranslate;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class Category extends BaseModel
 {
@@ -46,6 +48,12 @@ class Category extends BaseModel
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
+
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(CategoryAttribute::class);
+    }
+
     public function getImageFields(): array
     {
         return [
@@ -64,5 +72,18 @@ class Category extends BaseModel
             'name',
             'description',
         ];
+    }
+
+    /**
+     * HELPERS
+     * @throws Throwable
+     */
+    public function syncRelations(array $data): void
+    {
+        DB::transaction(function () use ($data) {
+            if (isset($data['categories'])) {
+                $this->relateds()->delete();
+            }
+        });
     }
 }

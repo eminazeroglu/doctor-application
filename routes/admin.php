@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\ActivityLogController;
 use App\Http\Controllers\Api\Admin\AdvertisementController;
+use App\Http\Controllers\Api\Admin\AttributeController;
 use App\Http\Controllers\Api\Admin\BlockedCredentialController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CityController;
@@ -152,9 +153,7 @@ Route::controller(ActivityLogController::class)->prefix('activity-logs')->group(
     Route::delete('/cleanup', 'cleanup')->name('activity-logs.cleanup');
 });
 
-/**
- * Category Routes
- * */
+// Category
 Route::controller(CategoryController::class)->prefix('categories')->group(function () {
     Route::get('{categoryId}/attributes', 'attributes');
     Route::post('{categoryId}/attributes', 'attachAttribute');
@@ -164,6 +163,16 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::post('/{categoryId}/config-save', 'configSave');
 });
 Route::resource('categories', CategoryController::class);
+
+// Attribute
+Route::controller(AttributeController::class)->prefix('attributes')->group(function () {
+    Route::get('{id}/options', 'listOptions');
+    Route::post('{id}/options', 'syncOptions');
+    Route::delete('{id}/options/{optionId}', 'deleteOption');
+    Route::post('{id}/options/order', 'orderOption');
+    Route::post('{id}/options/{optionId}/status', 'statusOption');
+});
+Route::resource('attributes', AttributeController::class);
 
 /**
  * Payment Service Routes

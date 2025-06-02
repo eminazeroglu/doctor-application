@@ -2,12 +2,13 @@
 
 namespace App\Services\Filter;
 
-class CategoryFilter extends BaseFilter
+class AttributeFilter extends BaseFilter
 {
     protected array $filters = [
         'search',
         'parent_id',
-        'is_home',
+        'type',
+        'position',
     ];
 
     protected function filterParentId($query, $value)
@@ -15,9 +16,14 @@ class CategoryFilter extends BaseFilter
         return $query->where('parent_id', $value);
     }
 
-    protected function filterIsHome($query, $value)
+    protected function filterType($query, $value)
     {
-        return $query->where('is_home', $value === 1);
+        return $query->where('type', $value);
+    }
+
+    protected function filterPosition($query, $value)
+    {
+        return $query->where('position', $value);
     }
 
     protected function getSearchableFields(): array

@@ -65,7 +65,7 @@ $permissionArr = [
         "complaint_status",
         "complaint_reply",
     ],
-"config" => [
+    "config" => [
         "config_create",
         "config_update",
         "config_delete",
@@ -88,34 +88,6 @@ $permissionArr = [
         "messaging_status",
         "messaging_view_message",
     ],
-    "mail_template" => [
-        "mail_template_create",
-        "mail_template_update",
-        "mail_template_delete",
-        "mail_template_read",
-        "mail_template_status",
-    ],
-    "mail_list" => [
-        "mail_list_create",
-        "mail_list_update",
-        "mail_list_delete",
-        "mail_list_read",
-        "mail_list_status",
-    ],
-    "mail_campaign" => [
-        "mail_campaign_create",
-        "mail_campaign_update",
-        "mail_campaign_delete",
-        "mail_campaign_read",
-        "mail_campaign_status",
-    ],
-    "mail_log" => [
-        "mail_log_create",
-        "mail_log_update",
-        "mail_log_delete",
-        "mail_log_read",
-        "mail_log_status",
-    ],
     "blocked_credential" => [
         "blocked_credential_create",
         "blocked_credential_update",
@@ -130,21 +102,28 @@ $permissionArr = [
         "category_read",
         "category_status",
     ],
-"terms" => [
+    "attribute" => [
+        "attribute_create",
+        "attribute_update",
+        "attribute_delete",
+        "attribute_read",
+        "attribute_status",
+    ],
+    "terms" => [
         "terms_create",
         "terms_update",
         "terms_delete",
         "terms_read",
         "terms_status",
     ],
-"payment_service" => [
+    "payment_service" => [
         "payment_service_create",
         "payment_service_update",
         "payment_service_delete",
         "payment_service_read",
         "payment_service_status",
     ],
-"payment" => [
+    "payment" => [
         "payment_create",
         "payment_update",
         "payment_delete",
