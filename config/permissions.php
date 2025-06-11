@@ -165,6 +165,13 @@ $permissionArr = [
         "advertisement_read",
         "advertisement_status",
     ],
+    "service" => [
+        "service_create",
+        "service_update",
+        "service_delete",
+        "service_read",
+        "service_status",
+    ],
 ];
 
 return [

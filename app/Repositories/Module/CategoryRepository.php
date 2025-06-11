@@ -46,10 +46,13 @@ class CategoryRepository extends BaseRepository
      * Frontend üçün aktiv parent kateqoriyaları gətirir.
      * Cache mexanizmi BaseRepository-dən gəlir.
      */
-    public function getActiveParentCategories(): Collection
+    public function getActiveParentCategories($withChildren = false): Collection
     {
-        return $this->executeWithCache('getActiveParentCategories', function () {
+        return $this->executeWithCache('getActiveParentCategories', function () use ($withChildren) {
             return $this->model->query()
+                ->when($withChildren, function ($q) {
+                    return $q->with('children');
+                })
                 ->where('parent_id', 0)
                 ->where('is_active', true)
                 ->orderBy('order')
@@ -181,6 +184,7 @@ class CategoryRepository extends BaseRepository
 
         return $query
             ->select(['id', 'translates'])
+            ->with('children')
             ->limit(50)
             ->get();
     }

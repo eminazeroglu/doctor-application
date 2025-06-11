@@ -25,163 +25,160 @@ class CategorySeeder extends Seeder
 
     private function createCategoryStructure(): void
     {
-        // 1. Uşaq aləmi
-        $childWorld = $this->createMainCategory('Uşaq aləmi', 'Children\'s World', 1, 'fas fa-baby');
-        $this->createChildCategories($childWorld->id, [
-            ['slug' => 'avtomobil-oturacaqlari', 'name' => 'Avtomobil oturacaqları'],
-            ['slug' => 'oyuncaqlar', 'name' => 'Oyuncaqlar'],
-            ['slug' => 'usaq-arabalari', 'name' => 'Uşaq arabaları'],
-            ['slug' => 'usaq-avtomobilleri', 'name' => 'Uşaq avtomobilləri'],
-            ['slug' => 'usaq-carpayilari-ve-beshikler', 'name' => 'Çarpayılar və beşiklər'],
-            ['slug' => 'usaq-dasiyicilari', 'name' => 'Uşaq daşıyıcıları'],
-            ['slug' => 'usaq-geyimleri', 'name' => 'Uşaq geyimi'],
-            ['slug' => 'mebel', 'name' => 'Uşaq mebeli'],
-            ['slug' => 'usaq-yemekleri', 'name' => 'Uşaq qidası və bəslənməsi'],
-            ['slug' => 'usaq-suruskenleri-ve-oyun-meydancalari', 'name' => 'Sürüşkənlər və meydançalar'],
-            ['slug' => 'manejler', 'name' => 'Manejlər'],
-            ['slug' => 'mekteb-levazimatlari', 'name' => 'Məktəblilər üçün'],
-            ['slug' => 'yurutecler', 'name' => 'Yürütəclər'],
-            ['slug' => 'usaq-gigiyenasi', 'name' => 'Hamam və gigiyena'],
-            ['slug' => 'usaq-tekstili', 'name' => 'Uşaq tekstili'],
-            ['slug' => 'qidalanma-ucun-usaq-oturacaqlar', 'name' => 'Qidalanma oturacaqları'],
-            ['slug' => 'her-sey', 'name' => 'Digər'],
+        // 1. Terapevtik sahələr
+        $therapeutic = $this->createMainCategory('Terapevtik sahələr', 'Therapeutic Fields', 1, 'fas fa-heartbeat');
+        $this->createChildCategories($therapeutic->id, [
+            ['slug' => 'terapevt', 'name' => 'Terapevt'],
+            ['slug' => 'kardioloq', 'name' => 'Kardioloq'],
+            ['slug' => 'allerqoloq', 'name' => 'Allerqoloq'],
+            ['slug' => 'endokrinoloq', 'name' => 'Endokrinoloq'],
+            ['slug' => 'qastroenteroloq', 'name' => 'Qastroenteroloq'],
+            ['slug' => 'hematoloq', 'name' => 'Hematoloq'],
+            ['slug' => 'infeksionist', 'name' => 'İnfeksionist'],
+            ['slug' => 'nefroloq', 'name' => 'Nefroloq'],
+            ['slug' => 'pulmonoloq', 'name' => 'Pulmonoloq'],
+            ['slug' => 'revmatoloq', 'name' => 'Revmatoloq'],
+            ['slug' => 'toksikoloq', 'name' => 'Toksikoloq'],
+            ['slug' => 'immunoloq', 'name' => 'İmmunoloq'],
+            ['slug' => 'dermatoloq', 'name' => 'Dermatoloq'],
         ]);
 
-        // 2. Şəxsi əşyalar
-        $personalItems = $this->createMainCategory('Şəxsi əşyalar', 'Personal Items', 2, 'fas fa-user');
-        $this->createChildCategories($personalItems->id, [
-            ['slug' => 'geyim-ayaqqabilar', 'name' => 'Geyim və ayaqqabılar'],
-            ['slug' => 'saatlar-zinet-esyalari', 'name' => 'Saat və zinət əşyaları'],
-            ['slug' => 'aksesuarlar', 'name' => 'Aksesuarlar'],
-            ['slug' => 'gozellik-saglamliq', 'name' => 'Sağlamlıq və gözəllik'],
-            ['slug' => 'itmis-esyalar', 'name' => 'İtmiş əşyalar'],
-            ['slug' => 'elektron-siqaretler', 'name' => 'Elektron siqaretlər və tütün qızdırıcıları'],
+        // 2. Cərrahiyyə sahələri
+        $surgery = $this->createMainCategory('Cərrahiyyə sahələri', 'Surgical Fields', 2, 'fas fa-user-md');
+        $this->createChildCategories($surgery->id, [
+            ['slug' => 'umumi-cerrah', 'name' => 'Ümumi cərrah'],
+            ['slug' => 'kardiocerrah', 'name' => 'Kardiocərrah'],
+            ['slug' => 'neyrocerrah', 'name' => 'Neyrocərrah'],
+            ['slug' => 'plastik-cerrah', 'name' => 'Plastik cərrah'],
+            ['slug' => 'uroloji-cerrah', 'name' => 'Uroloji cərrah'],
+            ['slug' => 'ortoped-travmatoloq', 'name' => 'Ortoped-travmatoloq'],
+            ['slug' => 'laparoskopikcerrah', 'name' => 'Laparoskopik cərrah'],
+            ['slug' => 'onkoloq-cerrah', 'name' => 'Onkoloq-cərrah'],
+            ['slug' => 'damar-cerrahi', 'name' => 'Damar cərrahı'],
+            ['slug' => 'transplantolog', 'name' => 'Transplantolog'],
+            ['slug' => 'estetik-cerrah', 'name' => 'Estetik cərrah'],
         ]);
 
-        // 3. Ev və bağ üçün
-        $homeAndGarden = $this->createMainCategory('Ev və bağ üçün', 'Home and Garden', 3, 'fas fa-home');
-        $this->createChildCategories($homeAndGarden->id, [
-            ['slug' => 'temir-tikinti', 'name' => 'Təmir və tikinti'],
-            ['slug' => 'mebel', 'name' => 'Mebellər'],
-            ['slug' => 'meiset-texnikasi', 'name' => 'Məişət texnikası'],
-            ['slug' => 'erzaq', 'name' => 'Ərzaq'],
-            ['slug' => 'qab-qacaq', 'name' => 'Qab-qacaq və mətbəx ləvazimatları'],
-            ['slug' => 'bitkiler', 'name' => 'Bitkilər'],
-            ['slug' => 'xalcalar-aksesuarlar', 'name' => 'Xalçalar və aksesuarlar'],
-            ['slug' => 'ev-tekstili', 'name' => 'Ev tekstili'],
-            ['slug' => 'ev-bag-ucun-ishiqlandirma', 'name' => 'Ev və bağ üçün işiqlandırma'],
-            ['slug' => 'dekor-interyer', 'name' => 'Dekor və interyer'],
-            ['slug' => 'bag-bostan', 'name' => 'Bağ və bostan'],
-            ['slug' => 'ev-teserrufati-mallari', 'name' => 'Ev təsərrüfatı malları'],
+        // 3. Diaqnostika və laboratoriya
+        $diagnostics = $this->createMainCategory('Diaqnostika və laboratoriya', 'Diagnostics and Laboratory', 3, 'fas fa-microscope');
+        $this->createChildCategories($diagnostics->id, [
+            ['slug' => 'rentgenoloq', 'name' => 'Rentgenoloq'],
+            ['slug' => 'ultrasonoqrafiya', 'name' => 'Ultrasonoqrafiya mütəxəssisi'],
+            ['slug' => 'kt-mri-mutexessisi', 'name' => 'KT və MRT mütəxəssisi'],
+            ['slug' => 'mammoloq', 'name' => 'Mammoloq'],
+            ['slug' => 'patoloq', 'name' => 'Patoloq'],
+            ['slug' => 'radioloq', 'name' => 'Radioloq'],
+            ['slug' => 'klinik-laborant', 'name' => 'Klinik laborant'],
+            ['slug' => 'endoskopist', 'name' => 'Endoskopist'],
+            ['slug' => 'funksional-diaqnostika', 'name' => 'Funksional diaqnostika mütəxəssisi'],
+            ['slug' => 'genetik', 'name' => 'Genetik'],
         ]);
 
-        // 4. Elektronika
-        $electronics = $this->createMainCategory('Elektronika', 'Electronics', 4, 'fas fa-laptop');
-        $this->createChildCategories($electronics->id, [
-            ['slug' => 'audio-video', 'name' => 'Audio və video'],
-            ['slug' => 'komputer-aksesuarlari', 'name' => 'Kompüter aksesuarları'],
-            ['slug' => 'oyunlar-ve-programlar', 'name' => 'Oyunlar, pultlar və proqramlar'],
-            ['slug' => 'komputerler', 'name' => 'Masaüstü kompüterlər'],
-            ['slug' => 'komputer-avadanliqi', 'name' => 'Komponentlər və monitorlar'],
-            ['slug' => 'plansetler', 'name' => 'Planşet və elektron kitablar'],
-            ['slug' => 'noutbuklar', 'name' => 'Noutbuklar və netbuklar'],
-            ['slug' => 'ofis-avadanliqi', 'name' => 'Ofis avadanlığı və istehlak materialları'],
-            ['slug' => 'telefonlar', 'name' => 'Telefonlar'],
-            ['slug' => 'nomreler-ve-sim-kartlar', 'name' => 'Nömrələr və SIM-kartlar'],
-            ['slug' => 'fotoaparatlar-ve-linzalar', 'name' => 'Fototexnika'],
-            ['slug' => 'smart-saat-ve-qolbaqlar', 'name' => 'Smart saat və qolbaqlar'],
-            ['slug' => 'televizor-ve-aksesuarlar', 'name' => 'Televizorlar və aksesuarlar'],
-            ['slug' => 'sebeke-avadanligi', 'name' => 'Şəbəkə və server avadanlığı'],
+        // 4. Pediatriya
+        $pediatrics = $this->createMainCategory('Pediatriya', 'Pediatrics', 4, 'fas fa-baby');
+        $this->createChildCategories($pediatrics->id, [
+            ['slug' => 'pediatr', 'name' => 'Pediatr'],
+            ['slug' => 'usaq-kardioloqu', 'name' => 'Uşaq kardioloqu'],
+            ['slug' => 'usaq-nevroloqu', 'name' => 'Uşaq nevroloqu'],
+            ['slug' => 'usaq-cerrah', 'name' => 'Uşaq cərrahı'],
+            ['slug' => 'usaq-ortopedi', 'name' => 'Uşaq ortopedi'],
+            ['slug' => 'usaq-oftalmoloqu', 'name' => 'Uşaq oftalmoloqu'],
+            ['slug' => 'usaq-otolarinqoloqu', 'name' => 'Uşaq otolarinqoloqu (LOR)'],
+            ['slug' => 'usaq-stomatoloqu', 'name' => 'Uşaq stomatoloqu'],
+            ['slug' => 'usaq-endokrinoloqu', 'name' => 'Uşaq endokrinoloqu'],
+            ['slug' => 'neonatoloq', 'name' => 'Neonatoloq'],
+            ['slug' => 'usaq-allergologi', 'name' => 'Uşaq allerqoloqu'],
+            ['slug' => 'usaq-psixoloqu', 'name' => 'Uşaq psixoloqu'],
+            ['slug' => 'usaq-qastroenteroloqu', 'name' => 'Uşaq qastroenteroloqu'],
         ]);
 
-        // 5. Hobbi və asudə
-        $hobby = $this->createMainCategory('Hobbi və asudə', 'Hobbies and Leisure', 5, 'fas fa-gamepad');
-        $this->createChildCategories($hobby->id, [
-            ['slug' => 'turlar-ve-biletler', 'name' => 'Biletlər və səyahət'],
-            ['slug' => 'velosipedler', 'name' => 'Velosipedlər'],
-            ['slug' => 'kolleksiyalar', 'name' => 'Kolleksiyalar'],
-            ['slug' => 'musiqi-aletleri', 'name' => 'Musiqi alətləri'],
-            ['slug' => 'idman-ve-asude', 'name' => 'İdman və asudə'],
-            ['slug' => 'kitab-ve-jurnallar', 'name' => 'Kitab və jurnallar'],
-            ['slug' => 'kempinq-ovculuq-baliqciliq', 'name' => 'Kempinq, ovçuluq və balıqçılıq'],
-            ['slug' => 'tanisliq', 'name' => 'Tanışlıq'],
+        // 5. Qadın sağlamlığı
+        $womensHealth = $this->createMainCategory('Qadın sağlamlığı', 'Women\'s Health', 5, 'fas fa-female');
+        $this->createChildCategories($womensHealth->id, [
+            ['slug' => 'ginekoloq', 'name' => 'Ginekoloq'],
+            ['slug' => 'mama', 'name' => 'Mama'],
+            ['slug' => 'reproduktoloq', 'name' => 'Reproduktoloq'],
+            ['slug' => 'mamaliginekoloq', 'name' => 'Mama-ginekoloq'],
+            ['slug' => 'ginekoloq-endokrinoloq', 'name' => 'Ginekoloq-endokrinoloq'],
+            ['slug' => 'onkoqinekoloq', 'name' => 'Onkoginekoloq'],
+            ['slug' => 'estetik-ginekoloq', 'name' => 'Estetik ginekoloq'],
+            ['slug' => 'akuşer', 'name' => 'Akuşer'],
         ]);
 
-        // 6. Nəqliyyat
-        $transport = $this->createMainCategory('Nəqliyyat', 'Transport', 6, 'fas fa-car');
-        $this->createChildCategories($transport->id, [
-            ['slug' => 'avtomobiller', 'name' => 'Avtomobillər'],
-            ['slug' => 'ehtiyyat-hisseleri-ve-aksesuarlar', 'name' => 'Ehtiyat hissələri və aksesuarlar'],
-            ['slug' => 'motosikletler-mopedler', 'name' => 'Motosikletlər və mopedlər'],
-            ['slug' => 'su-neqliyyati', 'name' => 'Su nəqliyyatı'],
-            ['slug' => 'tikinti-texnikasi', 'name' => 'Tikinti texnikası'],
-            ['slug' => 'aqrotexnika', 'name' => 'Aqrotexnika'],
-            ['slug' => 'avtobuslar', 'name' => 'Avtobuslar'],
-            ['slug' => 'yuk-masinlari-ve-qosqular', 'name' => 'Yük maşınları və qoşqular'],
-            ['slug' => 'qeydiyyat-nisanlari', 'name' => 'Qeydiyyat nişanları'],
+        // 6. Stomatoloji xidmətlər
+        $dental = $this->createMainCategory('Stomatoloji xidmətlər', 'Dental Services', 6, 'fas fa-tooth');
+        $this->createChildCategories($dental->id, [
+            ['slug' => 'terapevt-stomatoloq', 'name' => 'Terapevt stomatoloq'],
+            ['slug' => 'cerrah-stomatoloq', 'name' => 'Cərrah stomatoloq'],
+            ['slug' => 'ortodont', 'name' => 'Ortodont'],
+            ['slug' => 'ortoped-stomatoloq', 'name' => 'Ortoped stomatoloq'],
+            ['slug' => 'usaq-stomatoloqu', 'name' => 'Uşaq stomatoloqu'],
+            ['slug' => 'endodontist', 'name' => 'Endodontist'],
+            ['slug' => 'parodontoloq', 'name' => 'Parodontoloq'],
+            ['slug' => 'implantolog', 'name' => 'İmplantolog'],
+            ['slug' => 'estetik-stomatoloq', 'name' => 'Estetik stomatoloq'],
         ]);
 
-        // 7. Daşınmaz əmlak
-        $realEstate = $this->createMainCategory('Daşınmaz əmlak', 'Real Estate', 7, 'fas fa-building');
-        $this->createChildCategories($realEstate->id, [
-            ['slug' => 'menziller', 'name' => 'Mənzillər'],
-            ['slug' => 'heyet-evleri', 'name' => 'Həyət evləri, bağ evləri'],
-            ['slug' => 'torpaq-sahesi', 'name' => 'Torpaq'],
-            ['slug' => 'qarajlar', 'name' => 'Qarajlar'],
-            ['slug' => 'xaricde-emlak', 'name' => 'Xaricdə əmlak'],
-            ['slug' => 'obyektler-ve-ofisler', 'name' => 'Obyektlər və ofislər'],
+        // 7. Göz sağlamlığı
+        $eyeHealth = $this->createMainCategory('Göz sağlamlığı', 'Eye Health', 7, 'fas fa-eye');
+        $this->createChildCategories($eyeHealth->id, [
+            ['slug' => 'oftalmoloq', 'name' => 'Oftalmoloq'],
+            ['slug' => 'goz-cerrahi', 'name' => 'Göz cərrahı'],
+            ['slug' => 'qlakomatoloq', 'name' => 'Qlakomatoloq'],
+            ['slug' => 'retina-mutexessisi', 'name' => 'Retina mütəxəssisi'],
+            ['slug' => 'katarakt-cerrahi', 'name' => 'Katarakt cərrahı'],
+            ['slug' => 'optometrist', 'name' => 'Optometrist'],
+            ['slug' => 'usaq-oftalmoloqu', 'name' => 'Uşaq oftalmoloqu'],
+            ['slug' => 'refraksiya-mutexessisi', 'name' => 'Refraksiya mütəxəssisi'],
         ]);
 
-        // 8. İş elanları
-        $jobs = $this->createMainCategory('İş elanları', 'Job Listings', 8, 'fas fa-briefcase');
-        $this->createChildCategories($jobs->id, [
-            ['slug' => 'vakansiyalar', 'name' => 'Vakansiyalar'],
-            ['slug' => 'is-axtariram', 'name' => 'İş axtarıram'],
+        // 8. Əsəb və ruhi sağlamlıq
+        $mentalHealth = $this->createMainCategory('Əsəb və ruhi sağlamlıq', 'Mental Health', 8, 'fas fa-brain');
+        $this->createChildCategories($mentalHealth->id, [
+            ['slug' => 'nevroloq', 'name' => 'Nevroloq'],
+            ['slug' => 'psixiatr', 'name' => 'Psixiatr'],
+            ['slug' => 'psixoloq', 'name' => 'Psixoloq'],
+            ['slug' => 'psixoterapevt', 'name' => 'Psixoterapevt'],
+            ['slug' => 'narkoloq', 'name' => 'Narkoloq'],
+            ['slug' => 'neyropsixoloq', 'name' => 'Neyropsixoloq'],
+            ['slug' => 'usaq-psixiatr', 'name' => 'Uşaq psixiatrı'],
+            ['slug' => 'usaq-psixoloq', 'name' => 'Uşaq psixoloqu'],
+            ['slug' => 'seksolog', 'name' => 'Seksoloq'],
+            ['slug' => 'aile-psixoloqu', 'name' => 'Ailə psixoloqu'],
+            ['slug' => 'yuxu-pozgunu-mutexessisi', 'name' => 'Yuxu pozğunluğu mütəxəssisi'],
         ]);
 
-        // 9. Heyvanlar
-        $animals = $this->createMainCategory('Heyvanlar', 'Animals', 9, 'fas fa-paw');
-        $this->createChildCategories($animals->id, [
-            ['slug' => 'itler', 'name' => 'İtlər'],
-            ['slug' => 'pisikler', 'name' => 'Pişiklər'],
-            ['slug' => 'quslar', 'name' => 'Quşlar'],
-            ['slug' => 'baliqlar-akvariumlar', 'name' => 'Akvariumlar və balıqlar'],
-            ['slug' => 'kt-heyvanlari', 'name' => 'K/t heyvanları'],
-            ['slug' => 'heyvanlar-ucun-mehsullar', 'name' => 'Heyvanlar üçün məhsullar'],
-            ['slug' => 'dovsanlar', 'name' => 'Dovşanlar'],
-            ['slug' => 'diger-heyvanlar', 'name' => 'Digər heyvanlar'],
-            ['slug' => 'atlar', 'name' => 'Atlar'],
-            ['slug' => 'gemiriciler', 'name' => 'Gəmiricilər'],
+        // 9. Reabilitasiya və fizioterapiya
+        $rehabilitation = $this->createMainCategory('Reabilitasiya və fizioterapiya', 'Rehabilitation and Physiotherapy', 9, 'fas fa-walking');
+        $this->createChildCategories($rehabilitation->id, [
+            ['slug' => 'fizioterapevt', 'name' => 'Fizioterapevt'],
+            ['slug' => 'reabilitoloq', 'name' => 'Reabilitoloq'],
+            ['slug' => 'manual-terapevt', 'name' => 'Manual terapevt'],
+            ['slug' => 'kineziterapevt', 'name' => 'Kineziterapevt'],
+            ['slug' => 'idman-hekimi', 'name' => 'İdman həkimi'],
+            ['slug' => 'osteopat', 'name' => 'Osteopat'],
+            ['slug' => 'massaj-mutexessisi', 'name' => 'Massaj mütəxəssisi'],
+            ['slug' => 'loqoped', 'name' => 'Loqoped'],
+            ['slug' => 'erqoterapevt', 'name' => 'Erqoterapevt'],
+            ['slug' => 'fizioterapiya-texniki', 'name' => 'Fizioterapiya texniki'],
         ]);
 
-        // 10. Xidmətlər və biznes
-        $services = $this->createMainCategory('Xidmətlər və biznes', 'Services and Business', 10, 'fas fa-handshake');
-        $this->createChildCategories($services->id, [
-            ['slug' => 'avadanliqin-icaresi', 'name' => 'Avadanlığın icarəsi'],
-            ['slug' => 'avadanliqin-qurasdirilmasi', 'name' => 'Avadanlıqların quraşdırılması'],
-            ['slug' => 'biznes-avadaliqi', 'name' => 'Biznes üçün avadanlıq'],
-            ['slug' => 'avtoservis-ve-diaqnostika', 'name' => 'Avtoservis və diaqnostika'],
-            ['slug' => 'dayeler-baxicilar', 'name' => 'Dayələr, baxıcılar'],
-            ['slug' => 'foto-ve-video-cekilis', 'name' => 'Foto və video çəkiliş xidmətləri'],
-            ['slug' => 'gozellik-xidmetleri', 'name' => 'Gözəllik, sağlamlıq'],
-            ['slug' => 'huquq-xidmetleri', 'name' => 'Hüquq xidmətləri'],
-            ['slug' => 'komputer-xidmetleri', 'name' => 'IT, internet, telekom'],
-            ['slug' => 'logistika', 'name' => 'Logistika'],
-            ['slug' => 'sifarisle-mebel', 'name' => 'Mebel yığılması və təmiri'],
-            ['slug' => 'tedbirlerin-teskilati', 'name' => 'Musiqi, əyləncə və tədbirlər'],
-            ['slug' => 'muhasibat-xidmetleri', 'name' => 'Mühasibat xidmətləri'],
-            ['slug' => 'neqliyyat-icaresi', 'name' => 'Nəqliyyat vasitələrinin icarəsi'],
-            ['slug' => 'keyterinq-xidmetleri', 'name' => 'Qidalanma, keyterinq'],
-            ['slug' => 'reklam-xidmetleri', 'name' => 'Reklam, dizayn və poliqrafiya'],
-            ['slug' => 'sigorta-xidmetleri', 'name' => 'Sığorta xidmətləri'],
-            ['slug' => 'tehlukesizlik-sistemleri', 'name' => 'Təhlükəsizlik sistemlərinin qurulması'],
-            ['slug' => 'telim-hazirliq-kurslari', 'name' => 'Təlim, hazırlıq kursları'],
-            ['slug' => 'temir-tikinti', 'name' => 'Təmir və tikinti'],
-            ['slug' => 'temizlik-xidmeti', 'name' => 'Təmizlik'],
-            ['slug' => 'tercume-xidmetleri', 'name' => 'Tərcümə'],
-            ['slug' => 'texnika-temiri', 'name' => 'Texnika təmiri'],
-            ['slug' => 'tibbi-xidmetler', 'name' => 'Tibbi xidmətlər'],
-            ['slug' => 'diger-xidmetler', 'name' => 'Digər'],
+        // 10. Digər tibbi sahələr
+        $otherMedical = $this->createMainCategory('Digər tibbi sahələr', 'Other Medical Fields', 10, 'fas fa-stethoscope');
+        $this->createChildCategories($otherMedical->id, [
+            ['slug' => 'otolarinqoloq', 'name' => 'Otolarinqoloq (LOR)'],
+            ['slug' => 'dietoloq', 'name' => 'Dietoloq'],
+            ['slug' => 'homeopat', 'name' => 'Homeopat'],
+            ['slug' => 'onkoloq', 'name' => 'Onkoloq'],
+            ['slug' => 'uroloq', 'name' => 'Uroloq'],
+            ['slug' => 'androloq', 'name' => 'Androloq'],
+            ['slug' => 'geriator', 'name' => 'Geriator'],
+            ['slug' => 'kosmetolog', 'name' => 'Kosmetoloq'],
+            ['slug' => 'refleksoterapevt', 'name' => 'Refleksoterapevt'],
+            ['slug' => 'tibbi-genetik', 'name' => 'Tibbi genetik'],
+            ['slug' => 'hirudoterapevt', 'name' => 'Hirudoterapevt'],
+            ['slug' => 'ftiziatr', 'name' => 'Ftiziatr'],
+            ['slug' => 'proktolog', 'name' => 'Proktoloq'],
         ]);
     }
 
@@ -190,15 +187,15 @@ class CategorySeeder extends Seeder
      */
     private function createMainCategory(string $nameAz, string $nameEn, int $order, string $icon): Category
     {
-        $category =  $this->createCategory([
+        $category = $this->createCategory([
             'translates' => [
-                'az' => ['name' => $nameAz, 'description' => $nameAz . ' kateqoriyası'],
-                'en' => ['name' => $nameEn, 'description' => $nameEn . ' category']
+                'az' => ['name' => $nameAz, 'description' => $nameAz . ' sahəsində ixtisaslaşmış həkimlər'],
+                'en' => ['name' => $nameEn, 'description' => 'Doctors specializing in ' . $nameEn]
             ],
             'meta_tags' => [
-                'title' => $nameAz,
-                'description' => $nameAz . ' - elanlar və satış',
-                'keywords' => $nameAz . ', elan, satış'
+                'title' => $nameAz . ' - Həkimlər',
+                'description' => $nameAz . ' sahəsində ixtisaslaşmış həkimlər',
+                'keywords' => $nameAz . ', həkimlər, tibbi xidmətlər, mütəxəssislər'
             ],
             'icon' => $icon,
             'order' => $order,
@@ -206,6 +203,7 @@ class CategorySeeder extends Seeder
             'is_active' => true
         ]);
 
+        // Atributları əlavə edirik (ixtisas, təcrübə, məsləhət qiyməti və s.)
         $attributes = Attribute::query()->active()->inRandomOrder()->limit(rand(5, 10))->get()->pluck('id')->toArray();
 
         foreach ($attributes as $attribute) {
@@ -229,17 +227,17 @@ class CategorySeeder extends Seeder
                 'translates' => [
                     'az' => [
                         'name' => $category['name'],
-                        'description' => $category['name']
+                        'description' => $category['name'] . ' ixtisası üzrə həkimlər'
                     ],
                     'en' => [
                         'name' => ucfirst(str_replace('-', ' ', $category['slug'])),
-                        'description' => ucfirst(str_replace('-', ' ', $category['slug']))
+                        'description' => 'Doctors specializing in ' . ucfirst(str_replace('-', ' ', $category['slug']))
                     ]
                 ],
                 'meta_tags' => [
-                    'title' => $category['name'],
-                    'description' => $category['name'] . ' - elanlar',
-                    'keywords' => $category['name'] . ', elan'
+                    'title' => $category['name'] . ' - Həkimlər',
+                    'description' => $category['name'] . ' ixtisası üzrə həkimlər',
+                    'keywords' => $category['name'] . ', həkim, mütəxəssis, tibbi xidmət'
                 ],
                 'parent_id' => $parentId,
                 'order' => $index + 1,

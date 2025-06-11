@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Admin\PaymentServiceController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\RegionController;
 use App\Http\Controllers\Api\Admin\SeoLinkController;
+use App\Http\Controllers\Api\Admin\ServiceController;
 use App\Http\Controllers\Api\Admin\SettingController;
 use App\Http\Controllers\Api\Admin\SubwayController;
 use App\Http\Controllers\Api\Admin\TranslationController;
@@ -221,3 +222,14 @@ Route::controller(ComplaintsController::class)->prefix('complaints')->group(func
     Route::get('/stats', 'stats')->name('complaints.stats');
 });
 Route::resource('complaints', ComplaintsController::class);
+
+
+// Service
+Route::resource('services', ServiceController::class);
+Route::controller(ServiceController::class)->prefix('services')->group(function () {
+    Route::get('/category/{categoryId}', 'getByCategory');
+    Route::get('/popular', 'getPopular');
+    Route::get('/doctor/{doctorId}', 'getByDoctor');
+    Route::get('/doctor/{doctorId}/services', 'getDoctorServices');
+    Route::post('/doctor/{doctorId}/sync', 'syncDoctorServices');
+});

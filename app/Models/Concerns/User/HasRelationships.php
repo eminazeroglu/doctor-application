@@ -2,18 +2,17 @@
 
 namespace App\Models\Concerns\User;
 
-use App\Models\{
-    Payment,
+use App\Models\{Payment,
     Role,
+    Service,
     UserBlock,
     UserPreference,
     UserSocialLogin,
     UserLoginHistory,
     Comment,
-    Complaint,
-};
+    Complaint};
 
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne, MorphMany};
 
 trait HasRelationships
 {
@@ -74,5 +73,15 @@ trait HasRelationships
     public function blockedByUsers()
     {
         return $this->hasMany(UserBlock::class, 'blocked_id');
+    }
+
+    /**
+     * Service
+     * */
+    public function medicalServices(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'doctor_service', 'doctor_id', 'service_id')
+            ->withPivot(['custom_price', 'custom_duration', 'custom_fields'])
+            ->withTimestamps();
     }
 }
