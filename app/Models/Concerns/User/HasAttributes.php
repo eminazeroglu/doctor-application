@@ -41,6 +41,22 @@ trait HasAttributes
         );
     }
 
+    public function totalExperienceYears(): Attribute
+    {
+        return new Attribute(
+            get: function () {
+                $earliestStartDate = $this->experience()
+                    ->orderBy('start_date')
+                    ->first()?->start_date;
+
+                if (!$earliestStartDate) {
+                    return 0;
+                }
+                return $earliestStartDate->diffInYears(now());
+            }
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES - Sorğu filtərləri
