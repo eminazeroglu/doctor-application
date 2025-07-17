@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 
 class AuthService
 {
@@ -43,7 +44,7 @@ class AuthService
      * @param array $data İstifadəçi məlumatları
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function register(array $data): void
     {
@@ -128,13 +129,7 @@ class AuthService
                     ['status' => UserStatusEnum::PendingMail]
                 );
 
-                $referralAutoGenerateCode = setting('referral.system.auto_generate_code');
-
                 $user = $this->userRepository->create($createData);
-
-                if ($referralAutoGenerateCode) {
-                    $user->generateReferralCode();
-                }
 
                 // Qeydiyyat aktivliyini qeydə alırıq
                 $activityLogService->log(
@@ -756,7 +751,7 @@ class AuthService
 
     public function sendEmail($user, $type, $params = []): void
     {
-        $reactUrl = Request::header('Origin') ?: 'https://your-default-react-app.com';
+        $reactUrl = request()->header('Origin') ?: 'https://your-default-react-app.com';
         if ($type === 'welcome') Mail::to($user->email)->send(new WelcomeEmailMail($user, $reactUrl));
         else if ($type === 'password-reset') Mail::to($user->email)->send(new PasswordResetMail($params['token'], $reactUrl));
     }

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('referral_code')->nullable()->unique();
             $table->enum('gender', \App\Enums\GenderEnum::getValues())->nullable();
             $table->string('phone')->nullable();
+            $table->date('birthdate')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('user_type')->default(UserTypeEnum::User);
             $table->string('status')->default(UserStatusEnum::PendingMail);
