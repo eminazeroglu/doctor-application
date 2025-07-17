@@ -224,6 +224,54 @@ class Appointment extends Model
     }
 
     /**
+     * Bu randevuya aid həkim qeydləri
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(AppointmentNote::class);
+    }
+
+    /**
+     * Bu randevuda qoyulan diaqnozlar
+     */
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class);
+    }
+
+    /**
+     * Bu randevuda verilən reseptlər
+     */
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
+    }
+
+    /**
+     * Bu randevuda təyin edilən testlər
+     */
+    public function medicalTests(): HasMany
+    {
+        return $this->hasMany(MedicalTest::class);
+    }
+
+    /**
+     * Bu randevuda yaradılan müalicə planları
+     */
+    public function treatmentPlans(): HasMany
+    {
+        return $this->hasMany(TreatmentPlan::class);
+    }
+
+    /**
+     * Bu randevuda yaradılan sənədlər
+     */
+    public function medicalDocuments(): HasMany
+    {
+        return $this->hasMany(MedicalDocument::class);
+    }
+
+    /**
      * Statusu təsdiqlənmiş olaraq işarələyir
      */
     public function confirm(User $user = null): bool
