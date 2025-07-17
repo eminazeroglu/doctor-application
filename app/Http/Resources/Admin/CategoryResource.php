@@ -25,6 +25,7 @@ class CategoryResource extends JsonResource
             'meta_tags' => $this->meta_tags,
             'is_default' => $this->is_default,
             'is_active' => $this->is_active,
+            'is_home' => $this->is_home,
             'order' => $this->order,
             'custom_fields' => $this->custom_fields,
             'children' => CategoryResource::collection($this->whenLoaded('children')),

@@ -1,17 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\NotificationController;
-use App\Http\Controllers\Api\Admin\ReferralController;
 use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
-use App\Http\Controllers\Api\Admin\StoryController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\CommentController;
-use App\Http\Controllers\Api\Front\CompanyController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
-use App\Http\Controllers\Api\Front\ListingController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
-use App\Http\Controllers\Api\Front\SectionController;
 use App\Http\Controllers\Api\Front\UserBlockController;
 use App\Http\Controllers\Api\Front\UserController;
 use Illuminate\Support\Facades\Route;
@@ -38,25 +33,6 @@ Route::controller(PageController::class)->prefix('pages')->group(function () {
 });
 
 /**
- *  Story Routes
- * */
-Route::controller(StoryController::class)
-    ->prefix('stories')
-    ->group(function () {
-        // Feed - bütün aktiv stories
-        Route::get('feed', 'feed');
-
-        // İstifadəçinin storyləri
-        Route::get('user/{userId}', 'userStories');
-
-        // Story baxış əlavə etmə
-        Route::post('{uuid}/view', 'addView');
-
-        // Story statistikası
-        Route::get('{uuid}/stats', 'getStats');
-    });
-
-/**
  * Notification Routes
  */
 Route::controller(NotificationController::class)
@@ -67,38 +43,6 @@ Route::controller(NotificationController::class)
         Route::post('/{id}/read', 'markAsRead');
         Route::post('/read-all', 'markAllAsRead');
         Route::get('/user/stats', 'userStats');
-    });
-
-/**
- * Referral Routes
- * */
-Route::controller(ReferralController::class)
-    ->prefix('referrals')
-    ->group(function () {
-        Route::middleware(['auth:sanctum']) // Yalnız giriş etmiş istifadəçilər
-        ->group(function () {
-            // Statistika və məlumatlar
-            Route::get('/stats', 'userStats')
-                ->name('user.referrals.stats');  // İstifadəçinin referral statistikası
-
-            Route::get('/list', 'userReferrals')
-                ->name('user.referrals.list');  // Dəvət edilən istifadəçilərin siyahısı
-
-            // Kod idarəetməsi
-            Route::post('/generate-code', 'userGenerateCode')
-                ->name('user.referrals.generateCode');  // Yeni referral kodu yaratmaq
-
-            // Maliyyə əməliyyatları
-            Route::get('/earnings', 'userEarnings')
-                ->name('user.referrals.earnings');  // Qazanc tarixçəsi
-
-            Route::get('/rewards', 'userRewards')
-                ->name('user.referrals.rewards');  // Aktiv kampaniyalar
-        });
-
-        // Qeydiyyat zamanı referral kodunu yoxlamaq üçün public route
-        Route::get('/check-code/{code}', 'userValidateCode')
-            ->name('referrals.checkCode');  // Kodun etibarlılığını yoxlayır
     });
 
 /**
@@ -142,46 +86,6 @@ Route::controller(CategoryController::class)
         Route::get('/', 'categoryOnlyParent')->name('category.categoryOnlyParent');
         Route::get('/{id}/children', 'categoryWithChildren')->name('category.categoryWithChildren');
         Route::get('/{id}/attributes', 'categoryWithAttribute')->name('category.categoryWithAttribute');
-    });
-
-/**
- * Company Routes
- * */
-Route::controller(CompanyController::class)
-    ->prefix('companies')
-    ->group(function () {
-        Route::get('/', 'index')->name('company.index');
-        Route::post('/create', 'create')->name('company.create');
-        Route::get('/packages', 'packages')->name('company.packages');
-        Route::get('/benefits', 'benefits')->name('company.benefits');
-        Route::get('/{slug}', 'show')->name('company.show');
-        Route::get('/{company:slug}/comments', 'comments')->name('company.comments');
-        Route::get('/{company:slug}/listings', 'listings')->name('company.listings');
-    });
-
-/*
- * Section Routes
- * */
-Route::controller(SectionController::class)
-    ->prefix('sections')
-    ->group(function () {
-        Route::get('/', 'sectionList')->name('section.sectionList')->middleware('auth.optional');
-    });
-
-/**
- * Listing Routes
- * */
-Route::controller(ListingController::class)
-    ->prefix('listings')
-    ->group(function () {
-        Route::post('/search', 'search')->name('listings.search');
-        Route::post('/by-uuids', 'listByUuids')->name('listings.listByUuids');
-        Route::get('/{listing}/all', 'showAll')->name('listings.showAll');
-        Route::get('/{listing:slug}/comments', 'comments')->name('listings.comments');
-        Route::get('/{listing:slug}/related', 'related')->name('listings.related');
-        Route::post('/{listing:slug}/complaint', 'complaint')->name('listings.complaint')->middleware('auth:sanctum');
-        Route::get('/payment-services', 'paymentServices')->name('listings.paymentServices');
-        Route::post('/create', 'create')->name('listings.create')->middleware('auth:sanctum');
     });
 
 /**

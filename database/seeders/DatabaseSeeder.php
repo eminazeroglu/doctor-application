@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SeoLinkSeeder::class);
         $this->call(PaymentServiceSeeder::class);
         $this->call(LocationSeeder::class);
+        $this->call(AttributeSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(MessagingSystemSeeder::class);
         $this->call(CommentSeeder::class);

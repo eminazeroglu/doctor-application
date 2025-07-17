@@ -44,6 +44,7 @@ return new class extends Migration
              * */
             $table->customField();
 
+            $table->boolean('is_home')->default(false); // Default olaraq seçili olması
             $table->boolean('is_default')->default(false); // Default olaraq seçili olması
             $table->boolean('is_active')->default(true);  // Aktiv olub-olmadığı
             $table->integer('order')->default(0);         // Sıralama

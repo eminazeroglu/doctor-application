@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\ActivityLogController;
 use App\Http\Controllers\Api\Admin\AdvertisementController;
+use App\Http\Controllers\Api\Admin\AttributeController;
 use App\Http\Controllers\Api\Admin\BlockedCredentialController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CityController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\Admin\PaymentServiceController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\RegionController;
 use App\Http\Controllers\Api\Admin\SeoLinkController;
+use App\Http\Controllers\Api\Admin\ServiceController;
 use App\Http\Controllers\Api\Admin\SettingController;
 use App\Http\Controllers\Api\Admin\SubwayController;
 use App\Http\Controllers\Api\Admin\TranslationController;
@@ -152,9 +154,7 @@ Route::controller(ActivityLogController::class)->prefix('activity-logs')->group(
     Route::delete('/cleanup', 'cleanup')->name('activity-logs.cleanup');
 });
 
-/**
- * Category Routes
- * */
+// Category
 Route::controller(CategoryController::class)->prefix('categories')->group(function () {
     Route::get('{categoryId}/attributes', 'attributes');
     Route::post('{categoryId}/attributes', 'attachAttribute');
@@ -164,6 +164,16 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::post('/{categoryId}/config-save', 'configSave');
 });
 Route::resource('categories', CategoryController::class);
+
+// Attribute
+Route::controller(AttributeController::class)->prefix('attributes')->group(function () {
+    Route::get('{id}/options', 'listOptions');
+    Route::post('{id}/options', 'syncOptions');
+    Route::delete('{id}/options/{optionId}', 'deleteOption');
+    Route::post('{id}/options/order', 'orderOption');
+    Route::post('{id}/options/{optionId}/status', 'statusOption');
+});
+Route::resource('attributes', AttributeController::class);
 
 /**
  * Payment Service Routes
@@ -212,3 +222,14 @@ Route::controller(ComplaintsController::class)->prefix('complaints')->group(func
     Route::get('/stats', 'stats')->name('complaints.stats');
 });
 Route::resource('complaints', ComplaintsController::class);
+
+
+// Service
+Route::resource('services', ServiceController::class);
+Route::controller(ServiceController::class)->prefix('services')->group(function () {
+    Route::get('/category/{categoryId}', 'getByCategory');
+    Route::get('/popular', 'getPopular');
+    Route::get('/doctor/{doctorId}', 'getByDoctor');
+    Route::get('/doctor/{doctorId}/services', 'getDoctorServices');
+    Route::post('/doctor/{doctorId}/sync', 'syncDoctorServices');
+});

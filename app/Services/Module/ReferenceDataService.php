@@ -2,11 +2,8 @@
 
 namespace App\Services\Module;
 
-use App\Enums\CompanyBannerPositionEnum;
-use App\Enums\CompanyStatusEnum;
 use App\Enums\GenderEnum;
 use App\Enums\ImageWatermarkPositionEnum;
-use App\Enums\SectionTypeEnum;
 use App\Http\Resources\Admin\BaseResource;
 use App\Models\Language;
 use App\Models\Role;
@@ -14,12 +11,10 @@ use App\Repositories\Module\AttributeRepository;
 use App\Repositories\Module\CategoryRepository;
 use App\Repositories\Module\CityRepository;
 use App\Repositories\Module\CountryRepository;
-use App\Repositories\Module\CurrencyRepository;
 use App\Repositories\Module\LanguageRepository;
 use App\Repositories\Module\PaymentServiceRepository;
 use App\Repositories\Module\RegionRepository;
 use App\Repositories\Module\SubwayRepository;
-use App\Repositories\Module\VotingSystemRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -159,6 +154,30 @@ class ReferenceDataService
     public function fetchSubways(): Collection
     {
         return $this->subwayRepository->findActiveList();
+    }
+
+    /**
+     * Attributeların listəsi
+     */
+    public function fetchAttributes()
+    {
+        return app(AttributeService::class)->findActiveList();
+    }
+
+    /**
+     * Attributlara aid bütün tipləri listələyir
+     * */
+    public function fetchAttributeTypes()
+    {
+        return app(AttributeService::class)->getAttributeTypes();
+    }
+
+    /**
+     * Attributlara aid bütün yerləri listələyir
+     * */
+    public function fetchAttributePositions()
+    {
+        return app(AttributeService::class)->getAttributePositions();
     }
 
 }

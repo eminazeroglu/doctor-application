@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserStatusEnum;
+use App\Enums\UserTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->enum('gender', \App\Enums\GenderEnum::getValues())->nullable();
             $table->string('phone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('user_type')->default(UserTypeEnum::User);
             $table->string('status')->default(UserStatusEnum::PendingMail);
             $table->json('social_links')->nullable();
             $table->boolean('is_system')->default(false);

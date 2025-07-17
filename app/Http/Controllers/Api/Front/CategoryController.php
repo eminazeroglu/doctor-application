@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Front\AttributeResource;
 use App\Http\Resources\Front\CategoryResource;
 use App\Repositories\Module\CategoryRepository;
-use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
