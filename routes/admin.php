@@ -24,6 +24,11 @@ use App\Http\Controllers\Api\Admin\SubwayController;
 use App\Http\Controllers\Api\Admin\TranslationController;
 use App\Http\Controllers\Api\Admin\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\ClinicController;
+use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\ReviewController;
 
 /**
  * Languages Routes
@@ -233,3 +238,23 @@ Route::controller(ServiceController::class)->prefix('services')->group(function 
     Route::get('/doctor/{doctorId}/services', 'getDoctorServices');
     Route::post('/doctor/{doctorId}/sync', 'syncDoctorServices');
 });
+
+
+
+
+// Appointment
+Route::resource('appointments', AppointmentController::class);
+
+
+
+// Clinic
+Route::resource('clinics', ClinicController::class);
+
+// Doctor
+Route::resource('doctors', DoctorController::class);
+
+// Patient
+Route::resource('patients', PatientController::class);
+
+// Review
+Route::resource('reviews', ReviewController::class);

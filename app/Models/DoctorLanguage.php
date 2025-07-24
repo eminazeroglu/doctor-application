@@ -2,52 +2,53 @@
 
 namespace App\Models;
 
-use App\Traits\Model\HasUuid;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DoctorLanguage extends Model
+class DoctorLanguage extends BaseModel
 {
-    use HasUuid;
-
-    protected $fillable = [
-        'uuid',
-        'user_id',
-        'language',
-        'level',
-        'custom_fields'
-    ];
-
-    protected $casts = [
-        'custom_fields' => 'json'
-    ];
-
-    protected $appends = ['level_text'];
 
     /**
-     * Bu dil biliyinin sahibi olan həkim
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
      */
-    public function doctor(): BelongsTo
+    protected $fillable = [
+        'doctor_id',
+        'language',
+        'proficiency'
+    ];
+
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['proficiency_text'];
+
+    /**
+     * Dil bacarığı səviyyəsinin mətn təsvirini qaytarır.
+     * @return AttributeAlias
+     */
+    public function proficiencyText(): AttributeAlias
     {
-        return $this->belongsTo(User::class, 'user_id');
+       return new AttributeAlias(
+           get: function () {
+               return match($this->proficiency) {
+                   'native' => 'Ana dili',
+                   'fluent' => 'Sərbəst',
+                   'intermediate' => 'Orta',
+                   'basic' => 'Baza',
+                   default => $this->proficiency
+               };
+           }
+       );
     }
 
     /**
-     * Dil səviyyəsinin insan-oxuna bilən versiyasını qaytarır
+     * Dil biliyi qeydinə aid həkim əlaqəsi.
+     * @return BelongsTo
      */
-    protected function levelText(): Attribute
+    public function doctor(): BelongsTo
     {
-        return Attribute::make(
-            get: function () {
-                return match ($this->level) {
-                    'beginner' => 'Başlanğıc',
-                    'intermediate' => 'Orta',
-                    'advanced' => 'Yüksək',
-                    'native' => 'Ana dili',
-                    default => $this->level,
-                };
-            }
-        );
+        return $this->belongsTo(Doctor::class);
     }
 }

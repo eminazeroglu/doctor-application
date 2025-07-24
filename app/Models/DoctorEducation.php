@@ -2,64 +2,93 @@
 
 namespace App\Models;
 
-use App\Traits\Model\HasUuid;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DoctorEducation extends Model
+class DoctorEducation extends BaseModel
 {
-    use HasUuid;
 
+    /**
+     * İstifadə ediləcək cədvəl adı.
+     * @var string
+     */
     protected $table = 'doctor_education';
 
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'uuid',
-        'user_id',
-        'institution',
+        'doctor_id',
+        'university',
+        'faculty',
         'degree',
-        'field_of_study',
-        'location',
+        'specialization',
         'start_date',
         'end_date',
-        'is_current',
+        'location',
         'description',
-        'custom_fields',
-        'order'
-    ];
-
-    protected $casts = [
-        'is_current' => 'boolean',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'custom_fields' => 'json'
+        'is_currently_studying',
+        'document_path'
     ];
 
     /**
-     * Bu təhsil məlumatının sahibi olan həkim
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
      */
-    public function doctor(): BelongsTo
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_currently_studying' => 'boolean',
+    ];
+
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['duration', 'document_url'];
+
+    /**
+     * Təhsil müddətini qaytarır.
+     * @return AttributeAlias
+     */
+    public function duration(): AttributeAlias
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return new AttributeAlias(
+            get: function () {
+                $startYear = $this->start_date->format('Y');
+
+                if ($this->is_currently_studying) {
+                    return $startYear . ' - İndiyə qədər';
+                }
+
+                $endYear = $this->end_date ? $this->end_date->format('Y') : 'İndiyə qədər';
+
+                return $startYear . ' - ' . $endYear;
+            }
+        );
     }
 
     /**
-     * Təhsil müddətini hesablayır
-     *
-     * @return string
+     * Sənəd URL-i qaytarır.
+     * @return AttributeAlias
      */
-    public function getDurationAttribute(): string
+    public function documentUrl(): AttributeAlias
     {
-        $startYear = $this->start_date->format('Y');
+        return new AttributeAlias(
+            get: function () {
+                return $this->document_path ? asset('storage/' . $this->document_path) : null;
+            }
+        );
+    }
 
-        if ($this->is_current) {
-            return $startYear . ' - Davam edir';
-        }
-
-        if ($this->end_date) {
-            $endYear = $this->end_date->format('Y');
-            return $startYear . ' - ' . $endYear;
-        }
-
-        return $startYear;
+    /**
+     * Təhsil qeydinə aid həkim əlaqəsi.
+     * @return BelongsTo
+     */
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class);
     }
 }

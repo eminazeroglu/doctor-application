@@ -96,4 +96,20 @@ trait HasAttributes
     {
         return $this->blockedByUsers()->where('blocker_id', $userId)->exists();
     }
+
+    /**
+     * İstifadəçinin həkim sahib olub-olmadığını yoxlayır
+     *
+     * @return bool
+     */
+    public function hasDoctor(): bool
+    {
+        if ($this->relationLoaded('doctor')) {
+            return $this->doctor !== null;
+        }
+
+        return $this->doctor()
+            ->select('id')
+            ->exists();
+    }
 }

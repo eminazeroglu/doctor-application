@@ -2,77 +2,109 @@
 
 namespace App\Models;
 
-use App\Traits\Model\HasUuid;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DoctorExperience extends Model
+class DoctorExperience extends BaseModel
 {
-    use HasUuid;
-
+    /**
+     * İstifadə ediləcək cədvəl adı.
+     * @var string
+     */
     protected $table = 'doctor_experience';
 
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'uuid',
-        'user_id',
-        'institution',
+        'doctor_id',
+        'workplace',
         'position',
-        'location',
         'start_date',
         'end_date',
-        'is_current',
+        'location',
         'description',
-        'custom_fields',
-        'order'
-    ];
-
-    protected $casts = [
-        'is_current' => 'boolean',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'custom_fields' => 'json'
+        'is_current_job',
+        'document_path'
     ];
 
     /**
-     * Bu təcrübə məlumatının sahibi olan həkim
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_current_job' => 'boolean',
+    ];
+
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['duration', 'years', 'document_url'];
+
+    /**
+     * İş müddətini qaytarır.
+     * @return AttributeAlias
+     */
+    public function duration(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                $startYear = $this->start_date->format('Y');
+
+                if ($this->is_current_job) {
+                    return $startYear . ' - İndiyə qədər';
+                }
+
+                $endYear = $this->end_date ? $this->end_date->format('Y') : 'İndiyə qədər';
+
+                return $startYear . ' - ' . $endYear;
+            }
+        );
+    }
+
+    /**
+     * İş müddətini il olaraq qaytarır.
+     * @return AttributeAlias
+     */
+    public function years(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                $endDate = $this->is_current_job ? now() : $this->end_date;
+
+                if (!$endDate) {
+                    $endDate = now();
+                }
+
+                return $endDate->diffInYears($this->start_date);
+            }
+        );
+    }
+
+    /**
+     * Sənəd URL-i qaytarır.
+     * @return AttributeAlias
+     */
+    public function documentUrl(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->document_path ? asset('storage/' . $this->document_path) : null;
+            }
+        );
+    }
+
+    /**
+     * İş təcrübəsi qeydinə aid həkim əlaqəsi.
+     * @return BelongsTo
      */
     public function doctor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    /**
-     * İş müddətini hesablayır
-     *
-     * @return string
-     */
-    public function getDurationAttribute(): string
-    {
-        $startYear = $this->start_date->format('Y');
-
-        if ($this->is_current) {
-            return $startYear . ' - Hal-hazırda';
-        }
-
-        if ($this->end_date) {
-            $endYear = $this->end_date->format('Y');
-            return $startYear . ' - ' . $endYear;
-        }
-
-        return $startYear;
-    }
-
-    /**
-     * İş təcrübəsinin illərlə müddətini hesablayır
-     *
-     * @return int
-     */
-    public function getYearsOfExperienceAttribute(): int
-    {
-        $startDate = $this->start_date;
-        $endDate = $this->is_current ? now() : ($this->end_date ?: now());
-
-        // İllərlə fərqi hesablayırıq
-        return $startDate->diffInYears($endDate);
+        return $this->belongsTo(Doctor::class);
     }
 }

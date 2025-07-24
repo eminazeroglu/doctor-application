@@ -7,6 +7,7 @@ use App\Traits\Model\HasTranslate;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends BaseModel
 {
@@ -68,11 +69,35 @@ class Service extends BaseModel
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * Xidməti təklif edən klinikalar əlaqəsi.
+     * @return BelongsToMany
+     */
+    public function clinics(): BelongsToMany
+    {
+        return $this->belongsToMany(Clinic::class, 'clinic_services')
+            ->withPivot(['price', 'duration', 'description', 'is_active'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Xidməti təklif edən həkimlər əlaqəsi.
+     * @return BelongsToMany
+     */
     public function doctors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'doctor_medical_service', 'medical_service_id', 'doctor_id')
-            ->withPivot(['custom_price', 'custom_duration', 'custom_fields'])
+        return $this->belongsToMany(Doctor::class, 'doctor_clinic_services')
+            ->withPivot(['clinic_id', 'price', 'duration', 'description', 'is_active'])
             ->withTimestamps();
+    }
+
+    /**
+     * Xidmətə aid randevular əlaqəsi.
+     * @return HasMany
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
     }
 
     // Əlavə atributlar

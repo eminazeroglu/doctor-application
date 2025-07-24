@@ -2,70 +2,79 @@
 
 namespace App\Models;
 
-use App\Traits\Model\HasUuid;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DoctorCertificate extends Model
+class DoctorCertificate extends BaseModel
 {
-    use HasUuid;
-
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'uuid',
-        'user_id',
+        'doctor_id',
         'name',
-        'issuer',
+        'issuing_organization',
         'issue_date',
         'expiry_date',
-        'file_path',
-        'is_verified',
-        'verified_at',
         'description',
-        'custom_fields',
-        'order'
-    ];
-
-    protected $casts = [
-        'is_verified' => 'boolean',
-        'issue_date' => 'date',
-        'expiry_date' => 'date',
-        'verified_at' => 'datetime',
-        'custom_fields' => 'json'
+        'document_path',
+        'is_verified'
     ];
 
     /**
-     * Bu sertifikatın sahibi olan həkim
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
+    protected $casts = [
+        'issue_date' => 'date',
+        'expiry_date' => 'date',
+        'is_verified' => 'boolean',
+    ];
+
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['is_expired', 'document_url'];
+
+    /**
+     * Sertifikatın müddətinin bitib-bitmədiyini yoxlayır.
+     * @return AttributeAlias
+     */
+    public function isExpired(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                if (!$this->expiry_date) {
+                    return false;
+                }
+
+                return $this->expiry_date->isPast();
+            }
+        );
+    }
+
+    /**
+     * Sənəd URL-i qaytarır.
+     * @return AttributeAlias
+     */
+    public function documentUrl(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->document_path ? asset('storage/' . $this->document_path) : null;
+            }
+        );
+    }
+
+    /**
+     * Sertifikata aid həkim əlaqəsi.
+     * @return BelongsTo
      */
     public function doctor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    /**
-     * Sertifikatın bitib-bitmədiyini yoxlayır
-     *
-     * @return bool
-     */
-    public function isExpired(): bool
-    {
-        if (!$this->expiry_date) {
-            return false;
-        }
-
-        return $this->expiry_date->isPast();
-    }
-
-    /**
-     * Sertifikat faylının URL-ni qaytarır
-     *
-     * @return string|null
-     */
-    public function getFileUrlAttribute(): ?string
-    {
-        if (!$this->file_path) {
-            return null;
-        }
-
-        return asset('storage/' . $this->file_path);
+        return $this->belongsTo(Doctor::class);
     }
 }

@@ -25,8 +25,8 @@ class AuthResource extends JsonResource
             'has_photo' => $this->photo_path,
             'status' => $this->status,
             'status_text' => $this->status_text,
-            'role' => $this->role->group_name,
             $this->mergeWhen(count($this->getAllPermissions()) > 0, [
+                'role' => $this->role->group_name,
                 'permissions' => $this->getAllPermissions()->pluck('name'),
             ]),
             $this->mergeWhen($this->relationLoaded('preferences') && $this->preferences !== null, [

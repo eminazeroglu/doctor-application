@@ -50,9 +50,9 @@
 <div class="email-container">
     <h1>Şifrəni Sıfırlamaq</h1>
     <p>Salam,</p>
-    <p>Bu mesajı, sizə göndərməyimizin səbəbi şifrənizi sıfırlamaq üçün müraciət etməyinizdir. Şifrənizi sıfırlamaq üçün aşağıdakı düyməyə klikləyin:</p>
+    <p>Bu mesajı, sizə göndərməyimizin səbəbi şifrənizi sıfırlamaq üçün müraciət etməyinizdir. Şifrənizi sıfırlamaq üçün aşağıdakı koddan istifadə edin:</p>
 
-    <a href="{{ $resetLink }}" class="btn">Şifrəni Sıfırla</a>
+    <p style="font-size: 30px; font-weight: bold">KOD: {{ $code }}</p>
 
     <p>Əgər şifrə sıfırlamaq üçün müraciət etməmisinizsə, bu e-poçtu gözardı edə bilərsiniz.</p>
 

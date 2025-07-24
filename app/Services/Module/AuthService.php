@@ -481,17 +481,19 @@ class AuthService
         }
 
         $token = Str::random(60);
+        $code = Helper::generateNumber();
 
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $data['email']],
             [
                 'email' => $data['email'],
                 'token' => $token,
+                'code' => $code,
                 'created_at' => now()
             ]
         );
 
-        $this->sendEmail($user, 'password-reset', ['token' => $token]);
+        $this->sendEmail($user, 'password-reset', ['token' => $token, 'code' => $code]);
     }
 
     /**
@@ -501,6 +503,7 @@ class AuthService
      * @return array Token və istifadəçi məlumatları
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws Throwable
      */
     public function resetPassword(array $data): array
     {
@@ -513,19 +516,19 @@ class AuthService
             $metaData = [
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
-                'token' => $data['token']
+                'code' => $data['code']
             ];
 
             // Reset token məlumatlarını əldə edirik
             $resetRecord = DB::table('password_reset_tokens')
-                ->where('token', $data['token'])
+                ->where('code', $data['code'])
                 ->first();
 
             // Token yoxlaması
             if (!$resetRecord) {
                 $activityLogService->log(
                     action: ActivityLogActionEnum::PASSWORD_RESET_FAILED,
-                    oldData: ['reason' => 'Invalid token'],
+                    oldData: ['reason' => 'Invalid code'],
                     additionalData: ['meta_data' => $metaData]
                 );
 
@@ -544,7 +547,7 @@ class AuthService
                 $activityLogService->log(
                     action: ActivityLogActionEnum::PASSWORD_RESET_FAILED,
                     oldData: [
-                        'reason' => 'Token expired',
+                        'reason' => 'Code expired',
                         'email' => $resetRecord->email
                     ],
                     additionalData: ['meta_data' => $metaData]
@@ -753,6 +756,6 @@ class AuthService
     {
         $reactUrl = request()->header('Origin') ?: 'https://your-default-react-app.com';
         if ($type === 'welcome') Mail::to($user->email)->send(new WelcomeEmailMail($user, $reactUrl));
-        else if ($type === 'password-reset') Mail::to($user->email)->send(new PasswordResetMail($params['token'], $reactUrl));
+        else if ($type === 'password-reset') Mail::to($user->email)->send(new PasswordResetMail($params['token'], $params['code'], $reactUrl));
     }
 }

@@ -2,81 +2,81 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class DoctorClinic extends Model
+class DoctorClinic extends Pivot
 {
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
-        'user_id',
+        'doctor_id',
         'clinic_id',
-        'is_primary',
-        'working_hours',
-        'custom_fields'
+        'start_date',
+        'end_date',
+        'is_main_workplace',
+        'is_active',
+        'note'
     ];
 
+    /**
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
     protected $casts = [
-        'is_primary' => 'boolean',
-        'working_hours' => 'json',
-        'custom_fields' => 'json'
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_main_workplace' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     /**
-     * Bu klinika əlaqəsinin sahibi olan həkim
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
      */
-    public function doctor(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    protected $appends = ['duration', 'is_current'];
 
     /**
-     * Həkimin işlədiyi klinika
+     * İş müddətini qaytarır.
+     * @return AttributeAlias
      */
-    public function clinic(): BelongsTo
+    public function duration(): AttributeAlias
     {
-        return $this->belongsTo(Clinic::class, 'clinic_id');
-    }
+        return new AttributeAlias(
+            get: function () {
+                $startYear = $this->start_date ? $this->start_date->format('Y') : '';
 
-    /**
-     * İş vaxtının formatlı versiyasını qaytarır
-     *
-     * @return string|null
-     */
-    public function getFormattedWorkingHoursAttribute(): ?string
-    {
-        if (!$this->working_hours) {
-            return null;
-        }
+                if (!$this->end_date) {
+                    return $startYear . ' - İndiyə qədər';
+                }
 
-        $formattedHours = [];
+                $endYear = $this->end_date->format('Y');
 
-        foreach ($this->working_hours as $day => $hours) {
-            if (isset($hours['start']) && isset($hours['end'])) {
-                $dayName = $this->getDayName($day);
-                $formattedHours[] = "{$dayName}: {$hours['start']} - {$hours['end']}";
+                return $startYear . ' - ' . $endYear;
             }
-        }
-
-        return implode(', ', $formattedHours);
+        );
     }
 
     /**
-     * Gün nömrəsinə görə gün adını qaytarır
-     *
-     * @param int $day
-     * @return string
+     * Hal-hazırda iş münasibətlərinin aktiv olub-olmadığını yoxlayır.
+     * @return AttributeAlias
      */
-    protected function getDayName(int $day): string
+    public function isCurrent(): AttributeAlias
     {
-        return match ($day) {
-            1 => 'Bazar ertəsi',
-            2 => 'Çərşənbə axşamı',
-            3 => 'Çərşənbə',
-            4 => 'Cümə axşamı',
-            5 => 'Cümə',
-            6 => 'Şənbə',
-            7 => 'Bazar',
-            default => 'Bilinmir',
-        };
+        return new AttributeAlias(
+            get: function () {
+                if (!$this->is_active) {
+                    return false;
+                }
+
+                if (!$this->end_date) {
+                    return true;
+                }
+
+                return $this->end_date->isFuture();
+            }
+        );
     }
 }

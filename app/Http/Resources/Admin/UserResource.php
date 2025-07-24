@@ -29,9 +29,7 @@ class UserResource extends JsonResource
             'gender' => $this->gender,
             'gender_text' => $this->gender_text,
             'is_system' => $this->is_system,
-            'role' => $this->whenLoaded('role', function () {
-                return str($this->role->name)->title();
-            }),
+            'role' => str($this->role->name)->title()
         ];
     }
 }

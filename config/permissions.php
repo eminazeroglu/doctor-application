@@ -172,6 +172,48 @@ $permissionArr = [
         "service_read",
         "service_status",
     ],
+    "customer" => [
+        "customer_create",
+        "customer_update",
+        "customer_delete",
+        "customer_read",
+        "customer_status",
+    ],
+"appointment" => [
+        "appointment_create",
+        "appointment_update",
+        "appointment_delete",
+        "appointment_read",
+        "appointment_status",
+    ],
+    "clinic" => [
+        "clinic_create",
+        "clinic_update",
+        "clinic_delete",
+        "clinic_read",
+        "clinic_status",
+    ],
+    "doctor" => [
+        "doctor_create",
+        "doctor_update",
+        "doctor_delete",
+        "doctor_read",
+        "doctor_status",
+    ],
+    "patient" => [
+        "patient_create",
+        "patient_update",
+        "patient_delete",
+        "patient_read",
+        "patient_status",
+    ],
+    "review" => [
+        "review_create",
+        "review_update",
+        "review_delete",
+        "review_read",
+        "review_status",
+    ],
 ];
 
 return [

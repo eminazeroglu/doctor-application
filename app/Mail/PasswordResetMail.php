@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Helpers\Helper;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -13,17 +15,22 @@ class PasswordResetMail extends Mailable
     public $token;
     public $verificationUrl;
 
-    public function __construct($token, $verificationUrl)
+    public function __construct($token, $code, $verificationUrl)
     {
         $this->token = $token;
+        $this->code = $code;
         $this->verificationUrl = $verificationUrl;
     }
 
+    /**
+     * @throws Exception
+     */
     public function build(): PasswordResetMail
     {
         return $this->view('emails.password-reset')
             ->subject('Şifrə sıfırlamaq')
             ->with([
+                'code' => $this->code,
                 'resetLink' => $this->verificationUrl . '/auth/reset-password/'.$this->token
             ]);
     }

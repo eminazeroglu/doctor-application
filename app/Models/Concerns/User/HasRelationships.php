@@ -2,13 +2,11 @@
 
 namespace App\Models\Concerns\User;
 
-use App\Models\{Clinic,
-    DoctorCertificate,
-    DoctorEducation,
-    DoctorExperience,
-    DoctorLanguage,
-    DoctorSpecialty,
+use App\Models\{Appointment,
+    Doctor,
+    Patient,
     Payment,
+    Review,
     Role,
     Service,
     UserBlock,
@@ -91,73 +89,36 @@ trait HasRelationships
             ->withTimestamps();
     }
 
-    /**
-     * Həkimin ixtisasları
-     */
-    public function doctorSpecialties()
+    // Doctor & Patient əlaqələri
+    public function doctor(): HasOne
     {
-        return $this->hasMany(DoctorSpecialty::class);
+        return $this->hasOne(Doctor::class);
     }
 
-    /**
-     * Həkimin əsas ixtisası
-     */
-    public function primarySpecialty()
+    public function patient(): HasOne
     {
-        return $this->hasOne(DoctorSpecialty::class)->where('is_primary', true);
+        return $this->hasOne(Patient::class);
     }
 
-    /**
-     * Həkimin təhsil məlumatları
-     */
-    public function education()
+    // Randevular
+    public function appointments(): HasMany
     {
-        return $this->hasMany(DoctorEducation::class)->orderBy('order');
+        return $this->hasMany(Appointment::class, 'patient_id');
     }
 
-    /**
-     * Həkimin iş təcrübəsi
-     */
-    public function experience()
+    public function doctorAppointments(): HasMany
     {
-        return $this->hasMany(DoctorExperience::class)->orderBy('order');
+        return $this->hasMany(Appointment::class, 'doctor_id');
     }
 
-    /**
-     * Həkimin sertifikatları
-     */
-    public function certificates()
+    // Rəylər
+    public function reviews(): HasMany
     {
-        return $this->hasMany(DoctorCertificate::class)->orderBy('order');
+        return $this->hasMany(Review::class, 'patient_id');
     }
 
-    /**
-     * Həkimin dil bilikləri
-     */
-    public function languages()
+    public function doctorReviews(): HasMany
     {
-        return $this->hasMany(DoctorLanguage::class);
-    }
-
-    /**
-     * Həkimin işlədiyi klinikalar
-     */
-    public function clinics()
-    {
-        return $this->belongsToMany(Clinic::class, 'doctor_clinics')
-            ->withPivot(['is_primary', 'working_hours', 'custom_fields'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Həkimin əsas klinikası
-     */
-    public function primaryClinic()
-    {
-        return $this->belongsToMany(Clinic::class, 'doctor_clinics')
-            ->wherePivot('is_primary', true)
-            ->withPivot(['working_hours', 'custom_fields'])
-            ->withTimestamps()
-            ->first();
+        return $this->hasMany(Review::class, 'doctor_id');
     }
 }

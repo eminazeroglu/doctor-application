@@ -193,10 +193,10 @@
                         "summary": "Şifrəni yeniləmək",
                         "description": "Şifrəsini yeniləmək istəyən istifadəçi üçün istifadə olunur",
                         "formBody": {
-                            "token": {
+                            "code": {
                                 "type": "text",
                                 "required": true,
-                                "description": "Emaildən gələn token"
+                                "description": "Emaildən gələn kod"
                             },
                             "password": {
                                 "type": "text",

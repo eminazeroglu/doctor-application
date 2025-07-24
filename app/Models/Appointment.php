@@ -2,181 +2,172 @@
 
 namespace App\Models;
 
-use App\Enums\AppointmentServiceEnum;
-use App\Traits\Model\HasCode;
-use App\Traits\Model\HasUuid;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\AppointmentStatusEnum;
+use DateTime;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Appointment extends Model
+class Appointment extends BaseModel
 {
-    use HasUuid, HasCode, SoftDeletes;
+    use SoftDeletes;
 
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'uuid',
-        'appointment_number',
         'doctor_id',
         'patient_id',
-        'service_id',
         'clinic_id',
-        'availability_id',
-        'status',
-        'appointment_date',
+        'service_id',
+        'appointment_status_id',
         'start_time',
         'end_time',
-        'reason',
-        'symptoms',
+        'complaint',
         'notes',
-        'diagnosis',
-        'treatment',
-        'prescription',
-        'doctor_notes',
-        'fee',
+        'price',
         'is_paid',
-        'paid_at',
-        'payment_method',
-        'payment_reference',
-        'confirmed_at',
-        'cancelled_at',
-        'cancellation_reason',
-        'completed_at',
-        'meta_data',
-        'created_by'
+        'payment_id',
+        'cancel_reason',
+        'location',
+        'consultation_type',
+        'additional_info'
     ];
 
+    /**
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
     protected $casts = [
-        'appointment_date' => 'date',
-        'start_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i',
-        'fee' => 'decimal:2',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
         'is_paid' => 'boolean',
-        'paid_at' => 'datetime',
-        'confirmed_at' => 'datetime',
-        'cancelled_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'meta_data' => 'json'
+        'price' => 'float',
+        'additional_info' => 'json',
     ];
 
-    protected $appends = ['formatted_time', 'duration', 'can_cancel'];
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['duration', 'is_completed', 'is_active', 'is_upcoming', 'status_text', 'status_color', 'status_icon'];
 
     /**
-     * Model yaradıldıqda avtomatik randevu nömrəsi yaradır
+     * Randevunun müddətini (dəqiqə ilə) qaytarır.
+     * @return AttributeAlias
      */
-    protected static function boot()
+    public function duration(): AttributeAlias
     {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (!$model->appointment_number) {
-                $model->appointment_number = static::generateAppointmentNumber();
-            }
-        });
-    }
-
-    /**
-     * Randevu nömrəsi yaradır
-     */
-    public static function generateAppointmentNumber(): string
-    {
-        $prefix = 'APT-' . date('Ymd');
-        $lastAppointment = static::where('appointment_number', 'like', $prefix . '%')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastAppointment) {
-            $lastNumber = (int) substr($lastAppointment->appointment_number, -3);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . '-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Vaxtı formatlı şəkildə qaytarır
-     */
-    protected function formattedTime(): Attribute
-    {
-        return Attribute::make(
+        return new AttributeAlias(
             get: function () {
-                return "{$this->start_time->format('H:i')} - {$this->end_time->format('H:i')}";
+                return $this->start_time->diffInMinutes($this->end_time);
             }
         );
     }
 
     /**
-     * Randevunun müddətini dəqiqələrlə qaytarır
+     * Randevunun bitdiyini yoxlayır.
+     * @return AttributeAlias
      */
-    protected function duration(): Attribute
+    public function isCompleted(): AttributeAlias
     {
-        return Attribute::make(
+        return new AttributeAlias(
             get: function () {
-                $start = Carbon::createFromFormat('H:i', $this->start_time);
-                $end = Carbon::createFromFormat('H:i', $this->end_time);
-
-                return $start->diffInMinutes($end);
+                return $this->end_time->isPast();
             }
         );
     }
 
     /**
-     * Randevunun ləğv edilə biləcəyini yoxlayır
+     * Randevunun aktiv olduğunu yoxlayır.
+     * @return AttributeAlias
      */
-    protected function canCancel(): Attribute
+    public function isActive(): AttributeAlias
     {
-        return Attribute::make(
+        return new AttributeAlias(
             get: function () {
-                // Əgər randevu artıq ləğv edilib, tamamlanıb və ya pasient gəlməyibsə
-                if ($this->is_cancelled || $this->is_completed || $this->is_no_show) {
-                    return false;
-                }
-
-                // Əgər randevuya 24 saatdan az qalıbsa
-                $appointmentDateTime = Carbon::createFromFormat(
-                    'Y-m-d H:i',
-                    $this->appointment_date->format('Y-m-d') . ' ' . $this->start_time->format('H:i')
-                );
-
-                if (Carbon::now()->diffInHours($appointmentDateTime) < 24) {
-                    return false;
-                }
-
-                return true;
+                return now()->between($this->start_time, $this->end_time);
             }
         );
     }
 
     /**
-     * Həkim əlaqəsi
+     * Randevunun gələcəkdə olduğunu yoxlayır.
+     * @return AttributeAlias
+     */
+    public function isUpcoming(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->start_time->isFuture();
+            }
+        );
+    }
+
+    /**
+     * Randevu statusunun mətn təsvirini qaytarır.
+     * @return AttributeAlias
+     */
+    public function statusText(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return AppointmentStatusEnum::getDescription($this->appointment_status);
+            }
+        );
+    }
+
+    /**
+     * Randevu statusunun rəngini qaytarır.
+     * @return AttributeAlias
+     */
+    public function statusColor(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return AppointmentStatusEnum::getColor($this->appointment_status);
+            }
+        );
+    }
+
+    /**
+     * Randevu statusunun ikonunu qaytarır.
+     * @return AttributeAlias
+     */
+    public function statusIcon(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return AppointmentStatusEnum::getIcon($this->appointment_status);
+            }
+        );
+    }
+
+    /**
+     * Randevunun həkimi əlaqəsi.
+     * @return BelongsTo
      */
     public function doctor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'doctor_id');
+        return $this->belongsTo(Doctor::class);
     }
 
     /**
-     * Pasient əlaqəsi
+     * Randevunun xəstəsi əlaqəsi.
+     * @return BelongsTo
      */
     public function patient(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'patient_id');
+        return $this->belongsTo(Patient::class);
     }
 
     /**
-     * Xidmət əlaqəsi
-     */
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class, 'service_id');
-    }
-
-    /**
-     * Klinika əlaqəsi
+     * Randevunun klinikası əlaqəsi.
+     * @return BelongsTo
      */
     public function clinic(): BelongsTo
     {
@@ -184,31 +175,26 @@ class Appointment extends Model
     }
 
     /**
-     * Boş vaxt əlaqəsi
+     * Randevunun xidməti əlaqəsi.
+     * @return BelongsTo
      */
-    public function availability(): BelongsTo
+    public function service(): BelongsTo
     {
-        return $this->belongsTo(DoctorAvailability::class, 'availability_id');
+        return $this->belongsTo(Service::class);
     }
 
     /**
-     * Yaradıcı əlaqəsi
+     * Randevunun ödənişi əlaqəsi.
+     * @return BelongsTo
      */
-    public function creator(): BelongsTo
+    public function payment(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(Payment::class);
     }
 
     /**
-     * Tarixçə əlaqəsi
-     */
-    public function history(): HasMany
-    {
-        return $this->hasMany(AppointmentHistory::class)->orderBy('created_at', 'desc');
-    }
-
-    /**
-     * Xatırlatmalar əlaqəsi
+     * Randevunun xatırlatmaları əlaqəsi.
+     * @return HasMany
      */
     public function reminders(): HasMany
     {
@@ -216,205 +202,303 @@ class Appointment extends Model
     }
 
     /**
-     * Randevu rəyləri
+     * Randevunun tibbi qeydləri əlaqəsi.
+     * @return HasMany
+     */
+    public function medicalRecords(): HasMany
+    {
+        return $this->hasMany(PatientMedicalRecord::class);
+    }
+
+    /**
+     * Randevunun sənədləri əlaqəsi.
+     * @return HasMany
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(PatientDocument::class);
+    }
+
+    /**
+     * Randevunun rəyləri əlaqəsi.
+     * @return HasMany
      */
     public function reviews(): HasMany
     {
-        return $this->hasMany(ClinicReview::class);
+        return $this->hasMany(Review::class);
     }
 
     /**
-     * Bu randevuya aid həkim qeydləri
+     * Randevunun təkrarlanan randevu əlaqəsi.
+     * @return BelongsTo
      */
-    public function notes(): HasMany
+    public function recurringAppointment(): BelongsTo
     {
-        return $this->hasMany(AppointmentNote::class);
+        return $this->belongsTo(AppointmentRecurring::class, 'recurring_id');
     }
 
     /**
-     * Bu randevuda qoyulan diaqnozlar
+     * Randevunun statusunu güncəlləyir.
+     * @param AppointmentStatusEnum $status
+     * @param string|null $reason
+     * @return bool
      */
-    public function diagnoses(): HasMany
+    public function updateStatus(AppointmentStatusEnum $status, ?string $reason = null): bool
     {
-        return $this->hasMany(Diagnosis::class);
-    }
+        $this->appointment_status = $status;
 
-    /**
-     * Bu randevuda verilən reseptlər
-     */
-    public function prescriptions(): HasMany
-    {
-        return $this->hasMany(Prescription::class);
-    }
-
-    /**
-     * Bu randevuda təyin edilən testlər
-     */
-    public function medicalTests(): HasMany
-    {
-        return $this->hasMany(MedicalTest::class);
-    }
-
-    /**
-     * Bu randevuda yaradılan müalicə planları
-     */
-    public function treatmentPlans(): HasMany
-    {
-        return $this->hasMany(TreatmentPlan::class);
-    }
-
-    /**
-     * Bu randevuda yaradılan sənədlər
-     */
-    public function medicalDocuments(): HasMany
-    {
-        return $this->hasMany(MedicalDocument::class);
-    }
-
-    /**
-     * Statusu təsdiqlənmiş olaraq işarələyir
-     */
-    public function confirm(User $user = null): bool
-    {
-        // Əvvəlcə boş vaxtı məşğul kimi işarələyək
-        if ($this->availability) {
-            $this->availability->markAsBusy('Appointment Confirmed');
+        if ($status === AppointmentStatusEnum::Cancelled && $reason) {
+            $this->cancel_reason = $reason;
         }
 
-        // Statusu yeniləyək
-        $confirmedStatus = AppointmentServiceEnum::Confirmed;
-
-        $updated = $this->update([
-            'status' => $confirmedStatus,
-            'confirmed_at' => now()
-        ]);
-
-        if ($updated) {
-            // Tarixçəyə əlavə edək
-            $this->addHistory('confirm', $confirmedStatus, $user, 'Randevu təsdiqləndi');
-
-            // Xatırlatmaları planlaşdıraq
-            $this->scheduleReminders();
-        }
-
-        return $updated;
+        return $this->save();
     }
 
     /**
-     * Statusu ləğv edilmiş olaraq işarələyir
+     * Randevunu təsdiqləyir.
+     * @return bool
      */
-    public function cancel(string $reason = null, User $user = null): bool
+    public function confirm(): bool
     {
-        // Əvvəlcə boş vaxtı yenidən mövcud kimi işarələyək
-        if ($this->availability) {
-            $this->availability->markAsAvailable();
-        }
-
-        // Statusu yeniləyək
-        $cancelledStatus = AppointmentServiceEnum::Cancelled;
-
-        $updated = $this->update([
-            'status' => $cancelledStatus,
-            'cancelled_at' => now(),
-            'cancellation_reason' => $reason
-        ]);
-
-        if ($updated) {
-            // Tarixçəyə əlavə edək
-            $this->addHistory(
-                'cancel',
-                $cancelledStatus,
-                $user,
-                'Randevu ləğv edildi' . ($reason ? ": {$reason}" : '')
-            );
-        }
-
-        return $updated;
+        $this->appointment_status = AppointmentStatusEnum::Confirmed;
+        return $this->save();
     }
 
     /**
-     * Statusu tamamlanmış olaraq işarələyir
+     * Randevunu tamamlanmış kimi işarələyir.
+     * @return bool
      */
-    public function complete(User $user = null): bool
+    public function complete(): bool
     {
-        // Statusu yeniləyək
-        $completedStatus = AppointmentServiceEnum::Completed;
-
-        $updated = $this->update([
-            'status' => $completedStatus,
-            'completed_at' => now()
-        ]);
-
-        if ($updated) {
-            // Tarixçəyə əlavə edək
-            $this->addHistory('complete', $completedStatus, $user, 'Randevu tamamlandı');
-        }
-
-        return $updated;
+        $this->appointment_status = AppointmentStatusEnum::Completed;
+        return $this->save();
     }
 
     /**
-     * Statusu pasient gəlmədi olaraq işarələyir
+     * Randevunu ləğv edir.
+     * @param string $reason Ləğv səbəbi
+     * @return bool
      */
-    public function markAsNoShow(User $user = null): bool
+    public function cancel(string $reason): bool
     {
-        // Statusu yeniləyək
-        $noShowStatus = AppointmentServiceEnum::NoShow;
-
-        $updated = $this->update([
-            'status' => $noShowStatus
-        ]);
-
-        if ($updated) {
-            // Tarixçəyə əlavə edək
-            $this->addHistory('no_show', $noShowStatus, $user, 'Pasient gəlmədi');
-        }
-
-        return $updated;
+        $this->appointment_status = AppointmentStatusEnum::Cancelled;
+        $this->cancel_reason = $reason;
+        return $this->save();
     }
 
     /**
-     * Randevu tarixçəsinə yeni qeyd əlavə edir
+     * Xəstənin gəlmədiyini qeyd edir.
+     * @return bool
      */
-    public function addHistory(string $action, int $status, ?User $user = null, ?string $notes = null, ?array $changes = null): AppointmentHistory
+    public function markAsNoShow(): bool
     {
-        return AppointmentHistory::create([
-            'appointment_id' => $this->id,
-            'status' => $status,
-            'user_id' => $user?->id,
-            'action' => $action,
-            'notes' => $notes,
-            'changes' => $changes
+        $this->appointment_status = AppointmentStatusEnum::NoShow;
+        return $this->save();
+    }
+
+    /**
+     * Randevunu yenidən planlaşdırılmış kimi qeyd edir.
+     * @return bool
+     */
+    public function markAsRescheduled(): bool
+    {
+        $this->appointment_status = AppointmentStatusEnum::Rescheduled;
+        return $this->save();
+    }
+
+    /**
+     * Randevunun vaxtını dəyişdirir.
+     * @param DateTime $startTime Yeni başlama vaxtı
+     * @param DateTime $endTime Yeni bitmə vaxtı
+     * @return bool
+     */
+    public function reschedule(DateTime $startTime, DateTime $endTime): bool
+    {
+        $this->start_time = $startTime;
+        $this->end_time = $endTime;
+        $this->appointment_status = AppointmentStatusEnum::Rescheduled;
+        return $this->save();
+    }
+
+    /**
+     * Randevunun ödəndiyini işarələyir.
+     * @param int $paymentId Ödəniş ID-si
+     * @return bool
+     */
+    public function markAsPaid(int $paymentId): bool
+    {
+        $this->is_paid = true;
+        $this->payment_id = $paymentId;
+        return $this->save();
+    }
+
+    /**
+     * Randevu üçün xatırlatma yaradır.
+     * @param string $type Xatırlatma növü (email, sms, app)
+     * @param DateTime $sendAt Göndərmə vaxtı
+     * @return AppointmentReminder
+     */
+    public function createReminder(string $type, DateTime $sendAt): AppointmentReminder
+    {
+        return $this->reminders()->create([
+            'type' => $type,
+            'send_at' => $sendAt,
+            'is_sent' => false
         ]);
     }
 
     /**
-     * Randevu xatırlatmalarını planlaşdırır
+     * Gözləmədə olan randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
      */
-    protected function scheduleReminders(): void
+    public function scopePending(Builder $query): Builder
     {
-        // Artıq planlaşdırılmış xatırlatmaları siləm
-        $this->reminders()->delete();
+        return $query->where('appointment_status', AppointmentStatusEnum::Pending);
+    }
 
-        $appointmentDateTime = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            $this->appointment_date->format('Y-m-d') . ' ' . $this->start_time->format('H:i')
-        );
+    /**
+     * Təsdiqlənmiş randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeConfirmed(Builder $query): Builder
+    {
+        return $query->where('appointment_status', AppointmentStatusEnum::Confirmed);
+    }
 
-        // 24 saat əvvəl xatırlatma
-        AppointmentReminder::create([
-            'appointment_id' => $this->id,
-            'type' => 'email',
-            'scheduled_at' => $appointmentDateTime->copy()->subHours(24),
-            'message' => "Sabah saat {$this->start_time->format('H:i')}-da {$this->doctor->fullname} ilə randevunuz var."
+    /**
+     * Tamamlanmış randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeCompleted(Builder $query): Builder
+    {
+        return $query->where('appointment_status', AppointmentStatusEnum::Completed);
+    }
+
+    /**
+     * Ləğv edilmiş randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeCancelled(Builder $query): Builder
+    {
+        return $query->where('appointment_status', AppointmentStatusEnum::Cancelled);
+    }
+
+    /**
+     * Xəstənin gəlmədiyi randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeNoShow(Builder $query): Builder
+    {
+        return $query->where('appointment_status', AppointmentStatusEnum::NoShow);
+    }
+
+    /**
+     * Yenidən planlaşdırılmış randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeRescheduled(Builder $query): Builder
+    {
+        return $query->where('appointment_status', AppointmentStatusEnum::Rescheduled);
+    }
+
+    /**
+     * Aktiv randevuları qaytarır (Pending, Confirmed, Rescheduled).
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeActive($query): Builder
+    {
+        return $query->whereIn('appointment_status', [
+            AppointmentStatusEnum::Pending,
+            AppointmentStatusEnum::Confirmed,
+            AppointmentStatusEnum::Rescheduled
         ]);
+    }
 
-        // 1 saat əvvəl xatırlatma
-        AppointmentReminder::create([
-            'appointment_id' => $this->id,
-            'type' => 'email',
-            'scheduled_at' => $appointmentDateTime->copy()->subHours(1),
-            'message' => "1 saat sonra saat {$this->start_time->format('H:i')}-da {$this->doctor->fullname} ilə randevunuz var."
+    /**
+     * Gələcək randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('start_time', '>', now())
+            ->whereIn('appointment_status', [
+                AppointmentStatusEnum::Pending,
+                AppointmentStatusEnum::Confirmed,
+                AppointmentStatusEnum::Rescheduled
+            ]);
+    }
+
+    /**
+     * Keçmiş randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopePast($query): Builder
+    {
+        return $query->where('end_time', '<', now());
+    }
+
+    /**
+     * Bu gün olan randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeToday($query): Builder
+    {
+        return $query->whereDate('start_time', now()->toDateString());
+    }
+
+    /**
+     * Bu həftə olan randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeThisWeek($query): Builder
+    {
+        return $query->whereBetween('start_time', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
         ]);
+    }
+
+    /**
+     * Bu ay olan randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeThisMonth($query): Builder
+    {
+        return $query->whereBetween('start_time', [
+            now()->startOfMonth(),
+            now()->endOfMonth()
+        ]);
+    }
+
+    /**
+     * Ödənilmiş randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopePaid($query): Builder
+    {
+        return $query->where('is_paid', true);
+    }
+
+    /**
+     * Ödənilməmiş randevuları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeUnpaid($query): Builder
+    {
+        return $query->where('is_paid', false);
     }
 }

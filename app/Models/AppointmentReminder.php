@@ -2,32 +2,96 @@
 
 namespace App\Models;
 
-use App\Enums\AppointmentReminderTypeEnum;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AppointmentReminder extends Model
+class AppointmentReminder extends BaseModel
 {
+
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'appointment_id',
         'type',
-        'scheduled_at',
-        'sent_at',
+        'send_at',
         'is_sent',
-        'message',
-        'meta_data'
-    ];
-
-    protected $casts = [
-        'scheduled_at' => 'datetime',
-        'sent_at' => 'datetime',
-        'is_sent' => 'boolean',
-        'meta_data' => 'json'
+        'sent_at'
     ];
 
     /**
-     * Randevu əlaqəsi
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
+    protected $casts = [
+        'send_at' => 'datetime',
+        'sent_at' => 'datetime',
+        'is_sent' => 'boolean',
+    ];
+
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['type_text', 'is_pending', 'status'];
+
+    /**
+     * Xatırlatma növünün mətn təsvirini qaytarır.
+     * @return AttributeAlias
+     */
+    public function typeText(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return match($this->type) {
+                    'email' => 'E-poçt',
+                    'sms' => 'SMS',
+                    'app' => 'Tətbiq bildirişi',
+                    default => $this->type
+                };
+            }
+        );
+    }
+
+    /**
+     * Xatırlatmanın gözləmədə olduğunu yoxlayır.
+     * @return AttributeAlias
+     */
+    public function isPending(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return !$this->is_sent && $this->send_at->isFuture();
+            }
+        );
+    }
+
+    /**
+     * Xatırlatmanın statusunu qaytarır.
+     * @return AttributeAlias
+     */
+    public function status(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                if ($this->is_sent) {
+                    return 'Göndərilib';
+                }
+
+                if ($this->send_at->isFuture()) {
+                    return 'Gözləmədə';
+                }
+
+                return 'Ləngidilmiş';
+            }
+        );
+    }
+
+    /**
+     * Xatırlatmaya aid randevu əlaqəsi.
+     * @return BelongsTo
      */
     public function appointment(): BelongsTo
     {
@@ -35,25 +99,85 @@ class AppointmentReminder extends Model
     }
 
     /**
-     * Xatırlatmanı göndərilmiş kimi işarələyir
+     * Xatırlatmanı göndərilmiş kimi işarələyir.
+     * @return bool
      */
     public function markAsSent(): bool
     {
-        return $this->update([
-            'is_sent' => true,
-            'sent_at' => now()
-        ]);
+        $this->is_sent = true;
+        $this->sent_at = now();
+        return $this->save();
     }
 
     /**
-     * Növ təsvirini qaytarır
+     * Göndərilməmiş xatırlatmaları qaytarır.
+     * @param Builder $query
+     * @return Builder
      */
-    public function typeDescription(): Attribute
+    public function scopeUnsent(Builder $query): Builder
     {
-        return new Attribute(
-            get: function () {
-                return AppointmentReminderTypeEnum::getDescription($this->type);
-            }
-        );
+        return $query->where('is_sent', false);
+    }
+
+    /**
+     * Göndərilmiş xatırlatmaları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeSent(Builder $query): Builder
+    {
+        return $query->where('is_sent', true);
+    }
+
+    /**
+     * Gözləmədə olan xatırlatmaları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('is_sent', false)
+            ->where('send_at', '>', now());
+    }
+
+    /**
+     * İndi göndərilməli olan xatırlatmaları qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeDue(Builder $query): Builder
+    {
+        return $query->where('is_sent', false)
+            ->where('send_at', '<=', now());
+    }
+
+    /**
+     * E-poçt xatırlatmalarını qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeEmail(Builder $query): Builder
+    {
+        return $query->where('type', 'email');
+    }
+
+    /**
+     * SMS xatırlatmalarını qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeSms(Builder $query): Builder
+    {
+        return $query->where('type', 'sms');
+    }
+
+    /**
+     * Tətbiq bildirişi xatırlatmalarını qaytarır.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeApp(Builder $query): Builder
+    {
+        return $query->where('type', 'app');
     }
 }

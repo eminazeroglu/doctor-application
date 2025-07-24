@@ -3,10 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Model\HasImage;
-use App\Traits\Model\HasSlug;
-use App\Traits\Model\HasTranslate;
-use App\Traits\Model\HasUuid;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,16 +12,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Clinic extends Model
 {
-    use HasUuid, HasSlug, HasTranslate, HasImage, SoftDeletes;
+    use HasImage, SoftDeletes;
 
+    /**
+     * Kütləvi təyin edilə bilən atributlar.
+     * @var array
+     */
     protected $fillable = [
         'uuid',
+        'name',
         'slug',
-        'country_id',
-        'city_id',
-        'region_id',
-        'translates',
+        'description',
         'address',
+        'city',
+        'region',
+        'country',
+        'postal_code',
         'phone',
         'email',
         'website',
@@ -33,149 +36,133 @@ class Clinic extends Model
         'working_hours',
         'facilities',
         'logo_path',
-        'cover_path',
-        'meta_tags',
-        'custom_fields',
+        'images',
+        'rating',
+        'ratings_count',
         'is_verified',
         'is_featured',
         'is_active',
-        'order',
-        'verified_by',
-        'verified_at'
+        'created_by',
+        'parent_id'
     ];
 
+    /**
+     * Verilənlər tipini çevrilməli olan atributlar.
+     * @var array
+     */
     protected $casts = [
-        'translates' => 'json',
         'working_hours' => 'json',
         'facilities' => 'json',
-        'meta_tags' => 'json',
-        'custom_fields' => 'json',
+        'images' => 'json',
+        'rating' => 'integer',
+        'ratings_count' => 'integer',
         'is_verified' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
-        'verified_at' => 'datetime',
-        'latitude' => 'decimal',
-        'longitude' => 'decimal'
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
-    protected $appends = ['name', 'description', 'logo', 'cover', 'average_rating'];
+    /**
+     * Avtomatik əlavə edilən atributlar.
+     * @var array
+     */
+    protected $appends = ['logo_url', 'average_rating'];
 
     /**
-     * Çoxdilli sahələr
+     * Slug mənbə sütunu
+     * @return string
      */
-    public function getTranslatableAttributes(): array
+    protected function getSlugSourceColumn(): string
     {
-        return [
-            'name',
-            'description',
-            'short_description',
-            'address_notes'
-        ];
+        return 'name';
     }
 
     /**
-     * Şəkil konfiqurasiyaları
+     * Orta qiymətləndirməni hesablayır.
+     * @return AttributeAlias
      */
-    public function getImageFields(): array
+    public function averageRating(): AttributeAlias
     {
-        return [
-            'logo_path' => [
-                'path' => 'clinics',
-                'default_image' => 'default_clinic_logo.png'
-            ],
-            'cover_path' => [
-                'path' => 'clinics',
-                'default_image' => 'default_clinic_cover.png'
-            ]
-        ];
-    }
-
-    /**
-     * Orta reyting hesablaması
-     */
-    protected function averageRating(): Attribute
-    {
-        return Attribute::make(
+        return new AttributeAlias(
             get: function () {
-                $reviewsCount = $this->reviews()->where('is_approved', true)->count();
-
-                if ($reviewsCount === 0) {
-                    return 0;
-                }
-
-                return $this->reviews()
-                    ->where('is_approved', true)
-                    ->avg('rating') ?: 0;
+                return $this->ratings_count > 0 ? round($this->rating / $this->ratings_count, 1) : 0;
             }
         );
     }
 
     /**
-     * Lokasiya əlaqələri
+     * Klinikanın iş saatlarını qaytarır.
+     * @return HasMany
      */
-    public function country(): BelongsTo
+    public function workingHours(): HasMany
     {
-        return $this->belongsTo(Country::class);
-    }
-
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function region(): BelongsTo
-    {
-        return $this->belongsTo(Region::class);
+        return $this->hasMany(ClinicWorkingHour::class);
     }
 
     /**
-     * Klinikada çalışan həkimlər
+     * Klinikanın ixtisaslarını qaytarır.
+     * @return BelongsToMany
      */
-    public function doctors(): BelongsToMany
+    public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'doctor_clinics', 'clinic_id', 'user_id')
-            ->withPivot(['is_primary', 'working_hours', 'custom_fields'])
+        return $this->belongsToMany(Category::class, 'clinic_categories')
+            ->withPivot(['description', 'is_active'])
             ->withTimestamps();
     }
 
     /**
-     * Klinika ixtisasları
-     */
-    public function specialties(): BelongsToMany
-    {
-        return $this->belongsToMany(Category::class, 'clinic_specialty', 'clinic_id', 'category_id')
-            ->withPivot(['is_primary', 'description', 'custom_fields'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Klinikada təqdim olunan xidmətlər
+     * Klinikanın xidmətlərini qaytarır.
+     * @return BelongsToMany
      */
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'clinic_services', 'clinic_id', 'service_id')
-            ->withPivot(['custom_price', 'custom_duration', 'is_featured', 'custom_fields'])
+        return $this->belongsToMany(Service::class, 'clinic_services')
+            ->withPivot(['price', 'duration', 'description', 'is_active'])
             ->withTimestamps();
     }
 
     /**
-     * Klinika şəkilləri
+     * Klinikanın tətil günlərini qaytarır.
+     * @return HasMany
      */
-    public function photos(): HasMany
+    public function holidays(): HasMany
     {
-        return $this->hasMany(ClinicPhoto::class)->orderBy('order');
+        return $this->hasMany(ClinicHoliday::class);
     }
 
     /**
-     * Klinika rəyləri
+     * Klinikanın əsas klinikasını qaytarır.
+     * @return BelongsTo
      */
-    public function reviews(): HasMany
+    public function parent(): BelongsTo
     {
-        return $this->hasMany(ClinicReview::class);
+        return $this->belongsTo(Clinic::class, 'parent_id');
     }
 
     /**
-     * Klinikada olan randevular
+     * Klinikanın yaradıcı istifadəçisini qaytarır.
+     * @return BelongsTo
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Klinikada çalışan həkimləri qaytarır.
+     * @return BelongsToMany
+     */
+    public function doctors(): BelongsToMany
+    {
+        return $this->belongsToMany(Doctor::class, 'doctor_clinic')
+            ->withPivot(['start_date', 'end_date', 'is_main_workplace', 'is_active', 'note'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Klinikaya aid randevuları qaytarır.
+     * @return HasMany
      */
     public function appointments(): HasMany
     {
@@ -183,100 +170,42 @@ class Clinic extends Model
     }
 
     /**
-     * Klinikada olan boş vaxtlar
+     * Klinika haqqında rəyləri qaytarır.
+     * @return HasMany
      */
-    public function availabilities(): HasMany
+    public function reviews(): HasMany
     {
-        return $this->hasMany(DoctorAvailability::class);
+        return $this->hasMany(Review::class);
     }
 
     /**
-     * Klinikada ixtisaslardan birini verən həkimləri tapır
+     * Klinikanı favori seçən xəstələri qaytarır.
+     * @return BelongsToMany
      */
-    public function getDoctorsBySpecialty($specialtyId)
+    public function favoriteByPatients(): BelongsToMany
+    {
+        return $this->belongsToMany(Patient::class, 'patient_favorite_clinics')
+            ->withPivot(['note'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Aktiv və təsdiqlənmiş həkimləri qaytarır.
+     * @return BelongsToMany
+     */
+    public function activeVerifiedDoctors(): BelongsToMany
     {
         return $this->doctors()
-            ->whereHas('doctorSpecialties', function ($query) use ($specialtyId) {
-                $query->where('category_id', $specialtyId);
-            })
-            ->get();
+            ->where('is_active', true)
+            ->where('is_verified', true);
     }
 
-    /**
-     * Klinikada verilən xidməti təqdim edən həkimləri tapır
-     */
-    public function getDoctorsByService($serviceId)
+    public function getImageFields(): array
     {
-        return $this->doctors()
-            ->whereHas('doctorServices', function ($query) use ($serviceId) {
-                $query->where('service_id', $serviceId);
-            })
-            ->get();
-    }
-
-    /**
-     * İş saatlarının formatlı şəkildə verilməsi
-     */
-    public function formattedWorkingHours(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                if (!$this->working_hours) {
-                    return [];
-                }
-
-                $formatted = [];
-                $dayNames = [
-                    1 => 'Bazar ertəsi',
-                    2 => 'Çərşənbə axşamı',
-                    3 => 'Çərşənbə',
-                    4 => 'Cümə axşamı',
-                    5 => 'Cümə',
-                    6 => 'Şənbə',
-                    7 => 'Bazar'
-                ];
-
-                foreach ($this->working_hours as $day => $hours) {
-                    $dayNumber = (int) $day;
-                    $dayName = $dayNames[$dayNumber] ?? "Gün {$day}";
-
-                    if (isset($hours['closed']) && $hours['closed']) {
-                        $formatted[$dayNumber] = [
-                            'day' => $dayName,
-                            'hours' => 'Bağlıdır'
-                        ];
-                        continue;
-                    }
-
-                    if (isset($hours['start']) && isset($hours['end'])) {
-                        $formatted[$dayNumber] = [
-                            'day' => $dayName,
-                            'hours' => "{$hours['start']} - {$hours['end']}"
-                        ];
-                    }
-                }
-
-                // Gün nömrəsinə görə sıralayaq
-                ksort($formatted);
-
-                return array_values($formatted);
-            }
-        );
-    }
-
-    /**
-     * Klinika üçün Google Maps linkini qaytar
-     */
-    public function googleMapsLink(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                if (!$this->latitude || !$this->longitude) {
-                    return null;
-                }
-
-                return "https://www.google.com/maps/search/?api=1&query={$this->latitude},{$this->longitude}";
-            }
-        );
+        return [
+            'logo_path' => [
+                'path' => 'clinic'
+            ]
+        ];
     }
 }
