@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id(); // Həkimin unikal ID-si
             $table->key(); // Unikal UUID
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // İstifadəçi əlaqəsi
-            $table->foreignId('category')->constrained()->nullOnDelete(); // Əsas ixtisas
-            $table->foreignId('sub_category')->constrained()->nullOnDelete(); // Alt ixtisas
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete(); // Əsas ixtisas
+            $table->foreignId('sub_category_id')->nullable()->constrained('categories')->nullOnDelete(); // Alt ixtisas
             $table->text('biography')->nullable(); // Həkim haqqında ətraflı məlumat
             $table->decimal('consultation_fee', 10, 2)->nullable(); // Konsultasiya qiyməti
             $table->integer('consultation_duration')->default(30); // Konsultasiya müddəti (dəqiqə)

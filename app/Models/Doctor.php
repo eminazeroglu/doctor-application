@@ -114,7 +114,7 @@ class Doctor extends BaseModel
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category');
+        return $this->belongsTo(Category::class);
     }
 
     /**
@@ -123,7 +123,7 @@ class Doctor extends BaseModel
      */
     public function subcategory(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'sub_category');
+        return $this->belongsTo(Category::class);
     }
 
     /**

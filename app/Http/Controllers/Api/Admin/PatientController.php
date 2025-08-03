@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\ApiController;
 use App\Services\Module\PatientService;
-use Illuminate\Http\Request;
 
 class PatientController extends ApiController
 {

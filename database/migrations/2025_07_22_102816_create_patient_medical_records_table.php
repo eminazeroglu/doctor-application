@@ -13,6 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::create('patient_medical_records', function (Blueprint $table) {
             $table->id(); // Qeydin unikal ID-si
             $table->key(); // Unikal UUID
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->boolean('is_private')->default(false); // Qeyd xüsusidir?
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

@@ -31,7 +31,7 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7)->nullable(); // Xəritədə uzunluq dairəsi
             $table->json('working_hours')->nullable(); // İş saatları
             $table->json('facilities')->nullable(); // Təklif olunan imkanlar
-            $table->photo('logo')->nullable(); // Logo faylının yolu
+            $table->photo('logo'); // Logo faylının yolu
             $table->json('images')->nullable(); // Klinika şəkilləri
             $table->integer('rating')->default(0); // Orta qiymətləndirmə
             $table->integer('ratings_count')->default(0); // Qiymətləndirmə sayı

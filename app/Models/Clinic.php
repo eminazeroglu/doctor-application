@@ -67,7 +67,7 @@ class Clinic extends Model
      * Avtomatik əlavə edilən atributlar.
      * @var array
      */
-    protected $appends = ['logo_url', 'average_rating'];
+    protected $appends = ['average_rating'];
 
     /**
      * Slug mənbə sütunu

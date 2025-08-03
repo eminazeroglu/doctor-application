@@ -25,14 +25,15 @@ class DatabaseSeeder extends Seeder
         //if (App::environment('local')) {
         $this->call(PageSeeder::class);
         $this->call(SeoLinkSeeder::class);
-        $this->call(PaymentServiceSeeder::class);
         $this->call(LocationSeeder::class);
         $this->call(AttributeSeeder::class);
         $this->call(CategorySeeder::class);
+        $this->call(ServiceSeeder::class);
         $this->call(MessagingSystemSeeder::class);
         $this->call(CommentSeeder::class);
-        $this->call(PaymentSeeder::class);
         $this->call(ComplaintSeeder::class);
+        $this->call(ClinicSeeder::class);
+        $this->call(DoctorSeeder::class);
         //}
     }
 }

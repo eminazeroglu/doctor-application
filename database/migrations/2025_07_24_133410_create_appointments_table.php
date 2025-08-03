@@ -14,6 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::create('appointments', function (Blueprint $table) {
             $table->id(); // Randevunun unikal ID-si
             $table->key(); // Unikal UUID
@@ -36,6 +37,7 @@ return new class extends Migration
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
             $table->softDeletes(); // Yumşaq silmə (soft delete) üçün
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

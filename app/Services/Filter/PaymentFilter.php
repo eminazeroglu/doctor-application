@@ -5,20 +5,11 @@ namespace App\Services\Filter;
 class PaymentFilter extends BaseFilter
 {
     protected array $filters = [
-        'status',
-        'user',
-        'payment_method',
+        'name'
     ];
 
-    protected function filterUser($query, $value)
+    protected function filterName($query, $value)
     {
-        return $query->whereHas('user', function ($query) use ($value) {
-            $query->fullName($value);
-        });
-    }
-
-    protected function filterPaymentMethod($query, $value)
-    {
-        return $query->where('payment_method', $value);
+        return $query->where('name', $value);
     }
 }

@@ -50,14 +50,7 @@ $permissionArr = [
         "permission_read",
         "permission_status",
     ],
-    "notification" => [
-        "notification_create",
-        "notification_update",
-        "notification_delete",
-        "notification_read",
-        "notification_status",
-    ],
-    "complaint" => [
+"complaint" => [
         "complaint_create",
         "complaint_update",
         "complaint_delete",
@@ -123,14 +116,7 @@ $permissionArr = [
         "payment_service_read",
         "payment_service_status",
     ],
-    "payment" => [
-        "payment_create",
-        "payment_update",
-        "payment_delete",
-        "payment_read",
-        "payment_status",
-    ],
-    "country" => [
+"country" => [
         "country_create",
         "country_update",
         "country_delete",
@@ -213,6 +199,20 @@ $permissionArr = [
         "review_delete",
         "review_read",
         "review_status",
+    ],
+    "notification" => [
+        "notification_create",
+        "notification_update",
+        "notification_delete",
+        "notification_read",
+        "notification_status",
+    ],
+    "payment" => [
+        "payment_create",
+        "payment_update",
+        "payment_delete",
+        "payment_read",
+        "payment_status",
     ],
 ];
 

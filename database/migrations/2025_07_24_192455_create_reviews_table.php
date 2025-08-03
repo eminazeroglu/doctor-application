@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id(); // Rəyin unikal ID-si
-            $table->uuid('uuid')->unique(); // Unikal UUID
+            $table->key(); // Unikal UUID
             $table->foreignId('patient_id')->constrained()->onDelete('cascade'); // Xəstə əlaqəsi
             $table->foreignId('doctor_id')->nullable()->constrained()->nullOnDelete(); // Həkim əlaqəsi
             $table->foreignId('clinic_id')->nullable()->constrained()->nullOnDelete(); // Klinika əlaqəsi

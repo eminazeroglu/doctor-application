@@ -2,21 +2,25 @@
 
 use App\Http\Controllers\Api\Admin\ActivityLogController;
 use App\Http\Controllers\Api\Admin\AdvertisementController;
+use App\Http\Controllers\Api\Admin\AppointmentController;
 use App\Http\Controllers\Api\Admin\AttributeController;
 use App\Http\Controllers\Api\Admin\BlockedCredentialController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CityController;
+use App\Http\Controllers\Api\Admin\ClinicController;
 use App\Http\Controllers\Api\Admin\CommentController;
 use App\Http\Controllers\Api\Admin\ComplaintsController;
 use App\Http\Controllers\Api\Admin\CountryController;
+use App\Http\Controllers\Api\Admin\DoctorController;
 use App\Http\Controllers\Api\Admin\LanguageController;
 use App\Http\Controllers\Api\Admin\MessagingController;
 use App\Http\Controllers\Api\Admin\NotificationController;
 use App\Http\Controllers\Api\Admin\PageController;
+use App\Http\Controllers\Api\Admin\PatientController;
 use App\Http\Controllers\Api\Admin\PaymentController;
-use App\Http\Controllers\Api\Admin\PaymentServiceController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\RegionController;
+use App\Http\Controllers\Api\Admin\ReviewController;
 use App\Http\Controllers\Api\Admin\SeoLinkController;
 use App\Http\Controllers\Api\Admin\ServiceController;
 use App\Http\Controllers\Api\Admin\SettingController;
@@ -24,11 +28,6 @@ use App\Http\Controllers\Api\Admin\SubwayController;
 use App\Http\Controllers\Api\Admin\TranslationController;
 use App\Http\Controllers\Api\Admin\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AppointmentController;
-use App\Http\Controllers\Api\ClinicController;
-use App\Http\Controllers\Api\DoctorController;
-use App\Http\Controllers\Api\PatientController;
-use App\Http\Controllers\Api\ReviewController;
 
 /**
  * Languages Routes
@@ -180,15 +179,6 @@ Route::controller(AttributeController::class)->prefix('attributes')->group(funct
 });
 Route::resource('attributes', AttributeController::class);
 
-/**
- * Payment Service Routes
- * */
-Route::controller(PaymentServiceController::class)->prefix('payment-services')->group(function () {
-    Route::get('/{id}/options', 'options')->name('payment-services.options');
-    Route::post('/{id}/save-option', 'saveOption')->name('payment-services.save-option');
-});
-Route::resource('payment-services', PaymentServiceController::class);
-
 
 /**
  * Comment Routes
@@ -258,3 +248,10 @@ Route::resource('patients', PatientController::class);
 
 // Review
 Route::resource('reviews', ReviewController::class);
+
+// Notification
+Route::resource('notifications', NotificationController::class);
+
+
+// Payment
+Route::resource('payments', PaymentController::class);
