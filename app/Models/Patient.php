@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -132,15 +133,19 @@ class Patient extends BaseModel
 
     /**
      * Xəstənin yaşını hesablayır.
-     * @return int|null
+     * @return AttributeAlias
      */
-    public function age(): ?int
+    public function age(): AttributeAlias
     {
-        if (!$this->user->birthdate) {
-            return null;
-        }
+        return new AttributeAlias(
+            get: function () {
+                if (!$this->user->birthdate) {
+                    return null;
+                }
 
-        return $this->user->birthdate->age;
+                return Carbon::parse(now())->diff($this->user->birthdate)->format('%y');
+            }
+        );
     }
 
     /**

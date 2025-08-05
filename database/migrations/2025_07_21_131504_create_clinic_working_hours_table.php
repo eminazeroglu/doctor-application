@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('clinic_working_hours', function (Blueprint $table) {
             $table->id(); // İş saatı qeydinin unikal ID-si
             $table->foreignId('clinic_id')->constrained()->onDelete('cascade'); // Klinika əlaqəsi
-            $table->string('day_of_week'); // Həftənin günü
-            $table->time('open_time'); // Açılış saatı
-            $table->time('close_time'); // Bağlanış saatı
+            $table->string('day_of_week')->nullable(); // Həftənin günü
+            $table->time('open_time')->nullable(); // Açılış saatı
+            $table->time('close_time')->nullable(); // Bağlanış saatı
             $table->boolean('is_closed')->default(false); // Bu gün bağlıdır?
             $table->text('note')->nullable(); // Əlavə qeyd
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları

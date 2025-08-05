@@ -7,12 +7,11 @@ use App\Enums\ImageWatermarkPositionEnum;
 use App\Http\Resources\Admin\BaseResource;
 use App\Models\Language;
 use App\Models\Role;
-use App\Repositories\Module\AttributeRepository;
 use App\Repositories\Module\CategoryRepository;
 use App\Repositories\Module\CityRepository;
+use App\Repositories\Module\ClinicRepository;
 use App\Repositories\Module\CountryRepository;
 use App\Repositories\Module\LanguageRepository;
-use App\Repositories\Module\PaymentServiceRepository;
 use App\Repositories\Module\RegionRepository;
 use App\Repositories\Module\SubwayRepository;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,27 +20,27 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class ReferenceDataService
 {
     protected CategoryRepository $categoryRepository;
-    protected PaymentServiceRepository $paymentServiceRepository;
     protected CountryRepository $countryRepository;
     protected CityRepository $cityRepository;
     protected RegionRepository $regionRepository;
     protected SubwayRepository $subwayRepository;
+    protected ClinicRepository $clinicRepository;
 
     public function __construct(
         CategoryRepository       $categoryRepository,
-        PaymentServiceRepository $paymentServiceRepository,
         CountryRepository        $countryRepository,
         CityRepository           $cityRepository,
         RegionRepository         $regionRepository,
         SubwayRepository         $subwayRepository,
+        ClinicRepository         $clinicRepository,
     )
     {
         $this->categoryRepository = $categoryRepository;
-        $this->paymentServiceRepository = $paymentServiceRepository;
         $this->countryRepository = $countryRepository;
         $this->cityRepository = $cityRepository;
         $this->regionRepository = $regionRepository;
         $this->subwayRepository = $subwayRepository;
+        $this->clinicRepository = $clinicRepository;
     }
 
     /*
@@ -107,15 +106,6 @@ class ReferenceDataService
         return $this->categoryRepository->getCategoryWithAttributes($id);
     }
 
-    /**
-     * Ödəniş xidmətlərini tipinə görə
-     * əldə etmək
-     * */
-    public function fetchPaymentServiceByType($type): Collection
-    {
-        return $this->paymentServiceRepository->findListByType($type);
-    }
-
     public function fetchCountries(): Collection
     {
         return $this->countryRepository->findActiveList();
@@ -178,6 +168,14 @@ class ReferenceDataService
     public function fetchAttributePositions()
     {
         return app(AttributeService::class)->getAttributePositions();
+    }
+
+    /**
+     * Attributlara aid bütün yerləri listələyir
+     * */
+    public function fetchClinics(): Collection
+    {
+        return $this->clinicRepository->findActiveList();
     }
 
 }

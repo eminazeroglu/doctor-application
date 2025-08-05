@@ -218,40 +218,63 @@ Route::controller(ComplaintsController::class)->prefix('complaints')->group(func
 });
 Route::resource('complaints', ComplaintsController::class);
 
-
 // Service
 Route::resource('services', ServiceController::class);
-Route::controller(ServiceController::class)->prefix('services')->group(function () {
-    Route::get('/category/{categoryId}', 'getByCategory');
-    Route::get('/popular', 'getPopular');
-    Route::get('/doctor/{doctorId}', 'getByDoctor');
-    Route::get('/doctor/{doctorId}/services', 'getDoctorServices');
-    Route::post('/doctor/{doctorId}/sync', 'syncDoctorServices');
-});
-
-
-
 
 // Appointment
 Route::resource('appointments', AppointmentController::class);
-
-
+Route::controller(AppointmentController::class)->prefix('appointments')->group(function () {
+    Route::get('/today', 'today')->name('appointments.today');
+    Route::get('/statistics', 'statistics')->name('appointments.statistics');
+    Route::post('/{id}/action', 'action')->name('appointments.action');
+});
 
 // Clinic
+Route::controller(ClinicController::class)->prefix('clinics')->group(function () {
+    Route::get('/nearby', 'nearby')->name('clinics.nearby');
+    Route::get('/popular', 'popular')->name('clinics.popular');
+    Route::get('/{clinic}/statistics', 'statistics')->name('clinics.statistics');
+    Route::get('/{clinic}/available-slots', 'availableSlots')->name('clinics.available-slots');
+    Route::post('/{clinic}/toggle-verified', 'toggleVerified')->name('clinics.toggle-verified');
+    Route::post('/{clinic}/toggle-featured', 'toggleFeatured')->name('clinics.toggle-featured');
+});
 Route::resource('clinics', ClinicController::class);
 
 // Doctor
 Route::resource('doctors', DoctorController::class);
+Route::controller(DoctorController::class)->prefix('doctors')->group(function () {
+    Route::post('{id}/toggle-verification', 'toggleVerification')->name('doctors.toggleVerification');
+    Route::post('{id}/toggle-featured', 'toggleFeatured')->name('doctors.toggleFeatured');
+    Route::get('category/{categoryId}', 'getByCategory')->name('doctors.getByCategory');
+    Route::get('clinic/{clinicId}', 'getByClinic')->name('doctors.getByClinic');
+    Route::post('{id}/unavailability', 'addUnavailability')->name('doctors.addUnavailability');
+    Route::get('{id}/check-availability', 'checkAvailability')->name('doctors.checkAvailability');
+});
 
 // Patient
 Route::resource('patients', PatientController::class);
 
 // Review
+
+// Review
+Route::controller(ReviewController::class)->prefix('reviews')->group(function () {
+    // Xüsusi route-lar
+    Route::get('/by-doctor/{doctorId}', 'byDoctor')->name('reviews.by-doctor');
+    Route::get('/by-clinic/{clinicId}', 'byClinic')->name('reviews.by-clinic');
+    Route::get('/awaiting-moderation', 'awaitingModeration')->name('reviews.awaiting-moderation');
+    Route::get('/most-helpful', 'mostHelpful')->name('reviews.most-helpful');
+    Route::get('/reported', 'reported')->name('reviews.reported');
+    Route::get('/statistics', 'statistics')->name('reviews.statistics');
+
+    // Status əməliyyatları
+    Route::post('/{id}/verify', 'verify')->name('reviews.verify');
+    Route::post('/{id}/moderate', 'moderate')->name('reviews.moderate');
+});
+
 Route::resource('reviews', ReviewController::class);
 
 // Notification
 Route::resource('notifications', NotificationController::class);
-
 
 // Payment
 Route::resource('payments', PaymentController::class);

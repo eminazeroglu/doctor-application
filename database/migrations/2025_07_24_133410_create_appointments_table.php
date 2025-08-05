@@ -31,6 +31,7 @@ return new class extends Migration
             $table->boolean('is_paid')->default(false); // Ödənilib?
             $table->foreignId('payment_id')->nullable()->constrained()->nullOnDelete(); // Ödəniş əlaqəsi
             $table->text('cancel_reason')->nullable(); // Ləğv səbəbi
+            $table->dateTime('cancelled_at')->nullable(); // Ləğv Tarixi
             $table->string('location')->nullable(); // Yer (klinikada, onlayn, ev ziyarəti)
             $table->string('consultation_type')->default('in_person'); // Konsultasiya növü (in_person, online, home_visit)
             $table->json('additional_info')->nullable(); // Əlavə məlumatlar

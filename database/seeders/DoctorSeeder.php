@@ -8,6 +8,7 @@ use App\Enums\UserTypeEnum;
 use App\Models\Category;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\DoctorAttributeValue;
 use App\Models\DoctorCertificate;
 use App\Models\DoctorClinicService;
 use App\Models\DoctorEducation;
@@ -21,6 +22,7 @@ use App\Models\UserPreference;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class DoctorSeeder extends Seeder
@@ -32,15 +34,165 @@ class DoctorSeeder extends Seeder
     private array $doctorNames = [];
     private array $socialPlatforms = [];
 
+    /**
+     * @throws \Throwable
+     */
     public function run(): void
     {
-        DB::transaction(function () {
-            // 1. Əsas məlumatları hazırlayırıq
+        try {
+            // 1. Əvvəlcə mövcud həkim məlumatlarını silirik
+            $this->clearExistingDoctorData();
+
+            // 2. Əsas məlumatları hazırlayırıq
             $this->prepareData();
 
-            // 2. Həkimlər yaradırıq
+            // 3. Həkimlər yaradırıq
             $this->createDoctors(50); // 50 həkim yaradacağıq
-        });
+
+        } catch (\Exception $e) {
+            $this->command->error('DoctorSeeder xətası: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Həkim modulu ilə əlaqəli bütün məlumatları silir
+     */
+    private function clearExistingDoctorData(): void
+    {
+        $this->command->info('Mövcud həkim məlumatları silinir...');
+
+        // Foreign key constraint-ləri müvəqqəti olaraq söndürürük
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        try {
+            // Həkim ilə əlaqəli cədvəlləri düzgün ardıcıllıqla təmizləyirik
+            $tablesToClear = [
+                'doctor_attribute_values',
+                'doctor_schedules',
+                'doctor_unavailability',
+                'doctor_clinic_services',
+                'doctor_clinic',
+                'doctor_languages',
+                'doctor_certificates',
+                'doctor_experience',
+                'doctor_education',
+                'doctors'
+            ];
+
+            foreach ($tablesToClear as $table) {
+                if ($this->tableExists($table)) {
+                    DB::table($table)->truncate();
+                    $this->command->info("✓ {$table} cədvəli təmizləndi");
+                } else {
+                    $this->command->warn("⚠ {$table} cədvəli mövcud deyil - atlandı");
+                }
+            }
+
+            // Həkim tipində olan istifadəçiləri və onların preferences-lərini silirik
+            if ($this->tableExists('users') && $this->tableExists('user_preferences')) {
+                $doctorUserIds = DB::table('users')
+                    ->where('user_type', UserTypeEnum::Doctor)
+                    ->pluck('id');
+
+                if ($doctorUserIds->isNotEmpty()) {
+                    DB::table('user_preferences')
+                        ->whereIn('user_id', $doctorUserIds)
+                        ->delete();
+
+                    DB::table('users')
+                        ->where('user_type', UserTypeEnum::Doctor)
+                        ->delete();
+
+                    $this->command->info("✓ Həkim istifadəçiləri silindi ({$doctorUserIds->count()} ədəd)");
+                }
+            }
+
+            $this->command->info('✅ Mövcud həkim məlumatları uğurla silindi.');
+
+        } catch (\Exception $e) {
+            $this->command->error('❌ Məlumat silinərkən xəta: ' . $e->getMessage());
+            throw $e;
+        } finally {
+            // Foreign key constraint-ləri yenidən aktivləşdiririk
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * Cədvəlin mövcudluğunu yoxlayır
+     */
+    private function tableExists(string $table): bool
+    {
+        try {
+            return Schema::hasTable($table);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    protected function addAttributesToDoctor(Doctor $doctor): void
+    {
+        // Kateqoriyaya aid atributları alırıq.
+        if (!$doctor->category || !method_exists($doctor->category, 'attributes')) {
+            return;
+        }
+
+        $categoryAttributes = $doctor->category->attributes;
+
+        if ($categoryAttributes->isEmpty()) {
+            return;
+        }
+
+        // Random sayda atribut seçirik (məsələn, 3-5 atribut)
+        $randomAttributes = $categoryAttributes->shuffle()->take(rand(3, min(5, $categoryAttributes->count())));
+
+        foreach ($randomAttributes as $categoryAttribute) {
+            $attribute = $categoryAttribute->attribute;
+
+            if (!$attribute) {
+                continue;
+            }
+
+            // Bu atributun artıq bu elan üçün qeyd olunub-olmadığını yoxlayırıq
+            $exists = DoctorAttributeValue::where('doctor_id', $doctor->id)
+                ->where('attribute_id', $attribute->id)
+                ->exists();
+
+            if ($exists) {
+                continue; // Təkrar varsa, bu atributu atlayırıq
+            }
+
+            $data = [
+                'doctor_id' => $doctor->id,
+                'attribute_id' => $attribute->id,
+                'value' => $this->generateAttributeValue($attribute),
+            ];
+
+            $attributeOption = $attribute?->options()->inRandomOrder()->first();
+
+            if ($attributeOption) {
+                $data['attribute_option_id'] = $attributeOption->id;
+            }
+
+            DoctorAttributeValue::create($data);
+        }
+    }
+
+    private function generateAttributeValue($attribute): string
+    {
+        // Attribut tipinə görə dəyər yaradırıq
+        $attributeTypes = ['text', 'number', 'boolean', 'select', 'multiselect'];
+        $type = fake()->randomElement($attributeTypes);
+
+        return match($type) {
+            'text' => fake()->sentence(3),
+            'number' => (string) fake()->numberBetween(1, 100),
+            'boolean' => fake()->boolean() ? 'true' : 'false',
+            'select' => fake()->randomElement(['Option 1', 'Option 2', 'Option 3']),
+            'multiselect' => implode(',', fake()->randomElements(['Tag 1', 'Tag 2', 'Tag 3'], rand(1, 2))),
+            default => fake()->word(),
+        };
     }
 
     private function prepareData(): void
@@ -152,7 +304,7 @@ class DoctorSeeder extends Seeder
             $this->createSingleDoctor($categories, $services, $clinics, $i);
         }
 
-        $this->command->info("$count həkim uğurla yaradıldı!");
+        $this->command->info("✅ $count həkim uğurla yaradıldı!");
     }
 
     private function createSingleDoctor($categories, $services, $clinics, $index): void
@@ -233,14 +385,25 @@ class DoctorSeeder extends Seeder
         // 8. Klinika əlaqələri yaradırıq
         $this->createClinicRelations($doctor, $clinics);
 
-        // 9. Xidmətlər əlavə edirik
-        $this->createDoctorServices($doctor, $services, $clinics);
+        // 9. Xidmətlər əlavə edirik (yalnız cədvəllər mövcudsa)
+        if ($this->tableExists('doctor_clinic_services')) {
+            $this->createDoctorServices($doctor, $services, $clinics);
+        }
 
-        // 10. İş cədvəli yaradırıq
-        $this->createSchedules($doctor, $clinics);
+        // 10. İş cədvəli yaradırıq (yalnız cədvəl mövcudsa)
+        if ($this->tableExists('doctor_schedules')) {
+            $this->createSchedules($doctor, $clinics);
+        }
 
-        // 11. Məşğulluq vaxtları əlavə edirik
-        $this->createUnavailabilities($doctor);
+        // 11. Məşğulluq vaxtları əlavə edirik (yalnız cədvəl mövcudsa)
+        if ($this->tableExists('doctor_unavailability')) {
+            $this->createUnavailabilities($doctor);
+        }
+
+        // 12. Atributları əlavə edirik (yalnız cədvəl mövcudsa)
+        if ($this->tableExists('doctor_attribute_values')) {
+            $this->addAttributesToDoctor($doctor);
+        }
     }
 
     private function generateBiography($name, $category): string
@@ -275,6 +438,10 @@ class DoctorSeeder extends Seeder
 
     private function createEducation(Doctor $doctor): void
     {
+        if (!$this->tableExists('doctor_educations')) {
+            return;
+        }
+
         $educationCount = fake()->numberBetween(1, 3);
 
         for ($i = 0; $i < $educationCount; $i++) {
@@ -295,6 +462,10 @@ class DoctorSeeder extends Seeder
 
     private function createExperience(Doctor $doctor): void
     {
+        if (!$this->tableExists('doctor_experience')) {
+            return;
+        }
+
         $experienceCount = fake()->numberBetween(2, 5);
 
         for ($i = 0; $i < $experienceCount; $i++) {
@@ -315,6 +486,10 @@ class DoctorSeeder extends Seeder
 
     private function createCertificates(Doctor $doctor): void
     {
+        if (!$this->tableExists('doctor_certificates')) {
+            return;
+        }
+
         $certificateCount = fake()->numberBetween(1, 4);
 
         for ($i = 0; $i < $certificateCount; $i++) {
@@ -337,6 +512,10 @@ class DoctorSeeder extends Seeder
 
     private function createLanguages(Doctor $doctor): void
     {
+        if (!$this->tableExists('doctor_languages')) {
+            return;
+        }
+
         $languageCount = fake()->numberBetween(2, 4);
         $selectedLanguages = fake()->randomElements($this->languages, $languageCount);
 
@@ -351,6 +530,10 @@ class DoctorSeeder extends Seeder
 
     private function createClinicRelations(Doctor $doctor, $clinics): void
     {
+        if (!$this->tableExists('doctor_clinic')) {
+            return;
+        }
+
         $clinicCount = fake()->numberBetween(1, 3);
         $selectedClinics = $clinics->random($clinicCount);
 

@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('slug')->unique(); // SEO-dostu URL
             $table->text('description')->nullable(); // Klinika haqqında ətraflı məlumat
             $table->string('address')->nullable(); // Klinikanın ünvanı
-            $table->string('city')->nullable(); // Şəhər
-            $table->string('region')->nullable(); // Rayon/bölgə
-            $table->string('country')->default('Azerbaijan'); // Ölkə
+            $table->foreignId('country_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('region_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('subway_id')->nullable()->constrained()->nullOnDelete();
             $table->string('postal_code')->nullable(); // Poçt indeksi
             $table->string('phone')->nullable(); // Əlaqə telefonu
             $table->string('email')->nullable(); // Əlaqə e-poçtu
@@ -38,7 +39,7 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false); // Klinika təsdiqlənib?
             $table->boolean('is_featured')->default(false); // Önə çıxarılmış klinika?
             $table->boolean('is_active')->default(true); // Klinika aktivdir?
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete(); // Yaradıcı istifadəçi
+            $table->trackable(); // Yaradıcı istifadəçi
             $table->foreignId('parent_id')->nullable()->constrained('clinics')->nullOnDelete(); // Əsas klinika (filiallar üçün)
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
             $table->softDeletes(); // Yumşaq silmə (soft delete) üçün

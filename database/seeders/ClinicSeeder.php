@@ -8,6 +8,7 @@ use App\Models\ClinicCategory;
 use App\Models\ClinicHoliday;
 use App\Models\ClinicService;
 use App\Models\ClinicWorkingHour;
+use App\Models\Country;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
@@ -110,15 +111,19 @@ class ClinicSeeder extends Seeder
                 'Sunday' => ['open' => '10:00', 'close' => '14:00', 'is_closed' => $faker->boolean(70)],
             ];
 
+            $country = Country::query()->inRandomOrder()->first();
+            $city = $country->cities()->inRandomOrder()->first();
+            $region = $city->regions()->inRandomOrder()->first();
+
             $clinic = Clinic::create([
                 'uuid' => (string) Str::uuid(),
                 'name' => $name,
                 'slug' => $slug,
                 'description' => $faker->paragraph(5),
                 'address' => $faker->address,
-                'city' => $faker->randomElement(['Bakı', 'Sumqayıt', 'Gəncə', 'Mingəçevir', 'Şəki']),
-                'region' => $faker->randomElement(['Binəqədi', 'Nəsimi', 'Yasamal', 'Nərimanov', 'Xətai', 'Sabunçu', 'Suraxanı']),
-                'country' => 'Azerbaijan',
+                'city_id' => $city?->id,
+                'region_id' => $region?->id,
+                'country_id' => $country?->id,
                 'postal_code' => $faker->postcode,
                 'phone' => $faker->phoneNumber,
                 'email' => $faker->safeEmail,
@@ -127,7 +132,7 @@ class ClinicSeeder extends Seeder
                 'longitude' => $faker->longitude(49.8, 50.0),
                 'working_hours' => json_encode($workingHours),
                 'facilities' => json_encode($clinicFacilities),
-                'logo_path' => 'clinic_logo_' . $i . '.png',
+                'logo_path' => 'clinic_logo_' . rand(1, 5) . '.png',
                 'images' => json_encode($images),
                 'rating' => $faker->numberBetween(0, 500),
                 'ratings_count' => $faker->numberBetween(0, 100),
@@ -322,9 +327,9 @@ class ClinicSeeder extends Seeder
                     'slug' => $branchSlug,
                     'description' => $faker->paragraph(3),
                     'address' => $faker->address,
-                    'city' => $mainClinic->city, // Eyni şəhərdə
-                    'region' => $faker->randomElement(['Binəqədi', 'Nəsimi', 'Yasamal', 'Nərimanov', 'Xətai', 'Sabunçu', 'Suraxanı']),
-                    'country' => 'Azerbaijan',
+                    'city_id' => $city?->id, // Eyni şəhərdə
+                    'region_id' => $region?->id,
+                    'country_id' => $country?->id,
                     'postal_code' => $faker->postcode,
                     'phone' => $faker->phoneNumber,
                     'email' => 'filial' . $b . '@' . Str::slug($mainClinic->name) . '.az',

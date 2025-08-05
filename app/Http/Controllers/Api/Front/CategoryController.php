@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\ReferenceResource;
 use App\Http\Resources\Front\AttributeResource;
 use App\Http\Resources\Front\CategoryResource;
 use App\Repositories\Module\CategoryRepository;
@@ -32,5 +33,11 @@ class CategoryController extends Controller
     {
         $categories = $this->repository->getCategoryWithAttributesByUuid($uuid);
         return response()->json(AttributeResource::collection($categories));
+    }
+
+    public function categoryWithServices($uuid): \Illuminate\Http\JsonResponse
+    {
+        $categories = $this->repository->getCategoryWithServicesByUuid($uuid);
+        return response()->json(ReferenceResource::collection($categories));
     }
 }

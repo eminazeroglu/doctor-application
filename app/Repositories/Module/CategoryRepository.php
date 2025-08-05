@@ -117,6 +117,19 @@ class CategoryRepository extends BaseRepository
         });
     }
 
+    /**
+     * Kateqoriyanı bütün xidmətləri birlikdə gətirir
+     */
+    public function getCategoryWithServicesByUuid(string $uuid)
+    {
+        return $this->executeWithCache('getCategoryWithServices_' . $uuid, function () use ($uuid) {
+            $category = $this->model->query()
+                ->where('uuid', $uuid)
+                ->firstOrFail();
+            return $category->services;
+        });
+    }
+
     public function getCategoryWithTermsByUuid($uuid)
     {
         return $this->executeWithCache('getCategoryWithTerms_' . $uuid, function () use ($uuid) {

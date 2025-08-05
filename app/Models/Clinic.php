@@ -4,13 +4,12 @@ namespace App\Models;
 
 use App\Traits\Model\HasImage;
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Clinic extends Model
+class Clinic extends BaseModel
 {
     use HasImage, SoftDeletes;
 
@@ -24,9 +23,9 @@ class Clinic extends Model
         'slug',
         'description',
         'address',
-        'city',
-        'region',
-        'country',
+        'city_id',
+        'region_id',
+        'country_id',
         'postal_code',
         'phone',
         'email',
@@ -67,7 +66,7 @@ class Clinic extends Model
      * Avtomatik əlavə edilən atributlar.
      * @var array
      */
-    protected $appends = ['average_rating'];
+    protected $appends = ['average_rating', 'logo'];
 
     /**
      * Slug mənbə sütunu
@@ -87,6 +86,24 @@ class Clinic extends Model
         return new AttributeAlias(
             get: function () {
                 return $this->ratings_count > 0 ? round($this->rating / $this->ratings_count, 1) : 0;
+            }
+        );
+    }
+
+    public function getImageFields(): array
+    {
+        return [
+            'logo_path' => [
+                'path' => 'clinic'
+            ]
+        ];
+    }
+
+    public function logo(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->getImageUrl('logo_path');
             }
         );
     }
@@ -179,6 +196,33 @@ class Clinic extends Model
     }
 
     /**
+     * Klinikanın aid olduğu ölkə.
+     * @return BelongsTo
+     */
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * Klinikanın aid olduğu şəhər.
+     * @return BelongsTo
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    /**
+     * Klinikanın aid olduğu rayon.
+     * @return BelongsTo
+     */
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    /**
      * Klinikanı favori seçən xəstələri qaytarır.
      * @return BelongsToMany
      */
@@ -198,14 +242,5 @@ class Clinic extends Model
         return $this->doctors()
             ->where('is_active', true)
             ->where('is_verified', true);
-    }
-
-    public function getImageFields(): array
-    {
-        return [
-            'logo_path' => [
-                'path' => 'clinic'
-            ]
-        ];
     }
 }

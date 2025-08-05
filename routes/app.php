@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\CommentController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
+use App\Http\Controllers\Api\Front\DoctorController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
 use App\Http\Controllers\Api\Front\UserBlockController;
@@ -86,29 +87,7 @@ Route::controller(CategoryController::class)
         Route::get('/', 'categoryOnlyParent')->name('category.categoryOnlyParent');
         Route::get('/{id}/children', 'categoryWithChildren')->name('category.categoryWithChildren');
         Route::get('/{id}/attributes', 'categoryWithAttribute')->name('category.categoryWithAttribute');
-    });
-
-/**
- * User Routes
- * */
-Route::controller(UserController::class)
-    ->prefix('users')
-    ->middleware('auth:sanctum')
-    ->group(function () {
-        // Favorites
-        Route::get('/favorites', 'favorites')->name('users.favorites');
-        Route::post('/favorites', 'favoriteAction')->name('users.favoriteAction');
-        // Listings
-        Route::get('/listings', 'listings')->name('users.listings');
-        Route::get('/listings/total', 'listingsTotal')->name('users.listingsTotal');
-        // Balance
-        Route::get('/balance', 'balance')->name('users.balance');
-        Route::get('/referrals', 'referrals')->name('users.referrals');
-        Route::get('/payment-histories', 'paymentHistories')->name('users.paymentHistories');
-        // Company Gallery
-        Route::get('/company-galleries', 'companyGallery')->name('users.companyGallery');
-        Route::post('/company-gallery/delete', 'companyGalleryDelete')->name('users.companyGalleryDelete');
-        Route::post('/company-gallery/upload', 'companyGalleryUpload')->name('users.companyGalleryUpload');
+        Route::get('/{id}/services', 'categoryWithServices')->name('category.categoryWithServices');
     });
 
 /**
@@ -146,4 +125,11 @@ Route::controller(MessagingController::class)
         Route::get('/blocked-users', [UserBlockController::class, 'getBlockedUsers']);
     });
 
-
+/**
+ * Doctor Routes
+ * */
+Route::controller(DoctorController::class)
+    ->prefix('doctors')
+    ->group(function () {
+        Route::get('/search', 'doctorSearch')->name('doctor.search');
+    });

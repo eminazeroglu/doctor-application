@@ -22,7 +22,9 @@ class ReferenceResource extends JsonResource
         $result = [
             'id' => $this->id,
         ];
-        if ($this->fullname)
+        if ($this?->user?->fullname)
+            $result['name'] = $this->user->fullname;
+        else if ($this->fullname)
             $result['name'] = $this->fullname;
         else if ($this->name)
             $result['name'] = $this->name;

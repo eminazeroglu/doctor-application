@@ -21,9 +21,6 @@ return new class extends Migration
             $table->text('description')->nullable(); // Əlavə təsvir
             $table->boolean('is_recurring')->default(false); // Hər il təkrarlanır?
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
-
-            // Eyni klinika üçün tarixin unikallığı
-            $table->unique(['clinic_id', 'date']);
         });
     }
 

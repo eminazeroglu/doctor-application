@@ -45,6 +45,12 @@
                     }
                 ]
             }
+        },
+        {
+            "path": "/app/categories/{uuid}/services",
+            "method": "get",
+            "summary": "Kateqoriya xidmətləri siyahısı",
+            "description": "Seçilmiş kateqoriyanın bütün xidmətlərini kateqoriyalarını qaytarır"
         }
     ]
 }

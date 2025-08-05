@@ -1,0 +1,34 @@
+{
+    "tag": "Doctors",
+    "description": "Doctors ilə əlaqəli API endpoint-ləri",
+    "endpoints": [
+        {
+            "path": "/app/doctors/search",
+            "method": "get",
+            "summary": "Doctors siyahısı",
+            "description": "Bütün doctors siyahısını qaytarır",
+            "authorization": true,
+            "query": {
+                "search": {
+                    "type": "text",
+                    "description": "Axtarış"
+                },
+                "status": {
+                    "type": "text",
+                    "description": "Status filtri",
+                    "default": "active"
+                },
+                "page": {
+                    "type": "number",
+                    "description": "Səhifə nömrəsi",
+                    "default": 1
+                },
+                "limit": {
+                    "type": "number",
+                    "description": "Səhifə limiti",
+                    "default": 20
+                }
+            }
+        }
+    ]
+}

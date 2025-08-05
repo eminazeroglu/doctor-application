@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\CategoryAttributeResource;
 use App\Http\Resources\Admin\LocationResource;
-use App\Http\Resources\Admin\PaymentServiceResource;
 use App\Http\Resources\Admin\ReferenceResource;
 use App\Services\Module\ReferenceDataService;
 use Illuminate\Http\JsonResponse;
@@ -132,46 +131,6 @@ class ReferenceDataController extends Controller
     }
 
     /**
-     *
-    */
-    public function paymentService($type): JsonResponse
-    {
-        return response()->json(PaymentServiceResource::collection($this->service->fetchPaymentServiceByType($type)));
-    }
-
-    /**
-     * Şirkətlərin banner mövqeyləri
-    */
-    public function companyBannerPositions(): JsonResponse
-    {
-        return response()->json($this->service->fetchCompanyBannerPositions());
-    }
-
-    /**
-     * Şirkətlərin statusları
-     */
-    public function companyStatuses(): JsonResponse
-    {
-        return response()->json($this->service->fetchCompanyStatuses());
-    }
-
-    /**
-     * Voting Systems
-     * */
-    public function votingSystems(): JsonResponse
-    {
-        return response()->json(ReferenceResource::collection($this->service->fetchVotingSystems()));
-    }
-
-    /**
-     * Section Type
-    */
-    public function sectionTypes()
-    {
-        return response()->json(ReferenceResource::collection($this->service->fetchSectionTypes()));
-    }
-
-    /**
      * Country
      */
     public function countries(): JsonResponse
@@ -242,4 +201,14 @@ class ReferenceDataController extends Controller
     {
         return response()->json(ReferenceResource::collection($this->service->fetchCurrencies()));
     }
+
+    /**
+     * Clinics
+     * */
+    public function clinics(): JsonResponse
+    {
+        return response()->json(ReferenceResource::collection($this->service->fetchClinics()));
+    }
+
+
 }

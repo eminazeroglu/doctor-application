@@ -21,10 +21,6 @@ Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/categories/{parentId}/children', 'categoryChildren')->name('category-children');
     Route::get('/category/{id}/attributes', 'categoryAttributes')->name('category.attributes');
     Route::get('/payment-service/{type}', 'paymentService')->name('paymentService');
-    Route::get('/company/banner-positions', 'companyBannerPositions')->name('companyBannerPositions');
-    Route::get('/company/statuses', 'companyStatuses')->name('companyStatuses');
-    Route::get('/voting-systems', 'votingSystems')->name('votingSystems');
-    Route::get('/section/types', 'sectionTypes')->name('sectionTypes');
     Route::get('/countries', 'countries')->name('countries');
     Route::get('/countries/{uuid}/cities', 'countryWithCities')->name('countryWithCities');
     Route::get('/cities', 'cities')->name('cities');
@@ -33,6 +29,6 @@ Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/cities/{uuid}/subways', 'cityWithSubways')->name('cityWithSubways');
     Route::get('/regions', 'regions')->name('regions');
     Route::get('/regions/{uuid}/subways', 'regionWithSubways')->name('regionWithSubways');
-    Route::get('/subways', 'subways')->name('subways');
-    Route::get('/currencies', 'currencies')->name('currencies');
+    Route::get('/regions/{uuid}/subways', 'regionWithSubways')->name('regionWithSubways');
+    Route::get('/clinics', 'clinics')->name('clinics');
 });

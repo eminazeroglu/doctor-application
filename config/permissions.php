@@ -109,13 +109,6 @@ $permissionArr = [
         "terms_read",
         "terms_status",
     ],
-    "payment_service" => [
-        "payment_service_create",
-        "payment_service_update",
-        "payment_service_delete",
-        "payment_service_read",
-        "payment_service_status",
-    ],
 "country" => [
         "country_create",
         "country_update",
