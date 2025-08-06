@@ -26,7 +26,8 @@ class Blog extends BaseModel
     {
         return [
             'photo_path' => [
-                'path' => 'blog'
+                'path' => 'blog',
+                'base64' => true
             ]
         ];
     }

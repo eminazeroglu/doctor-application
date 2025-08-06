@@ -17,7 +17,13 @@ class BlogController extends ApiController
     public function commonRules(): array
     {
         return [
-            // Add validation rules for store method
+            'translates' => 'required|array',
+            'translates.*' => 'required',
+            'translates.*.title' => 'required',
+            'translates.*.description' => 'required',
+            'translates.*.content' => 'required',
+            'category_id' => ['required', 'exists:categories,id'],
+            'photo'
         ];
     }
 }
