@@ -5,6 +5,7 @@ namespace App\Repositories\Module;
 use App\Models\Doctor;
 use App\Repositories\BaseRepository;
 use App\Services\Filter\DoctorFilter;
+use App\Services\Module\DoctorService;
 use Illuminate\Database\Eloquent\Collection;
 
 class DoctorRepository extends BaseRepository
@@ -260,11 +261,30 @@ class DoctorRepository extends BaseRepository
     /**
      * İxtisasa görə həkimləri tap
      */
-    public function findByCategory(int $categoryId): Collection
+    public function findByCategory(int $categoryId, $limit = 0): Collection
     {
-        return $this->model->where('category', $categoryId)
+        return $this->model->query()
+            ->where(function ($query) use ($categoryId) {
+                $query->where('category_id', $categoryId);
+                $query->orWhere('sub_category_id', $categoryId);
+            })
             ->with($this->with)
-            ->active()
+            ->when($limit > 0, function ($query) use ($limit) {
+                $query->limit($limit);
+            })
+            ->isActive()
+            ->get();
+    }
+
+    /**
+     * Random həkimləri tap
+     */
+    public function findRandom(): Collection
+    {
+        return $this->model->query()
+            ->with($this->with)
+            ->isActive()
+            ->limit(4)
             ->get();
     }
 
@@ -372,7 +392,30 @@ class DoctorRepository extends BaseRepository
 
     public function doctorSearch($request)
     {
-        return $this->model->query()
-            ->paginate($request->get('limit') ?? 16);
+        return $this->executeQuery('searchDoctors', function ($query) use ($request) {
+            $query->with([
+                'user',
+                'category',
+                'subcategory',
+                'clinics' => function($q) {
+                    $q->where('clinics.is_active', true);
+                },
+                'reviews'
+            ]);
+            $query = $this->filter->apply($query);
+            $doctors = $query->paginate($request->limit);
+
+            $doctors->getCollection()->transform(function ($doctor) {
+                $doctor->nearest_slots = app(DoctorService::class)->getNearestAvailableSlots($doctor);
+                return $doctor;
+            });
+
+            return $doctors;
+        });
+    }
+
+    public function doctorView($id)
+    {
+        return app(DoctorService::class)->getDoctorWithAvailability($id);
     }
 }

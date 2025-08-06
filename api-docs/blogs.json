@@ -1,0 +1,36 @@
+{
+    "tag": "Blogs",
+    "description": "Blogs ilə əlaqəli API endpoint-ləri",
+    "endpoints": [
+        {
+            "path": "/app/blogs",
+            "method": "get",
+            "summary": "Blogs siyahısı",
+            "description": "Bütün blogs siyahısını qaytarır",
+            "authorization": false,
+            "query": {
+                "search": {
+                    "type": "text",
+                    "description": "Axtarış"
+                },
+                "page": {
+                    "type": "number",
+                    "description": "Səhifə nömrəsi",
+                    "default": 1
+                },
+                "limit": {
+                    "type": "number",
+                    "description": "Səhifə limiti",
+                    "default": 20
+                }
+            }
+        },
+        {
+            "path": "/app/blogs/{slug}",
+            "method": "get",
+            "summary": "blog detalları",
+            "description": "blog detallarını qaytarır",
+            "authorization": false
+        }
+    ]
+}

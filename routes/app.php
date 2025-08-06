@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\NotificationController;
 use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
+use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\CommentController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
@@ -131,5 +132,16 @@ Route::controller(MessagingController::class)
 Route::controller(DoctorController::class)
     ->prefix('doctors')
     ->group(function () {
-        Route::get('/search', 'doctorSearch')->name('doctor.search');
+        Route::post('/search', 'doctorSearch')->name('doctor.search');
+        Route::get('/{id}/view', 'doctorView')->name('doctor.view');
+    });
+
+/**
+ * Blog Routes
+ * */
+Route::controller(BlogController::class)
+    ->prefix('blogs')
+    ->group(function () {
+        Route::get('/', 'blogSearch')->name('blog.search');
+        Route::get('/{slug}', 'blogView')->name('blog.view');
     });

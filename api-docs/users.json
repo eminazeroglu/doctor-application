@@ -7,34 +7,6 @@
             "method": "get",
             "summary": "İstifadəçi məlumatlarını qaytarır",
             "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
-        },
-        {
-            "path": "/common/user/profile",
-            "method": "put",
-            "summary": "İstifadəçi məlumatlarını yeniləyir",
-            "description": "İstifadəçiyə aid məlumatları yeniləyir",
-            "formBody": {
-                "name": {
-                    "type": "text",
-                    "required": true,
-                    "description": "Ad"
-                },
-                "surname": {
-                    "type": "text",
-                    "required": true,
-                    "description": "Soyad"
-                },
-                "phone": {
-                    "type": "text",
-                    "description": "Telefon"
-                }
-            }
-        },
-        {
-            "path": "/app/users/balance",
-            "method": "get",
-            "summary": "İstifadəçinin balansı",
-            "description": "İstifadəçiyə aid balans məlumatlarını əldə edirik"
         }
     ]
 }

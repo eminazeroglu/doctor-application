@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\AppointmentStatusEnum;
+use App\Enums\UserStatusEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Model;
@@ -21,8 +23,8 @@ class Doctor extends BaseModel
     protected $fillable = [
         'uuid',
         'user_id',
-        'specialty',
-        'sub_specialty',
+        'category_id',
+        'sub_category_id',
         'biography',
         'consultation_fee',
         'consultation_duration',
@@ -70,7 +72,7 @@ class Doctor extends BaseModel
      * Avtomatik əlavə edilən atributlar.
      * @var array
      */
-    protected $appends = ['full_name_with_title', 'rating_average'];
+    protected $appends = ['full_name_with_title', 'rating_average', 'suggested_by_people'];
 
     /**
      * Həkimin tam adını titulu ilə birlikdə qaytarır.
@@ -94,7 +96,36 @@ class Doctor extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return $this->total_ratings > 0 ? round($this->average_rating / $this->total_ratings, 1) : 0;
+                // Oy sayısı yoksa 0 döndür
+                if ($this->total_ratings <= 0) {
+                    return 0;
+                }
+
+                // Toplam puan / oy sayısı ile ortalamayı hesapla
+                $raw = $this->average_rating / $this->total_ratings;
+
+                // 5’i geçerse 5 olsun, değilse kendi değeri kalsın
+                $capped = min($raw, 5);
+
+                // Virgülden sonra 1 basamağa yuvarla
+                return round($capped, 1);
+            }
+        );
+    }
+
+    public function suggestedByPeople(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                $suggested_by_people = 0;
+                $suggested_by_people_total = $this->appointments()->count();
+                $suggested_by_people_confirmed = $this->appointments()->where('appointment_status', AppointmentStatusEnum::Confirmed)->count();
+
+                if ($suggested_by_people_confirmed > 0 && $suggested_by_people_total > 0) {
+                    $suggested_by_people = ceil($suggested_by_people_confirmed * 100 / $suggested_by_people_total);
+                }
+
+                return $suggested_by_people;
             }
         );
     }
@@ -115,6 +146,14 @@ class Doctor extends BaseModel
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Həkim atribut dəyərləri
+     */
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(DoctorAttributeValue::class);
     }
 
     /**
@@ -409,6 +448,18 @@ class Doctor extends BaseModel
     }
 
     /**
+     * Həkimin adına görə axtarış.
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeIsActive(Builder $query): Builder
+    {
+        return $query->whereHas('user', function($q) {
+            $q->where('status', UserStatusEnum::Active);
+        });
+    }
+
+    /**
      * İxtisasa görə axtarış.
      * @param Builder $query
      * @param int $categoryId
@@ -416,7 +467,7 @@ class Doctor extends BaseModel
      */
     public function scopeByCategory(Builder $query, int $categoryId): Builder
     {
-        return $query->where('category', $categoryId);
+        return $query->where('category_id', $categoryId);
     }
 
     /**
@@ -427,7 +478,7 @@ class Doctor extends BaseModel
      */
     public function scopeBySubCategory(Builder $query, int $subCategoryId): Builder
     {
-        return $query->where('sub_category', $subCategoryId);
+        return $query->where('sub_category_id', $subCategoryId);
     }
 
     /**

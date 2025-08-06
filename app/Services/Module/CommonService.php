@@ -13,6 +13,7 @@ class CommonService
     {
         $languages = app(TranslationService::class)->getAllLanguages();
         $settingSocialMedia = collect(setting('socialMedia'))->where('active', true)->toArray();
+        $settingGeneral = collect(setting('info'))->toArray();
         $socialMedia = [];
         foreach ($settingSocialMedia as $key => $value) {
             $socialMedia[$key] = $value['url'];
@@ -21,6 +22,7 @@ class CommonService
             'socialMedia' => $socialMedia,
             'language' => setting('system.default_language'),
             'languages' => ReferenceResource::collection($languages),
+            'general' => $settingGeneral,
             'image_formats' => collect(setting('upload.allowed_file_types.image'))->map(function ($i) {
                 $format = 'image/' . $i;
                 if ($i === 'svg') $format = $format . '+xml';

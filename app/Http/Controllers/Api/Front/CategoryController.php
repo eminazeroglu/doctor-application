@@ -23,15 +23,15 @@ class CategoryController extends Controller
         return response()->json(CategoryResource::collection($categories));
     }
 
-    public function categoryWithChildren($uuid): \Illuminate\Http\JsonResponse
+    public function categoryWithChildren($id): \Illuminate\Http\JsonResponse
     {
-        $categories = $this->repository->getChildrenByUUid($uuid);
+        $categories = $this->repository->getChildrenById($id);
         return response()->json(CategoryResource::collection($categories));
     }
 
-    public function categoryWithAttribute($uuid): \Illuminate\Http\JsonResponse
+    public function categoryWithAttribute($id): \Illuminate\Http\JsonResponse
     {
-        $categories = $this->repository->getCategoryWithAttributesByUuid($uuid);
+        $categories = $this->repository->getCategoryWithAttributesById($id);
         return response()->json(AttributeResource::collection($categories));
     }
 

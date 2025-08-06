@@ -199,6 +199,7 @@ class CategorySeeder extends Seeder
             ],
             'icon' => $icon,
             'order' => $order,
+            'is_home' => rand(0, 1) === 1,
             'is_default' => false,
             'is_active' => true
         ]);

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Appointment extends BaseModel
 {
@@ -24,7 +25,7 @@ class Appointment extends BaseModel
         'patient_id',
         'clinic_id',
         'service_id',
-        'appointment_status_id',
+        'appointment_status',  // appointment_status_id yerinə appointment_status
         'start_time',
         'end_time',
         'complaint',
@@ -33,6 +34,7 @@ class Appointment extends BaseModel
         'is_paid',
         'payment_id',
         'cancel_reason',
+        'cancelled_at',
         'location',
         'consultation_type',
         'additional_info'
@@ -45,16 +47,53 @@ class Appointment extends BaseModel
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'cancelled_at' => 'datetime',
         'is_paid' => 'boolean',
         'price' => 'float',
-        'additional_info' => 'json',
+        'additional_info' => 'json'
     ];
 
     /**
      * Avtomatik əlavə edilən atributlar.
      * @var array
      */
-    protected $appends = ['duration', 'is_completed', 'is_active', 'is_upcoming', 'status_text', 'status_color', 'status_icon'];
+    protected $appends = [
+        'duration',
+        'is_completed',
+        'is_active',
+        'is_upcoming',
+        'status_text',
+        'status_color',
+        'status_icon',
+        'appointment_date',  // Yeni əlavə
+        'appointment_time'   // Yeni əlavə
+    ];
+
+    /**
+     * Randevu tarixini qaytarır (yalnız tarix hissəsi)
+     * @return AttributeAlias
+     */
+    public function appointmentDate(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->start_time ? $this->start_time->format('Y-m-d') : null;
+            }
+        );
+    }
+
+    /**
+     * Randevu vaxtını qaytarır (yalnız saat hissəsi)
+     * @return AttributeAlias
+     */
+    public function appointmentTime(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->start_time ? $this->start_time->format('H:i') : null;
+            }
+        );
+    }
 
     /**
      * Randevunun müddətini (dəqiqə ilə) qaytarır.
@@ -64,6 +103,9 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
+                if (!$this->start_time || !$this->end_time) {
+                    return 0;
+                }
                 return $this->start_time->diffInMinutes($this->end_time);
             }
         );
@@ -77,6 +119,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
+                if (!$this->end_time) return false;
                 return $this->end_time->isPast();
             }
         );
@@ -90,6 +133,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
+                if (!$this->start_time || !$this->end_time) return false;
                 return now()->between($this->start_time, $this->end_time);
             }
         );
@@ -103,6 +147,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
+                if (!$this->start_time) return false;
                 return $this->start_time->isFuture();
             }
         );
@@ -116,7 +161,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return AppointmentStatusEnum::getDescription($this->appointment_status);
+                return AppointmentStatusEnum::getDescription($this->appointment_status) ?? $this->appointment_status;
             }
         );
     }
@@ -129,7 +174,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return AppointmentStatusEnum::getColor($this->appointment_status);
+                return AppointmentStatusEnum::getColor($this->appointment_status) ?? 'gray';
             }
         );
     }
@@ -142,7 +187,7 @@ class Appointment extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return AppointmentStatusEnum::getIcon($this->appointment_status);
+                return AppointmentStatusEnum::getIcon($this->appointment_status) ?? 'calendar';
             }
         );
     }
@@ -239,16 +284,17 @@ class Appointment extends BaseModel
 
     /**
      * Randevunun statusunu güncəlləyir.
-     * @param AppointmentStatusEnum $status
+     * @param string $status
      * @param string|null $reason
      * @return bool
      */
-    public function updateStatus(AppointmentStatusEnum $status, ?string $reason = null): bool
+    public function updateStatus(string $status, ?string $reason = null): bool
     {
         $this->appointment_status = $status;
 
         if ($status === AppointmentStatusEnum::Cancelled && $reason) {
             $this->cancel_reason = $reason;
+            $this->cancelled_at = now();
         }
 
         return $this->save();
@@ -283,6 +329,7 @@ class Appointment extends BaseModel
     {
         $this->appointment_status = AppointmentStatusEnum::Cancelled;
         $this->cancel_reason = $reason;
+        $this->cancelled_at = now();
         return $this->save();
     }
 
@@ -308,11 +355,11 @@ class Appointment extends BaseModel
 
     /**
      * Randevunun vaxtını dəyişdirir.
-     * @param DateTime $startTime Yeni başlama vaxtı
-     * @param DateTime $endTime Yeni bitmə vaxtı
+     * @param DateTime|Carbon $startTime Yeni başlama vaxtı
+     * @param DateTime|Carbon $endTime Yeni bitmə vaxtı
      * @return bool
      */
-    public function reschedule(DateTime $startTime, DateTime $endTime): bool
+    public function reschedule($startTime, $endTime): bool
     {
         $this->start_time = $startTime;
         $this->end_time = $endTime;
@@ -335,10 +382,10 @@ class Appointment extends BaseModel
     /**
      * Randevu üçün xatırlatma yaradır.
      * @param string $type Xatırlatma növü (email, sms, app)
-     * @param DateTime $sendAt Göndərmə vaxtı
+     * @param DateTime|Carbon $sendAt Göndərmə vaxtı
      * @return AppointmentReminder
      */
-    public function createReminder(string $type, DateTime $sendAt): AppointmentReminder
+    public function createReminder(string $type, $sendAt): AppointmentReminder
     {
         return $this->reminders()->create([
             'type' => $type,

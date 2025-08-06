@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdvertisementController;
 use App\Http\Controllers\Api\Admin\AppointmentController;
 use App\Http\Controllers\Api\Admin\AttributeController;
 use App\Http\Controllers\Api\Admin\BlockedCredentialController;
+use App\Http\Controllers\Api\Admin\BlogController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CityController;
 use App\Http\Controllers\Api\Admin\ClinicController;
@@ -278,3 +279,6 @@ Route::resource('notifications', NotificationController::class);
 
 // Payment
 Route::resource('payments', PaymentController::class);
+
+// Blog
+Route::resource('blogs', BlogController::class);

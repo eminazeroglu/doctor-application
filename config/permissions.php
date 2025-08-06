@@ -207,6 +207,13 @@ $permissionArr = [
         "payment_read",
         "payment_status",
     ],
+    "blog" => [
+        "blog_create",
+        "blog_update",
+        "blog_delete",
+        "blog_read",
+        "blog_status",
+    ],
 ];
 
 return [

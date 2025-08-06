@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DoctorResource extends JsonResource
+class DoctorViewResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -41,6 +41,48 @@ class DoctorResource extends JsonResource
             'consultation_fee' => $this->consultation_fee,
             'is_verified' => $this->is_verified,
             'is_featured' => $this->is_featured,
+            'reviews' => $this->whenLoaded('reviews', $this->reviews->map(fn($i) => [
+                'photo' => $i->patient->photo,
+                'fullname' => $i->patient->fullname,
+                'rating' => $i->rating,
+            ])),
+            'languages' => $this->whenLoaded('languages', $this->languages->map(fn($i) => [
+                'name' => $i->language,
+                'proficiency' => $i->proficiency,
+                'proficiency_text' => $i->proficiency_text
+            ])),
+            'certificates' => $this->whenLoaded('services', $this->certificates->map(fn($i) => [
+                'name' => $i->name,
+                'organization' => $i->issuing_organization,
+                'issue_date' => $i->issue_date,
+                'expiry_date' => $i->expiry_date,
+                'description' => $i->description,
+                'is_verified' => $i->is_verified,
+            ])),
+            'experiences' => $this->whenLoaded('experiences', $this->experiences->map(fn($i) => [
+                'name' => $i->workplace,
+                'position' => $i->position,
+                'duration' => $i->duration,
+                'location' => $i->location,
+            ])),
+            'educations' => $this->whenLoaded('educations', $this->educations->map(fn($i) => [
+                'name' => $i->university,
+                'faculty' => $i->faculty,
+                'degree' => $i->degree,
+                'duration' => $i->duration,
+            ])),
+            'clinics' => $this->whenLoaded('clinics', $this->clinics->map(fn($i) => [
+                'name' => $i->name,
+                'address' => $i->address,
+                'working_hours' => $i->workingHours->map(fn($w) => [
+                    'day_of_week' => $w->day_of_week,
+                    'open_time' => $w->open_time,
+                    'close_time' => $w->close_time,
+                    'is_closed' => $w->is_closed,
+                    'day_name' => $w->day_name,
+                    'time_range' => $w->time_range,
+                ]),
+            ])),
             'main_workplace' => $main_workplace ? [
                 'slug' => $main_workplace['slug'],
                 'name' => $main_workplace['name'],

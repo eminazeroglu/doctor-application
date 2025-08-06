@@ -30,6 +30,10 @@ class CategoryRepository extends BaseRepository
 
             $query->where('parent_id', 0);
 
+            if (request()->get('is_home')) {
+                $query->where('is_home', true);
+            }
+
             $this->applyRelations($query);
             return $query->get();
         });
@@ -64,11 +68,11 @@ class CategoryRepository extends BaseRepository
     /*
      *
      * */
-    public function getChildrenByUUid($uuid)
+    public function getChildrenById($id)
     {
-        return $this->executeWithCache('getChildrenByUUid' . $uuid, function () use ($uuid) {
+        return $this->executeWithCache('getChildrenByUUid' . $id, function () use ($id) {
             return $this->model->query()
-                ->whereRelation('parent', 'uuid', $uuid)
+                ->whereRelation('parent', 'id', $id)
                 ->where('is_active', true)
                 ->orderBy('order')
                 ->get();
@@ -94,10 +98,10 @@ class CategoryRepository extends BaseRepository
     /**
      * Kateqoriyanı bütün atribut və qaydaları ilə birlikdə gətirir
      */
-    public function getCategoryWithAttributesByUuid(string $uuid)
+    public function getCategoryWithAttributesById(string $id)
     {
         $is_visible = request()->get('is_visible');
-        return $this->executeWithCache('getCategoryWithAttributes_' . $uuid, function () use ($uuid, $is_visible) {
+        return $this->executeWithCache('getCategoryWithAttributes_' . $id, function () use ($id, $is_visible) {
             $category = $this->model->query()
                 ->with(['attributes' => function ($q) use ($is_visible) {
                     $q->when($is_visible, function ($q) {
@@ -110,7 +114,7 @@ class CategoryRepository extends BaseRepository
                             }]);
                         }]);
                 }])
-                ->where('uuid', $uuid)
+                ->where('id', $id)
                 ->firstOrFail();
 
             return $category->attributes;

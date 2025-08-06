@@ -280,119 +280,73 @@
             }
         },
         {
-            "tag": "Kateqoriyalar",
-            "description": "Kateqoriyalar ilə əlaqəli API-lər",
+            "tag": "Blogs",
+            "description": "Blogs ilə əlaqəli API endpoint-ləri",
             "endpoints": {
-                "/app/categories": {
+                "/app/blogs": {
                     "get": {
-                        "summary": "Atributların siyahısııı",
-                        "description": "Bütün atributların siyahısını qaytarır",
-                        "responses": {
-                            "200": [
-                                {
-                                    "uuid": "68b4580b-f16a-46ab-93a3-a5af7186f461",
-                                    "name": "Uşaq aləmi",
-                                    "slug": "usaq-alemi",
-                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                                },
-                                {
-                                    "uuid": "5aae8636-4563-4ced-92b7-17d9163d6c2b",
-                                    "name": "Şəxsi əşyalar",
-                                    "slug": "sexsi-esyalar",
-                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                                }
-                            ]
+                        "summary": "Blogs siyahısı",
+                        "description": "Bütün blogs siyahısını qaytarır",
+                        "authorization": false,
+                        "query": {
+                            "search": {
+                                "type": "text",
+                                "description": "Axtarış"
+                            },
+                            "page": {
+                                "type": "number",
+                                "description": "Səhifə nömrəsi",
+                                "default": 1
+                            },
+                            "limit": {
+                                "type": "number",
+                                "description": "Səhifə limiti",
+                                "default": 20
+                            }
                         }
                     }
                 },
-                "/app/categories/{uuid}/children": {
+                "/app/blogs/{slug}": {
                     "get": {
-                        "summary": "Alt kateqoriyaların siyahısı",
-                        "description": "Seçilmiş kateqoriyanın bütün alt kateqoriyalarını qaytarır",
-                        "responses": {
-                            "200": [
-                                {
-                                    "uuid": "3e79732e-c143-49f7-9fd1-df604e30aaae",
-                                    "name": "Geyim və ayaqqabılar",
-                                    "slug": "geyim-ve-ayaqqabilar",
-                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                                },
-                                {
-                                    "uuid": "350cb69e-52f7-4d5b-811c-aca8a8c7924c",
-                                    "name": "Saat və zinət əşyaları",
-                                    "slug": "saat-ve-zinet-esyalari",
-                                    "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "/app/categories/{uuid}/services": {
-                    "get": {
-                        "summary": "Kateqoriya xidmətləri siyahısı",
-                        "description": "Seçilmiş kateqoriyanın bütün xidmətlərini kateqoriyalarını qaytarır"
+                        "summary": "blog detalları",
+                        "description": "blog detallarını qaytarır",
+                        "authorization": false
                     }
                 }
             }
         },
         {
-            "tag": "Şərhlər",
-            "description": "Şərhlər ilə əlaqəli API-lər",
+            "tag": "Kateqoriyalar",
+            "description": "Kateqoriyalar ilə əlaqəli API-lər",
             "endpoints": {
-                "/app/comments/save": {
-                    "post": {
-                        "summary": "Yeni şərh",
-                        "description": "Yeni şərh əlavə edir",
-                        "authorization": true,
-                        "formBody": {
-                            "type": {
-                                "type": "text",
-                                "required": true,
-                                "description": "Bu nə üçün şərh yazıldığını göstərir. Elan, Şirkət və ya istifadəçi (listing, company, user)"
-                            },
-                            "commentable_uuid": {
-                                "type": "text",
-                                "required": true,
-                                "description": "Bu şərh yazılan (listing, company, user) nədirsə onun uuid nömrəsidir."
-                            },
-                            "content": {
-                                "type": "text",
-                                "required": true,
-                                "description": "Şərhin məzmunu"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "id": 1,
-                                "name": "Example name",
-                                "description": "Example description",
-                                "status": "active",
-                                "created_at": "2024-01-01 00:00:00"
-                            },
-                            "422": {
-                                "type": "Zəhmət olmasa boş buraxmayın",
-                                "commentable_uuid": "Zəhmət olmasa boş buraxmayın",
-                                "content": "Zəhmət olmasa boş buraxmayın"
+                "/app/categories": {
+                    "get": {
+                        "summary": "Kateqoriya siyahısııı",
+                        "description": "Bütün kateqoriyaların siyahısını qaytarır",
+                        "query": {
+                            "is_home": {
+                                "type": "boolean",
+                                "description": "1 və ya 0 göndərərək əsas səhifə üçün kateqoriyaları əldə edə bilərsən"
                             }
                         }
                     }
                 },
-                "/app/comments/{uuid}/delete": {
-                    "delete": {
-                        "summary": "Şərh silmə",
-                        "description": "Şərh məlumatını silir",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "message": "Məlumat uğurla silindi"
-                            },
-                            "404": {
-                                "message": "Məlumat tapılmadı"
-                            },
-                            "500": {
-                                "message": "Şərhi silmək mümkün olmadı"
-                            }
-                        }
+                "/app/categories/{id}/children": {
+                    "get": {
+                        "summary": "Alt kateqoriyaların siyahısı",
+                        "description": "Seçilmiş kateqoriyanın bütün alt kateqoriyalarını qaytarır"
+                    }
+                },
+                "/app/categories/{id}/services": {
+                    "get": {
+                        "summary": "Kateqoriya xidmətləri siyahısı",
+                        "description": "Seçilmiş kateqoriyanın bütün xidmətlərini kateqoriyalarını qaytarır"
+                    }
+                },
+                "/app/categories/{id}/attributes": {
+                    "get": {
+                        "summary": "Kateqoriya attributları siyahısı",
+                        "description": "Seçilmiş kateqoriyanın bütün attributelarını qaytarır"
                     }
                 }
             }
@@ -413,23 +367,22 @@
             }
         },
         {
-            "tag": "Doctors",
+            "tag": "Həkimlər",
             "description": "Doctors ilə əlaqəli API endpoint-ləri",
             "endpoints": {
                 "/app/doctors/search": {
-                    "get": {
-                        "summary": "Doctors siyahısı",
+                    "post": {
+                        "summary": "Həkimlərin siyahısı",
                         "description": "Bütün doctors siyahısını qaytarır",
-                        "authorization": true,
-                        "query": {
+                        "authorization": false,
+                        "formBody": {
                             "search": {
                                 "type": "text",
                                 "description": "Axtarış"
                             },
-                            "status": {
-                                "type": "text",
-                                "description": "Status filtri",
-                                "default": "active"
+                            "attributes": {
+                                "type": "object",
+                                "description": "Dinamik atributlar üzrə axtarış. Açar kimi atribut ID-si, dəyər kimi seçim ID-si və ya dəyər istifadə olunur. Məsələn: {\"1\": 5} - Atribut ID 1 (Marka), Option ID 5 (BMW); {\"2\": 12} - Model, X5; {\"3\": \"2018-2022\"} - İl aralığı; {\"4\": [2,5,7]} - Çoxlu seçim halında (məs: Rənglər)."
                             },
                             "page": {
                                 "type": "number",
@@ -443,593 +396,11 @@
                             }
                         }
                     }
-                }
-            }
-        },
-        {
-            "tag": "Mesajlaşma",
-            "description": "Mesajlaşma ilə əlaqəli API endpoint-ləri",
-            "endpoints": {
-                "/app/messaging/conversations": {
+                },
+                "/app/doctors/{id}/view": {
                     "get": {
-                        "summary": "Söhbətlər siyahısı",
-                        "description": "İstifadəçinin bütün söhbətlərini qaytarır",
-                        "authorization": true,
-                        "query": {
-                            "status": {
-                                "type": "string",
-                                "description": "Söhbətin statusu (active, archived, blocked)",
-                                "default": "active"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "data": [
-                                    {
-                                        "id": 1,
-                                        "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
-                                        "type": "private",
-                                        "status": "active",
-                                        "is_pinned": true,
-                                        "participant": {
-                                            "id": 2,
-                                            "name": "Ülvi",
-                                            "surname": "Əzizov",
-                                            "fullname": "Ülvi Əzizov",
-                                            "username": "ulvi",
-                                            "photo": "https://example.com/photos/ulvi.jpg"
-                                        },
-                                        "last_message": {
-                                            "content": "Dünən hardaydın. Zəng çatmırdı sənə salamatçılıxdır?",
-                                            "sent_at": "02.10.2024 12:43",
-                                            "sender_id": 2
-                                        },
-                                        "last_activity_at": "2024-10-02T12:43:00Z",
-                                        "created_at": "2024-09-15T10:30:00Z",
-                                        "unread_count": 3
-                                    }
-                                ],
-                                "success": true
-                            },
-                            "401": {
-                                "message": "Unauthenticated"
-                            }
-                        }
-                    },
-                    "post": {
-                        "summary": "Yeni söhbət yaratma",
-                        "description": "Yeni söhbət yaradır və ilk mesajı göndərir",
-                        "authorization": true,
-                        "formBody": {
-                            "receiver_id": {
-                                "type": "number",
-                                "required": true,
-                                "description": "Söhbətin qarşı tərəfi (istifadəçi ID)"
-                            },
-                            "content": {
-                                "type": "textarea",
-                                "required": true,
-                                "description": "İlk mesaj mətni",
-                                "rows": 3
-                            },
-                            "type": {
-                                "type": "select",
-                                "description": "Söhbət növü bunlar ola biler: private(Şəxsi), listing (Elanla bağlı), support (Dəstəl söhbəti)",
-                                "default": "private"
-                            },
-                            "conversationable_id": {
-                                "type": "number",
-                                "description": "Söhbətin aid olduğu model ID-si"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "data": {
-                                    "id": 2,
-                                    "uuid": "9f9e9d9c-9b9a-9968-9766-956463926160",
-                                    "type": "private",
-                                    "status": "active",
-                                    "is_pinned": false,
-                                    "participant": {
-                                        "id": 3,
-                                        "name": "Kamran",
-                                        "surname": "Haqverdiyev",
-                                        "fullname": "Kamran Haqverdiyev",
-                                        "username": "kamran",
-                                        "photo": "https://example.com/photos/kamran.jpg"
-                                    },
-                                    "last_message": {
-                                        "content": "Salam, necəsən?",
-                                        "sent_at": "02.10.2024 14:00",
-                                        "sender_id": 1
-                                    },
-                                    "last_activity_at": "2024-10-02T14:00:00Z",
-                                    "created_at": "2024-10-02T14:00:00Z",
-                                    "unread_count": 0
-                                },
-                                "success": true
-                            },
-                            "422": {
-                                "receiver_id": "Alıcı istifadəçi mütləqdir",
-                                "content": "İlk mesaj mətni mütləqdir"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/conversations/{uuid}": {
-                    "get": {
-                        "summary": "Söhbət detalları",
-                        "description": "Verilmiş UUID ilə söhbət məlumatlarını və mesajlarını qaytarır",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "data": {
-                                    "id": 1,
-                                    "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
-                                    "type": "private",
-                                    "status": "active",
-                                    "is_pinned": true,
-                                    "participant": {
-                                        "id": 2,
-                                        "name": "Ülvi",
-                                        "surname": "Əzizov",
-                                        "fullname": "Ülvi Əzizov",
-                                        "username": "ulvi",
-                                        "photo": "https://example.com/photos/ulvi.jpg"
-                                    },
-                                    "messages": [
-                                        {
-                                            "id": 101,
-                                            "uuid": "6f6e6d6c-6b6a-6968-6766-656463626160",
-                                            "sender": {
-                                                "id": 1,
-                                                "name": "Şahin",
-                                                "surname": "Əliyev",
-                                                "fullname": "Şahin Əliyev",
-                                                "username": "shahin",
-                                                "photo": "https://example.com/photos/shahin.jpg"
-                                            },
-                                            "content": "Salam, necəsən?",
-                                            "type": "text",
-                                            "status": "read",
-                                            "is_edited": false,
-                                            "is_system": false,
-                                            "is_from_current_user": true,
-                                            "created_at": "2024-10-01T14:20:00Z",
-                                            "formatted_created_at": "01.10.2024 14:20"
-                                        },
-                                        {
-                                            "id": 102,
-                                            "uuid": "7f7e7d7c-7b7a-7968-7766-756463726170",
-                                            "sender": {
-                                                "id": 2,
-                                                "name": "Ülvi",
-                                                "surname": "Əzizov",
-                                                "fullname": "Ülvi Əzizov",
-                                                "username": "ulvi",
-                                                "photo": "https://example.com/photos/ulvi.jpg"
-                                            },
-                                            "content": "Dünən hardaydın. Zəng çatmırdı sənə salamatçılıxdır?",
-                                            "type": "text",
-                                            "status": "sent",
-                                            "is_edited": false,
-                                            "is_system": false,
-                                            "is_from_current_user": false,
-                                            "created_at": "2024-10-02T12:43:00Z",
-                                            "formatted_created_at": "02.10.2024 12:43"
-                                        }
-                                    ],
-                                    "last_activity_at": "2024-10-02T12:43:00Z",
-                                    "created_at": "2024-09-15T10:30:00Z"
-                                },
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbətə icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/conversations/{uuid}/messages": {
-                    "get": {
-                        "summary": "Söhbət mesajları",
-                        "description": "Verilmiş söhbətin mesajlarını səhifələnmiş şəkildə qaytarır",
-                        "authorization": true,
-                        "query": {
-                            "page": {
-                                "type": "number",
-                                "description": "Səhifə nömrəsi",
-                                "default": 1
-                            },
-                            "limit": {
-                                "type": "number",
-                                "description": "Səhifə limiti",
-                                "default": 20
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "data": [
-                                    {
-                                        "id": 101,
-                                        "uuid": "6f6e6d6c-6b6a-6968-6766-656463626160",
-                                        "sender": {
-                                            "id": 1,
-                                            "name": "Şahin",
-                                            "surname": "Əliyev",
-                                            "fullname": "Şahin Əliyev",
-                                            "username": "shahin",
-                                            "photo": "https://example.com/photos/shahin.jpg"
-                                        },
-                                        "content": "Salam, necəsən?",
-                                        "type": "text",
-                                        "status": "read",
-                                        "is_edited": false,
-                                        "is_system": false,
-                                        "is_from_current_user": true,
-                                        "created_at": "2024-10-01T14:20:00Z",
-                                        "formatted_created_at": "01.10.2024 14:20"
-                                    }
-                                ],
-                                "meta": {
-                                    "current_page": 1,
-                                    "last_page": 5,
-                                    "per_page": 20,
-                                    "total": 98
-                                },
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbətə icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/send": {
-                    "post": {
-                        "summary": "Mesaj göndərmə",
-                        "description": "Mövcud söhbətə yeni mesaj göndərir",
-                        "authorization": true,
-                        "formData": true,
-                        "formBody": {
-                            "conversation_id": {
-                                "type": "string",
-                                "required": true,
-                                "description": "Söhbətin UUID-si"
-                            },
-                            "content": {
-                                "type": "textarea",
-                                "required": false,
-                                "description": "Mesaj mətni",
-                                "rows": 3
-                            },
-                            "type": {
-                                "type": "select",
-                                "description": "Mesaj növü",
-                                "default": "text",
-                                "options": [
-                                    {
-                                        "value": "text",
-                                        "label": "Mətn"
-                                    },
-                                    {
-                                        "value": "image",
-                                        "label": "Şəkil"
-                                    },
-                                    {
-                                        "value": "file",
-                                        "label": "Fayl"
-                                    },
-                                    {
-                                        "value": "voice",
-                                        "label": "Səs yazısı"
-                                    }
-                                ]
-                            },
-                            "attachments[]": {
-                                "type": "file",
-                                "description": "Fayl əlavələri (şəkil, sənəd və s.)",
-                                "isArray": true,
-                                "multiple": true,
-                                "accept": "*/*"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "data": {
-                                    "id": 103,
-                                    "uuid": "8f8e8d8c-8b8a-8968-8766-856463826160",
-                                    "conversation_id": 1,
-                                    "sender": {
-                                        "id": 1,
-                                        "name": "Şahin",
-                                        "surname": "Əliyev",
-                                        "fullname": "Şahin Əliyev",
-                                        "username": "shahin",
-                                        "photo": "https://example.com/photos/shahin.jpg"
-                                    },
-                                    "content": "15 dəqiqə əvvəl",
-                                    "type": "text",
-                                    "status": "sent",
-                                    "is_edited": false,
-                                    "is_system": false,
-                                    "is_from_current_user": true,
-                                    "created_at": "2024-10-02T13:00:00Z",
-                                    "formatted_created_at": "02.10.2024 13:00"
-                                },
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbətə mesaj göndərmək icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            },
-                            "422": {
-                                "conversation_id": "Söhbət ID-si mütləqdir",
-                                "content": "Mətn və ya fayl göndərilməlidir"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/conversations/{uuid}/pin": {
-                    "post": {
-                        "summary": "Söhbəti pinləmə/pin ləğv etmə",
-                        "description": "Söhbətin pinlənmiş (sabitlənmiş) vəziyyətini dəyişir",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "data": {
-                                    "id": 1,
-                                    "uuid": "5f5b5e5d-5c5b-5a5b-5958-57565554535",
-                                    "is_pinned": false
-                                },
-                                "message": "Söhbət pin-dən çıxarıldı",
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbəti pinləmək icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/conversations/{uuid}/archive": {
-                    "post": {
-                        "summary": "Söhbəti arxivləşdirmə",
-                        "description": "Söhbəti arxivə göndərir",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "message": "Söhbət arxivləşdirildi",
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbəti arxivləşdirmək icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/conversations/{uuid}/unarchive": {
-                    "post": {
-                        "summary": "Söhbəti arxivdən çıxarma",
-                        "description": "Söhbəti arxivdən çıxarır və aktiv edir",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "message": "Söhbət arxivdən çıxarıldı",
-                                "success": true
-                            },
-                            "403": {
-                                "message": "Bu söhbəti arxivdən çıxarmaq icazəniz yoxdur"
-                            },
-                            "404": {
-                                "message": "Söhbət tapılmadı"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/mark-as-read": {
-                    "post": {
-                        "summary": "Mesajları oxundu kimi işarələmək",
-                        "description": "Verilən mesajları oxundu kimi işarələyir",
-                        "authorization": true,
-                        "formBody": {
-                            "message_uuids": {
-                                "type": "array",
-                                "required": true,
-                                "description": "Mesaj UUID-lərinin siyahısı"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "message": "Mesajlar oxundu kimi işarələndi",
-                                "success": true
-                            },
-                            "422": {
-                                "message_uuids": "Mesaj UUID-ləri mütləqdir"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/search-users": {
-                    "get": {
-                        "summary": "İstifadəçi axtarışı",
-                        "description": "Yeni söhbət başlatmaq üçün istifadəçi axtarışı",
-                        "authorization": true,
-                        "query": {
-                            "search": {
-                                "type": "string",
-                                "required": true,
-                                "description": "Axtarış sözü (ad, soyad və ya istifadəçi adı)"
-                            },
-                            "limit": {
-                                "type": "number",
-                                "description": "Maksimum nəticə sayı",
-                                "default": 10
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "data": [
-                                    {
-                                        "id": 2,
-                                        "name": "Ülvi",
-                                        "surname": "Əzizov",
-                                        "fullname": "Ülvi Əzizov",
-                                        "username": "ulvi",
-                                        "photo": "https://example.com/photos/ulvi.jpg"
-                                    },
-                                    {
-                                        "id": 3,
-                                        "name": "Kamran",
-                                        "surname": "Haqverdiyev",
-                                        "fullname": "Kamran Haqverdiyev",
-                                        "username": "kamran",
-                                        "photo": "https://example.com/photos/kamran.jpg"
-                                    }
-                                ],
-                                "success": true
-                            },
-                            "422": {
-                                "search": "Axtarış sözü ən azı 2 simvol olmalıdır"
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/unread-count": {
-                    "get": {
-                        "summary": "Oxunmamış mesaj sayı",
-                        "description": "İstifadəçinin oxunmamış mesajlarının ümumi sayını qaytarır",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "data": {
-                                    "unread_count": 5,
-                                    "unread_conversations": 2
-                                },
-                                "success": true
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/block-user": {
-                    "post": {
-                        "summary": "İstifadəçini bloklama",
-                        "description": "Cari istifadəçi digər bir istifadəçini bloklayır",
-                        "authorization": true,
-                        "formBody": {
-                            "user_id": {
-                                "type": "number",
-                                "required": true,
-                                "description": "Bloklanacaq istifadəçinin ID-si"
-                            },
-                            "reason": {
-                                "type": "textarea",
-                                "required": false,
-                                "description": "Bloklama səbəbi",
-                                "rows": 2
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "success": true,
-                                "message": "İstifadəçi uğurla bloklandı"
-                            },
-                            "400": {
-                                "success": false,
-                                "message": "Özünüzü bloklaya bilməzsiniz"
-                            },
-                            "404": {
-                                "success": false,
-                                "message": "İstifadəçi tapılmadı"
-                            },
-                            "409": {
-                                "success": false,
-                                "message": "Bu istifadəçi artıq bloklanıb"
-                            },
-                            "422": {
-                                "success": false,
-                                "errors": {
-                                    "user_id": "İstifadəçi ID-si mütləqdir"
-                                }
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/unblock-user": {
-                    "post": {
-                        "summary": "İstifadəçi blokunu ləğv etmə",
-                        "description": "Cari istifadəçi əvvəlcədən bloklanmış istifadəçinin blokunu ləğv edir",
-                        "authorization": true,
-                        "formBody": {
-                            "user_id": {
-                                "type": "number",
-                                "required": true,
-                                "description": "Bloku ləğv ediləcək istifadəçinin ID-si"
-                            }
-                        },
-                        "responses": {
-                            "200": {
-                                "success": true,
-                                "message": "İstifadəçi bloku uğurla ləğv edildi"
-                            },
-                            "404": {
-                                "success": false,
-                                "message": "İstifadəçi tapılmadı"
-                            },
-                            "422": {
-                                "success": false,
-                                "errors": {
-                                    "user_id": "İstifadəçi ID-si mütləqdir"
-                                }
-                            }
-                        }
-                    }
-                },
-                "/app/messaging/blocked-users": {
-                    "get": {
-                        "summary": "Bloklanmış istifadəçilər siyahısı",
-                        "description": "Cari istifadəçinin bloklamış olduğu bütün istifadəçilərin siyahısını qaytarır",
-                        "authorization": true,
-                        "responses": {
-                            "200": {
-                                "success": true,
-                                "data": [
-                                    {
-                                        "id": 2,
-                                        "name": "Ülvi",
-                                        "surname": "Əzizov",
-                                        "fullname": "Ülvi Əzizov",
-                                        "username": "ulvi",
-                                        "photo": "https://example.com/photos/ulvi.jpg",
-                                        "blocked_at": "2024-10-02T14:30:00Z",
-                                        "reason": "Lazımsız mesajlar göndərirdi"
-                                    },
-                                    {
-                                        "id": 5,
-                                        "name": "Nicat",
-                                        "surname": "Məmmədov",
-                                        "fullname": "Nicat Məmmədov",
-                                        "username": "nicat",
-                                        "photo": "https://example.com/photos/nicat.jpg",
-                                        "blocked_at": "2024-09-15T08:20:00Z",
-                                        "reason": null
-                                    }
-                                ]
-                            }
-                        }
+                        "summary": "Həkim məlumatı",
+                        "description": "Verilən id-ə görə həkimin məlumatlarını qaytarır"
                     }
                 }
             }
@@ -1312,32 +683,6 @@
                     "get": {
                         "summary": "İstifadəçi məlumatlarını qaytarır",
                         "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
-                    },
-                    "put": {
-                        "summary": "İstifadəçi məlumatlarını yeniləyir",
-                        "description": "İstifadəçiyə aid məlumatları yeniləyir",
-                        "formBody": {
-                            "name": {
-                                "type": "text",
-                                "required": true,
-                                "description": "Ad"
-                            },
-                            "surname": {
-                                "type": "text",
-                                "required": true,
-                                "description": "Soyad"
-                            },
-                            "phone": {
-                                "type": "text",
-                                "description": "Telefon"
-                            }
-                        }
-                    }
-                },
-                "/app/users/balance": {
-                    "get": {
-                        "summary": "İstifadəçinin balansı",
-                        "description": "İstifadəçiyə aid balans məlumatlarını əldə edirik"
                     }
                 }
             }

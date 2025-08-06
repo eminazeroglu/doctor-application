@@ -2,6 +2,7 @@
 
 namespace App\Services\Filter;
 
+use App\Models\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 
 class DoctorFilter extends BaseFilter
@@ -24,10 +25,10 @@ class DoctorFilter extends BaseFilter
         'rating_min',
         'language',
         'gender',
-        'status',
         'is_active',
         'date_range',
-        'trashed'
+        'trashed',
+        'attributes',
     ];
 
     /**
@@ -59,7 +60,7 @@ class DoctorFilter extends BaseFilter
     /**
      * İxtisas üzrə filtrasiya
      */
-    protected function filterCategoryId(Builder $query, $value): Builder
+    protected function filterCategoryId($query, $value): Builder
     {
         return $query->where('category', $value);
     }
@@ -67,7 +68,7 @@ class DoctorFilter extends BaseFilter
     /**
      * Alt ixtisas üzrə filtrasiya
      */
-    protected function filterSubcategoryId(Builder $query, $value): Builder
+    protected function filterSubcategoryId($query, $value): Builder
     {
         return $query->where('sub_category', $value);
     }
@@ -75,7 +76,7 @@ class DoctorFilter extends BaseFilter
     /**
      * Klinika üzrə filtrasiya
      */
-    protected function filterClinicId(Builder $query, $value): Builder
+    protected function filterClinicId($query, $value): Builder
     {
         return $query->whereHas('clinics', function($clinicQuery) use ($value) {
             $clinicQuery->where('clinic_id', $value);
@@ -198,5 +199,64 @@ class DoctorFilter extends BaseFilter
         return $query->whereHas('user', function($userQuery) use ($value) {
             $userQuery->where('gender', $value);
         });
+    }
+
+    /**
+     * 'attributes' parametri üçün filter
+     * Dinamik atribut filtrlərini idarə edir
+     *
+     * Format: attributes[1]=5&attributes[2][]=3&attributes[2][]=4
+     * 1, 2 - attribute_id, 3, 4, 5 - attribute_option_id və ya dəyər
+     */
+    protected function filterAttributes(Builder $query, array $attributes): Builder
+    {
+        foreach ($attributes as $attributeId => $value) {
+            // Atributu yoxlayırıq
+            $attribute = Attribute::find($attributeId);
+            if (!$attribute) continue;
+
+            // Attributun tipindən asılı olaraq fərqli davranırıq
+            if (is_array($value)) {
+                // Çoxlu seçim üçün
+                $query->whereHas('attributes', function($q) use ($attributeId, $value) {
+                    $q->where('attribute_id', $attributeId)
+                        ->where(function($subQ) use ($value) {
+                            foreach ($value as $optionId) {
+                                // Əgər rəqəmdirsə, option_id kimi baxırıq
+                                if (is_numeric($optionId)) {
+                                    $subQ->orWhere('attribute_option_id', $optionId);
+                                } else {
+                                    // Əgər mətn isə, dəyər kimi baxırıq
+                                    $subQ->orWhere('value', 'like', "%{$optionId}%");
+                                }
+                            }
+                        });
+                });
+            } else {
+                // Tək dəyər üçün
+                $query->whereHas('attributes', function($q) use ($attributeId, $value) {
+                    $q->where('attribute_id', $attributeId);
+
+                    // Əgər rəqəmdirsə, option_id kimi baxırıq
+                    if (is_numeric($value)) {
+                        $q->where('attribute_option_id', $value);
+                    } else {
+                        // Range atributları üçün xüsusi davranış (min-max)
+                        if (str_contains($value, '-') && preg_match('/^[\d\.]+-[\d\.]+$/', $value)) {
+                            list($min, $max) = explode('-', $value);
+                            $q->where(function($rangeQ) use ($min, $max) {
+                                $rangeQ->where('value', '>=', $min)
+                                    ->where('value', '<=', $max);
+                            });
+                        } else {
+                            // Digər mətn dəyərləri üçün
+                            $q->where('value', 'like', "%{$value}%");
+                        }
+                    }
+                });
+            }
+        }
+
+        return $query;
     }
 }

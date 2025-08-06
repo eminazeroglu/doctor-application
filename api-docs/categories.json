@@ -5,52 +5,32 @@
         {
             "path": "/app/categories",
             "method": "get",
-            "summary": "Atributların siyahısııı",
-            "description": "Bütün atributların siyahısını qaytarır",
-            "responses": {
-                "200": [
-                    {
-                        "uuid": "68b4580b-f16a-46ab-93a3-a5af7186f461",
-                        "name": "Uşaq aləmi",
-                        "slug": "usaq-alemi",
-                        "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                    },
-                    {
-                        "uuid": "5aae8636-4563-4ced-92b7-17d9163d6c2b",
-                        "name": "Şəxsi əşyalar",
-                        "slug": "sexsi-esyalar",
-                        "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                    }
-                ]
+            "summary": "Kateqoriya siyahısııı",
+            "description": "Bütün kateqoriyaların siyahısını qaytarır",
+            "query": {
+                "is_home": {
+                    "type": "boolean",
+                    "description": "1 və ya 0 göndərərək əsas səhifə üçün kateqoriyaları əldə edə bilərsən"
+                }
             }
         },
         {
-            "path": "/app/categories/{uuid}/children",
+            "path": "/app/categories/{id}/children",
             "method": "get",
             "summary": "Alt kateqoriyaların siyahısı",
-            "description": "Seçilmiş kateqoriyanın bütün alt kateqoriyalarını qaytarır",
-            "responses": {
-                "200": [
-                    {
-                        "uuid": "3e79732e-c143-49f7-9fd1-df604e30aaae",
-                        "name": "Geyim və ayaqqabılar",
-                        "slug": "geyim-ve-ayaqqabilar",
-                        "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                    },
-                    {
-                        "uuid": "350cb69e-52f7-4d5b-811c-aca8a8c7924c",
-                        "name": "Saat və zinət əşyaları",
-                        "slug": "saat-ve-zinet-esyalari",
-                        "photo": "https://advert-application.test/uploads/photos/setting/default_photo.webp"
-                    }
-                ]
-            }
+            "description": "Seçilmiş kateqoriyanın bütün alt kateqoriyalarını qaytarır"
         },
         {
-            "path": "/app/categories/{uuid}/services",
+            "path": "/app/categories/{id}/services",
             "method": "get",
             "summary": "Kateqoriya xidmətləri siyahısı",
             "description": "Seçilmiş kateqoriyanın bütün xidmətlərini kateqoriyalarını qaytarır"
+        },
+        {
+            "path": "/app/categories/{id}/attributes",
+            "method": "get",
+            "summary": "Kateqoriya attributları siyahısı",
+            "description": "Seçilmiş kateqoriyanın bütün attributelarını qaytarır"
         }
     ]
 }

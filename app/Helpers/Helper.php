@@ -51,7 +51,7 @@ class Helper
      * @param string $field
      * @return string
      */
-    public static function createSlug(string $modelClass, string $text, string $field = 'url'): string
+    public static function createSlug(string $modelClass, string $text, string $field = 'slug'): string
     {
         $slug = Str::slug($text);
         $count = $modelClass::where($field, 'LIKE', $slug . '%')->count();
