@@ -41,6 +41,18 @@
                                 "description": "İstifadəçi doğum tarixi",
                                 "default": "1990-05-05"
                             },
+                            "gender": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Burda enum olur ya male/female olmalıdır",
+                                "default": "male"
+                            },
+                            "phone": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Burda telefon nömrəsi olur nümunə - 994552343434",
+                                "default": "994552343434"
+                            },
                             "email": {
                                 "type": "text",
                                 "required": true,

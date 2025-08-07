@@ -20,7 +20,7 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => bcrypt('123'), // Bütün fake istifadəçilər üçün eyni şifrə
-            'phone' => $this->faker->phoneNumber(),
+            'phone' => str_replace('+', '', $this->faker->phoneNumber()),
             'photo_path' => 'photo-'. rand(1, 5) . '.jpg',
             'status' => UserStatusEnum::getRandomValue(),
             'role_id' => 1,

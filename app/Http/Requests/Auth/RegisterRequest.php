@@ -15,6 +15,8 @@ class RegisterRequest extends BaseRequest
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required',
             'birthdate' => 'nullable|date_format:Y-m-d',
+            'gender' => 'required|in:male,female',
+            'phone' => 'required',
         ];
     }
 }
