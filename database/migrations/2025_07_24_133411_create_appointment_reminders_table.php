@@ -21,6 +21,11 @@ return new class extends Migration
             $table->boolean('is_sent')->default(false); // Göndərilib?
             $table->dateTime('sent_at')->nullable(); // Göndərilmə vaxtı
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
+
+            $table->index(
+                ['appointment_id', 'type', 'scheduled_at', 'is_sent'],
+                'appt_reminder_idx' // Custom name under 64 charssss
+            );
         });
     }
 
