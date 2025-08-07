@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
 
             $table->index(
-                ['appointment_id', 'type', 'scheduled_at', 'is_sent'],
+                ['appointment_id', 'type', 'is_sent'],
                 'appt_reminder_idx' // Custom name under 64 charssss
             );
         });
