@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
 
             // Xatırlatma məlumatları
-            $table->enum('type', \App\Enums\AppointmentReminderTypeEnum::getValues()); // Xatırlatma növü
+            $table->string('type'); // Xatırlatma növü
             $table->timestamp('scheduled_at'); // Planlaşdırılmış tarix
             $table->timestamp('sent_at')->nullable(); // Göndərilmə tarixi
             $table->boolean('is_sent')->default(false); // Göndərilibmi

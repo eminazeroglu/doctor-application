@@ -128,7 +128,7 @@ class CategoryRepository extends BaseRepository
     {
         return $this->executeWithCache('getCategoryWithServices_' . $uuid, function () use ($uuid) {
             $category = $this->model->query()
-                ->where('uuid', $uuid)
+                ->where('id', $uuid)
                 ->firstOrFail();
             return $category->services;
         });

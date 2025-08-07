@@ -23,6 +23,7 @@ class AuthResource extends JsonResource
             'phone' => $this->phone,
             'photo' => $this->getImageUrl('photo_path'),
             'has_photo' => $this->photo_path,
+            'user_type' => $this->user_type,
             'status' => $this->status,
             'status_text' => $this->status_text,
             $this->mergeWhen(count($this->getAllPermissions()) > 0, [
