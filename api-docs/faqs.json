@@ -1,0 +1,12 @@
+{
+    "tag": "Faqs",
+    "description": "Faqs ilə əlaqəli API endpoint-ləri",
+    "endpoints": [
+        {
+            "path": "/app/faqs",
+            "method": "get",
+            "summary": "Faqs siyahısı",
+            "description": "Bütün faqs siyahısını qaytarır"
+        }
+    ]
+}

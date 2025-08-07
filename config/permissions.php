@@ -214,6 +214,13 @@ $permissionArr = [
         "blog_read",
         "blog_status",
     ],
+    "faq" => [
+        "faq_create",
+        "faq_update",
+        "faq_delete",
+        "faq_read",
+        "faq_status",
+    ],
 ];
 
 return [

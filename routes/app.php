@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\CommentController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
 use App\Http\Controllers\Api\Front\DoctorController;
+use App\Http\Controllers\Api\Front\FaqController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
 use App\Http\Controllers\Api\Front\UserBlockController;
@@ -144,4 +145,13 @@ Route::controller(BlogController::class)
     ->group(function () {
         Route::get('/', 'blogSearch')->name('blog.search');
         Route::get('/{slug}', 'blogView')->name('blog.view');
+    });
+
+/**
+ * Faq Routes
+ * */
+Route::controller(FaqController::class)
+    ->prefix('faqs')
+    ->group(function () {
+        Route::get('/', 'index')->name('faq.index');
     });

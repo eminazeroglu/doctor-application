@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\CommentController;
 use App\Http\Controllers\Api\Admin\ComplaintsController;
 use App\Http\Controllers\Api\Admin\CountryController;
 use App\Http\Controllers\Api\Admin\DoctorController;
+use App\Http\Controllers\Api\Admin\FaqController;
 use App\Http\Controllers\Api\Admin\LanguageController;
 use App\Http\Controllers\Api\Admin\MessagingController;
 use App\Http\Controllers\Api\Admin\NotificationController;
@@ -282,3 +283,6 @@ Route::resource('payments', PaymentController::class);
 
 // Blog
 Route::resource('blogs', BlogController::class);
+
+// Faq
+Route::resource('faqs', FaqController::class);

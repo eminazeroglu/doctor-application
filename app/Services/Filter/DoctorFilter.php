@@ -16,6 +16,9 @@ class DoctorFilter extends BaseFilter
         'subcategory_id',
         'clinic_id',
         'service_id',
+        'city_id',
+        'region_id',
+        'subway_id',
         'is_verified',
         'is_featured',
         'home_visit',
@@ -80,6 +83,36 @@ class DoctorFilter extends BaseFilter
     {
         return $query->whereHas('clinics', function($clinicQuery) use ($value) {
             $clinicQuery->where('clinic_id', $value);
+        });
+    }
+
+    /**
+     * Şəhər üzrə filtrasiya
+     */
+    protected function filterCityId($query, $value): Builder
+    {
+        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+            $clinicQuery->where('clinic.city_id', $value);
+        });
+    }
+
+    /**
+     * Region üzrə filtrasiya
+     */
+    protected function filterRegionId($query, $value): Builder
+    {
+        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+            $clinicQuery->where('clinic.region_id', $value);
+        });
+    }
+
+    /**
+     * Metro üzrə filtrasiya
+     */
+    protected function filterSubwayId($query, $value): Builder
+    {
+        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+            $clinicQuery->where('clinic.subway_id', $value);
         });
     }
 
