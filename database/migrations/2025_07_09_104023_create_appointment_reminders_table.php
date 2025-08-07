@@ -31,7 +31,7 @@ return new class extends Migration
             // $table->index(['appointment_id', 'type', 'scheduled_at', 'is_sent']);
 			$table->index(
 				['appointment_id', 'type', 'scheduled_at', 'is_sent'],
-				'appt_reminder_idx' // Custom name under 64 chars
+				'appt_reminder_idx' // Custom name under 64 charssss
 			);
         });
     }
