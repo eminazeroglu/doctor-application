@@ -277,6 +277,17 @@ Route::resource('reviews', ReviewController::class);
 
 // Notification
 Route::resource('notifications', NotificationController::class);
+Route::controller(NotificationController::class)->prefix('notifications')->group(function () {
+    // Statistika və hesabatlar
+    Route::get('/statistics/admin', 'statistics')->name('notifications.statistics');
+
+    // Kütləvi əməliyyatlar
+    Route::post('/bulk/delete', 'bulkDelete')->name('notifications.bulkDelete');
+    Route::post('/bulk/send-to-all', 'sendToAll')->name('notifications.sendToAll');
+
+    // Planlaşdırılmış notification-lar
+    Route::post('/scheduled/send', 'sendScheduled')->name('notifications.sendScheduled');
+});
 
 // Payment
 Route::resource('payments', PaymentController::class);

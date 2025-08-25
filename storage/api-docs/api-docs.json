@@ -442,6 +442,36 @@
             }
         },
         {
+            "tag": "Bildirişlər",
+            "description": "Bildirişlər ilə əlaqəli API-lər",
+            "endpoints": {
+                "/app/notifications/user": {
+                    "get": {
+                        "summary": "İstifadəçiyə aid bildirişləri qaytarır",
+                        "description": "İstifadəçiyə aid bütün bildirişləri qaytarır"
+                    }
+                },
+                "/app/notifications/{id}/read": {
+                    "post": {
+                        "summary": "Bildirişi oxundu",
+                        "description": "İstifadəçiyə aid bildirişi oxundu edir. id olaraq notification id-ini göndəririk"
+                    }
+                },
+                "/app/notifications/read-all": {
+                    "post": {
+                        "summary": "Hamsınə oxundu et",
+                        "description": "İstifadəçiyə aid bütün bildirişləri oxundu edir"
+                    }
+                },
+                "/app/notifications/{id}": {
+                    "delete": {
+                        "summary": "Bildiriş sil",
+                        "description": "İstifadəçiyə aid verilən id nömrəsinə görə bildirişi silir"
+                    }
+                }
+            }
+        },
+        {
             "tag": "Səhifələr",
             "description": "Səhifələr ilə əlaqəli API endpoint-ləri",
             "endpoints": {
@@ -716,6 +746,12 @@
             "description": "İstifadəçilər ilə əlaqəli API-lər",
             "endpoints": {
                 "/common/user/profile": {
+                    "get": {
+                        "summary": "İstifadəçi məlumatlarını qaytarır",
+                        "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
+                    }
+                },
+                "/common/user/notification": {
                     "get": {
                         "summary": "İstifadəçi məlumatlarını qaytarır",
                         "description": "İstifadəçiyə aid bütün məlumatları qaytarır"

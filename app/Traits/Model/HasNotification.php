@@ -2,52 +2,37 @@
 
 namespace App\Traits\Model;
 
-use App\Enums\NotificationPriorityEnum;
 use App\Enums\NotificationTypeEnum;
 use App\Models\Notification;
-use App\Models\NotificationDelivery;
 use App\Services\Module\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait HasNotification
 {
     /**
-     * Model-in bütün notification-larını əldə etmək üçün relationship
-     * MorphMany relationship istifadə edərək polymorphic əlaqə qururuq
+     * İstifadəçinin bütün notification-ları
      */
-    public function notifications(): MorphMany
+    public function notifications(): HasMany
     {
-        return $this->morphMany(Notification::class, 'notifiable');
+        return $this->hasMany(Notification::class, 'user_id');
     }
 
     /**
      * Sadəcə oxunmamış notification-ları əldə etmək üçün relationship
      * notifications() relationship-ini filter edərək oxunmamışları alırıq
      */
-    public function unreadNotifications(): MorphMany
+    public function unreadNotifications(): HasMany
     {
         return $this->notifications()->whereNull('read_at');
-    }
-
-    /**
-     * Yüksək prioritetli notification-ları əldə etmək üçün relationship
-     * notifications() relationship-ini priority-ə görə filter edirik
-     */
-    public function highPriorityNotifications(): MorphMany
-    {
-        return $this->notifications()
-            ->where('priority', NotificationPriorityEnum::HIGH)
-            ->orderBy('created_at', 'desc');
     }
 
     /**
      * Planlaşdırılmış notification-ları əldə etmək üçün relationship
      * Gələcək tarixə planlaşdırılmış notification-ları qaytarır
      */
-    public function scheduledNotifications(): MorphMany
+    public function scheduledNotifications(): HasMany
     {
         return $this->notifications()
             ->whereNotNull('send_at')
@@ -135,19 +120,6 @@ trait HasNotification
     public function getNotificationStats(): array
     {
         return app(NotificationService::class)->getStats($this);
-    }
-
-    /**
-     * Notification göndərmə məlumatlarını əldə etmək üçün relationship
-     */
-    public function notificationDeliveries(): HasManyThrough
-    {
-        return $this->hasManyThrough(
-            NotificationDelivery::class,
-            Notification::class,
-            'notifiable_id',
-            'notification_id'
-        )->where('notifiable_type', self::class);
     }
 
     /**

@@ -1,0 +1,30 @@
+{
+    "tag": "Bildirişlər",
+    "description": "Bildirişlər ilə əlaqəli API-lər",
+    "endpoints": [
+        {
+            "path": "/app/notifications/user",
+            "method": "get",
+            "summary": "İstifadəçiyə aid bildirişləri qaytarır",
+            "description": "İstifadəçiyə aid bütün bildirişləri qaytarır"
+        },
+        {
+            "path": "/app/notifications/{id}/read",
+            "method": "post",
+            "summary": "Bildirişi oxundu",
+            "description": "İstifadəçiyə aid bildirişi oxundu edir. id olaraq notification id-ini göndəririk"
+        },
+        {
+            "path": "/app/notifications/read-all",
+            "method": "post",
+            "summary": "Hamsınə oxundu et",
+            "description": "İstifadəçiyə aid bütün bildirişləri oxundu edir"
+        },
+        {
+            "path": "/app/notifications/{id}",
+            "method": "delete",
+            "summary": "Bildiriş sil",
+            "description": "İstifadəçiyə aid verilən id nömrəsinə görə bildirişi silir"
+        }
+    ]
+}

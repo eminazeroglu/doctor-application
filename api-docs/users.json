@@ -7,6 +7,12 @@
             "method": "get",
             "summary": "İstifadəçi məlumatlarını qaytarır",
             "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
+        },
+        {
+            "path": "/common/user/notification",
+            "method": "get",
+            "summary": "İstifadəçi məlumatlarını qaytarır",
+            "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
         }
     ]
 }

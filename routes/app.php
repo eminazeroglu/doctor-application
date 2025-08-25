@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\Front\FaqController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
 use App\Http\Controllers\Api\Front\UserBlockController;
-use App\Http\Controllers\Api\Front\UserController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -42,10 +41,24 @@ Route::controller(NotificationController::class)
     ->prefix('notifications')
     ->middleware(['auth:sanctum'])
     ->group(function () {
-        Route::get('/user', 'userNotifications');
-        Route::post('/{id}/read', 'markAsRead');
-        Route::post('/read-all', 'markAllAsRead');
-        Route::get('/user/stats', 'userStats');
+        // İstifadəçi notification-ları
+        Route::get('/user', 'userNotifications')->name('notifications.user');
+        Route::get('/user/latest', 'getLatest')->name('notifications.latest');
+        Route::get('/user/stats', 'userStats')->name('notifications.userStats');
+
+        // Notification oxuma əməliyyatları
+        Route::post('/{id}/read', 'markAsRead')->name('notifications.markAsRead');
+        Route::post('/read-all', 'markAllAsRead')->name('notifications.markAllAsRead');
+        Route::delete('/{id}', 'deleteNotification')->name('notifications.delete');
+
+        // Cihaz idarəetməsi
+        Route::post('/devices/register', 'registerDevice')->name('notifications.registerDevice');
+        Route::post('/devices/unregister', 'unregisterDevice')->name('notifications.unregisterDevice');
+        Route::get('/devices', 'getUserDevices')->name('notifications.getUserDevices');
+
+        // Tənzimləmələr
+        Route::get('/preferences', 'getPreferences')->name('notifications.getPreferences');
+        Route::put('/preferences', 'updatePreferences')->name('notifications.updatePreferences');
     });
 
 /**

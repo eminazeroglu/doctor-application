@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use App\Listeners\SendWelcomeEmail;
+use App\Events\Notification\NotificationCreated;
+use App\Events\Notification\NotificationRead;
+use App\Listeners\Notification\SendNotificationToChannels;
+use App\Listeners\Notification\UpdateNotificationCache;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -16,6 +20,14 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendWelcomeEmail::class,
+        ],
+
+        NotificationCreated::class => [
+            SendNotificationToChannels::class,
+        ],
+
+        NotificationRead::class => [
+            UpdateNotificationCache::class,
         ],
     ];
 
