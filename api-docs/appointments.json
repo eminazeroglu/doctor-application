@@ -1,0 +1,82 @@
+{
+    "tag": "Randevular",
+    "description": "Randevular ilə əlaqəli API-lər",
+    "endpoints": [
+        {
+            "path": "/app/appointments",
+            "method": "get",
+            "authorization": true,
+            "summary": "İstifadəçiyə aid randevular",
+            "description": "İstifadəçiyə aid bütün randevuları qaytarır",
+            "query": {
+                "status": {
+                    "type": "text",
+                    "description": "Status"
+                },
+                "date_range": {
+                    "type": "text",
+                    "description": "Tarix aralığı"
+                }
+            }
+        },
+        {
+            "path": "/app/appointments/filters",
+            "method": "get",
+            "authorization": true,
+            "summary": "Randevu filtirləri",
+            "description": "Randevu aid bütün filterləri qaytarır"
+        },
+        {
+            "path": "/app/appointments/export",
+            "method": "get",
+            "authorization": true,
+            "summary": "İstifadəçi Randevu export",
+            "description": "İstifadəçiyə aid randevuları export edir"
+        },
+        {
+            "path": "/app/appointments/{uuid}",
+            "method": "get",
+            "authorization": true,
+            "summary": "Tək bir randevu",
+            "description": "Tək bir randevu-a aid bütün məlumatları əldə etmək üçün uuid göndəririk"
+        },
+        {
+            "path": "/app/appointments/{uuid}",
+            "method": "delete",
+            "authorization": true,
+            "summary": "Randevu ləğv etmə",
+            "description": "Randevunu ləğv etmək üçün uuid göndəririk",
+            "formBody": {
+                "reasons": {
+                    "type": "array",
+                    "required": true,
+                    "description": "Burda səbəbləri göndəririk. 'doctor_dislike' => 'Həkimi bəyənmirəm',\n 'time_conflict' => 'Vaxtım uyğun gəlmir',\n 'found_another_doctor' => 'Başqa həkim tapdım',\n 'personal_reason' => 'Şəxsi səbəbə görə',",
+                    "default": [
+                        "doctor_dislike",
+                        "time_conflict"
+                    ]
+                },
+                "custom_reason": {
+                    "type": "text",
+                    "required": true,
+                    "description": "Səbəb",
+                    "default": "Burda istifadəçinin başqa səbəbi yazılır"
+                }
+            }
+        },
+        {
+            "path": "/app/appointments/{uuid}/review",
+            "method": "post",
+            "authorization": true,
+            "summary": "Randevuya rəy",
+            "description": "Randevu rəy yazmaq üçün uuid ilə form parametirlərini göndəririk",
+            "formBody": {
+                "rating": {
+                    "type": "array",
+                    "required": true,
+                    "description": "1-5 arası bir rəqəm"
+                }
+            }
+        }
+    ]
+}

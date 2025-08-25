@@ -2,9 +2,11 @@
 
 namespace App\Services\Module;
 
+use App\Exceptions\BaseException;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\Review;
 use App\Repositories\Module\ReviewRepository;
 use App\Services\BaseCrudService;
 use Illuminate\Database\Eloquent\Collection;
@@ -95,7 +97,7 @@ class ReviewService extends BaseCrudService
     }
 
     /**
-     * Rəy yaratma (əlavə validasiya ilə)
+     * Rəy yaratma (əlavə validasiya ilə) - Admin panel üçün
      * @throws Throwable
      */
     public function create(array $data): Model
@@ -127,6 +129,14 @@ class ReviewService extends BaseCrudService
                 $this->markAppointmentAsReviewed($data['appointment_id']);
             }
 
+            // Reytinqləri yenilə
+            if (!empty($data['doctor_id'])) {
+                $this->updateDoctorRating($data['doctor_id']);
+            }
+            if (!empty($data['clinic_id'])) {
+                $this->updateClinicRating($data['clinic_id']);
+            }
+
             DB::commit();
             return $review;
 
@@ -148,6 +158,8 @@ class ReviewService extends BaseCrudService
 
             // Mövcud rəyi əldə et
             $existingReview = $this->repository->findById($id);
+            $oldDoctorId = $existingReview->doctor_id;
+            $oldClinicId = $existingReview->clinic_id;
 
             // Əgər həkim rəyidirsə doctor_id təyin et, clinic_id null et
             if (!empty($data['doctor_id'])) {
@@ -160,6 +172,21 @@ class ReviewService extends BaseCrudService
             }
 
             $review = parent::update($id, $data);
+
+            // Köhnə və yeni reytinqləri yenilə
+            if ($oldDoctorId && $oldDoctorId !== $review->doctor_id) {
+                $this->updateDoctorRating($oldDoctorId);
+            }
+            if ($oldClinicId && $oldClinicId !== $review->clinic_id) {
+                $this->updateClinicRating($oldClinicId);
+            }
+
+            if ($review->doctor_id) {
+                $this->updateDoctorRating($review->doctor_id);
+            }
+            if ($review->clinic_id) {
+                $this->updateClinicRating($review->clinic_id);
+            }
 
             DB::commit();
             return $review;
@@ -280,15 +307,15 @@ class ReviewService extends BaseCrudService
     }
 
     /**
-     * Randevunu rəy verilmiş kimi işarələ
+     * Randevunu rəy verilmiş kimi işarələ - DÜZƏLDİLDİ
      */
     private function markAppointmentAsReviewed(int $appointmentId): void
     {
-        // Bu metod Appointment servisi ilə əlaqələndirilə bilər
-        // İndi sadə olaraq appointment cədvəlini yeniləyirik
         Appointment::query()
             ->where('id', $appointmentId)
-            ->update(['is_reviewed' => true]);
+            ->update([
+                'reviewed_at' => now()
+            ]);
     }
 
     /**
@@ -308,23 +335,27 @@ class ReviewService extends BaseCrudService
     }
 
     /**
-     * Həkim reytinqini hesabla və yenilə
+     * Həkim reytinqini hesabla və yenilə - DÜZƏLDİLDİ
      */
     public function updateDoctorRating(int $doctorId): void
     {
         try {
-            $reviews = $this->repository->findByDoctor($doctorId);
+            $reviews = Review::where('doctor_id', $doctorId)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->where('is_moderated', true)
+                ->get();
 
             if ($reviews->isNotEmpty()) {
-                $averageRating = $reviews->avg('rating');
-                $totalReviews = $reviews->count();
+                $totalRating = $reviews->sum('rating');
+                $totalCount = $reviews->count();
 
                 // Doctor cədvəlini yenilə
                 Doctor::query()
                     ->where('id', $doctorId)
                     ->update([
-                        'average_rating' => round($averageRating, 1),
-                        'total_reviews' => $totalReviews,
+                        'average_rating' => $totalRating, // Həkim modelində rating_average attribute-u hesablayır
+                        'total_ratings' => $totalCount,
                         'updated_at' => now()
                     ]);
             }
@@ -334,23 +365,27 @@ class ReviewService extends BaseCrudService
     }
 
     /**
-     * Klinika reytinqini hesabla və yenilə
+     * Klinika reytinqini hesabla və yenilə - DÜZƏLDİLDİ
      */
     public function updateClinicRating(int $clinicId): void
     {
         try {
-            $reviews = $this->repository->findByClinic($clinicId);
+            $reviews = Review::where('clinic_id', $clinicId)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->where('is_moderated', true)
+                ->get();
 
             if ($reviews->isNotEmpty()) {
-                $averageRating = $reviews->avg('rating');
-                $totalReviews = $reviews->count();
+                $totalRating = $reviews->sum('rating');
+                $totalCount = $reviews->count();
 
                 // Clinic cədvəlini yenilə
                 Clinic::query()
                     ->where('id', $clinicId)
                     ->update([
-                        'average_rating' => round($averageRating, 1),
-                        'total_reviews' => $totalReviews,
+                        'rating' => $totalRating, // Klinika modelində average_rating attribute-u hesablayır
+                        'ratings_count' => $totalCount,
                         'updated_at' => now()
                     ]);
             }
@@ -471,6 +506,211 @@ class ReviewService extends BaseCrudService
                 'recent_reviews' => collect([]),
                 'needs_attention' => 0
             ];
+        }
+    }
+
+    /**
+     * Rəy yaradır (Screen 3 üçün - xəstə tərəfindən)
+     * Bu metod appointment controller-dən çağırılır
+     * @throws \Exception
+     */
+    public function createReview(array $reviewData): Review
+    {
+        DB::beginTransaction();
+        try {
+            // Əvvəlcədən rəy yazılıb-yazılmadığını yoxlayırıq
+            $existingReview = Review::where('appointment_id', $reviewData['appointment_id'])
+                ->where('patient_id', $reviewData['patient_id'])
+                ->first();
+
+            if ($existingReview) {
+                throw new BaseException([
+                    'message' => 'Bu randevu üçün artıq rəy yazılmışdır'
+                ], 422);
+            }
+
+            // Review yaradırıq
+            $review = Review::create([
+                'patient_id' => $reviewData['patient_id'],
+                'appointment_id' => $reviewData['appointment_id'],
+                'doctor_id' => $reviewData['doctor_id'],
+                'clinic_id' => $reviewData['clinic_id'] ?? null,
+                'rating' => $reviewData['rating'],
+                'comment' => $reviewData['comment'] ?? null,
+                'is_verified' => true, // Randevudan gələn rəylər avtomatik təsdiqlənir
+                'is_moderated' => true, // Randevudan gələn rəylər avtomatik moderasiya edilir
+                'is_active' => true,
+                'is_anonymous' => $reviewData['is_anonymous'] ?? false,
+            ]);
+
+            // Həkim reytinqini yeniləyirik
+            $this->updateDoctorRating($reviewData['doctor_id']);
+
+            // Klinika reytinqini yeniləyirik (əgər klinika qiymətləndirilmişdirsə)
+            if (!empty($reviewData['clinic_id'])) {
+                $this->updateClinicRating($reviewData['clinic_id']);
+            }
+
+            // Randevu statusunu yeniləyirik
+            $this->markAppointmentAsReviewed($reviewData['appointment_id']);
+
+            DB::commit();
+            return $review->load(['patient.user', 'doctor.user', 'clinic']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Xəstənin yazdığı rəylər (xəstə panelində istifadə üçün)
+     */
+    public function getPatientReviews(int $patientId, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Review::with(['doctor.user', 'clinic', 'appointment'])
+            ->where('patient_id', $patientId)
+            ->where('is_active', true);
+
+        // Filter əgər varsa
+        if (!empty($filters['rating'])) {
+            $query->where('rating', $filters['rating']);
+        }
+
+        if (!empty($filters['doctor_id'])) {
+            $query->where('doctor_id', $filters['doctor_id']);
+        }
+
+        if (!empty($filters['clinic_id'])) {
+            $query->where('clinic_id', $filters['clinic_id']);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 10);
+    }
+
+    /**
+     * Həkim haqqında rəylər (public üçün)
+     */
+    public function getDoctorReviews(int $doctorId, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Review::with(['patient.user', 'appointment'])
+            ->where('doctor_id', $doctorId)
+            ->where('is_active', true)
+            ->where('is_verified', true)
+            ->where('is_moderated', true);
+
+        // Filter əgər varsa
+        if (!empty($filters['rating'])) {
+            $query->where('rating', $filters['rating']);
+        }
+
+        // Anonim rəylərdə xəstə məlumatını gizlət
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 10);
+    }
+
+    /**
+     * Klinika haqqında rəylər (public üçün)
+     */
+    public function getClinicReviews(int $clinicId, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Review::with(['patient.user', 'doctor.user', 'appointment'])
+            ->where('clinic_id', $clinicId)
+            ->where('is_active', true)
+            ->where('is_verified', true)
+            ->where('is_moderated', true);
+
+        // Filter əgər varsa
+        if (!empty($filters['rating'])) {
+            $query->where('rating', $filters['rating']);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 10);
+    }
+
+    /**
+     * Rəy statistikaları (public üçün)
+     */
+    public function getReviewStats(string $type, int $id): array
+    {
+        $field = $type === 'doctor' ? 'doctor_id' : 'clinic_id';
+
+        $reviews = Review::where($field, $id)
+            ->where('is_active', true)
+            ->where('is_verified', true)
+            ->where('is_moderated', true)
+            ->get();
+
+        if ($reviews->isEmpty()) {
+            return [
+                'total_reviews' => 0,
+                'average_rating' => 0,
+                'rating_distribution' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
+                'percentage_distribution' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
+            ];
+        }
+
+        $total = $reviews->count();
+        $averageRating = round($reviews->avg('rating'), 1);
+
+        $distribution = [];
+        $percentageDistribution = [];
+
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $reviews->where('rating', $i)->count();
+            $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
+
+            $distribution[$i] = $count;
+            $percentageDistribution[$i] = $percentage;
+        }
+
+        return [
+            'total_reviews' => $total,
+            'average_rating' => $averageRating,
+            'rating_distribution' => $distribution,
+            'percentage_distribution' => $percentageDistribution,
+        ];
+    }
+
+    /**
+     * Rəy silmə (xəstə və ya admin tərəfindən)
+     * @throws \Exception
+     */
+    public function deleteReview(int $reviewId, int $userId, string $userRole = 'patient'): bool
+    {
+        $review = Review::findOrFail($reviewId);
+
+        // Yalnız yazan xəstə və ya admin silə bilər
+        if ($userRole !== 'admin' && $review->patient->user_id !== $userId) {
+            throw new BaseException([
+                'message' => 'Bu rəyi silmək icazəniz yoxdur'
+            ], 403);
+        }
+
+        DB::beginTransaction();
+        try {
+            $doctorId = $review->doctor_id;
+            $clinicId = $review->clinic_id;
+
+            // Rəyi deaktiv edirik (tam silmirik)
+            $review->update(['is_active' => false]);
+
+            // Reytinqləri yenidən hesabla
+            if ($doctorId) {
+                $this->updateDoctorRating($doctorId);
+            }
+            if ($clinicId) {
+                $this->updateClinicRating($clinicId);
+            }
+
+            DB::commit();
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }

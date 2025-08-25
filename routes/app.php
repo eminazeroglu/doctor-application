@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\NotificationController;
 use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
+use App\Http\Controllers\Api\Front\AppointmentController;
 use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\CommentController;
@@ -105,16 +106,6 @@ Route::controller(CategoryController::class)
         Route::get('/{id}/services', 'categoryWithServices')->name('category.categoryWithServices');
     });
 
-/**
- * Comment Routes
- * */
-Route::controller(CommentController::class)
-    ->prefix('comments')
-    ->middleware(['auth:sanctum', 'check.blocked'])
-    ->group(function () {
-        Route::post('/save', 'save')->name('comments.save');
-        Route::delete('/{id}/delete', 'delete')->name('comments.delete');
-    });
 
 /**
  * Messaging Routes
@@ -167,4 +158,34 @@ Route::controller(FaqController::class)
     ->prefix('faqs')
     ->group(function () {
         Route::get('/', 'index')->name('faq.index');
+    });
+
+/**
+ * Appointment Routes
+ */
+Route::controller(AppointmentController::class)
+    ->prefix('appointments')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+
+        // Randevu siyahısı
+        Route::get('/', 'index')->name('appointments.index');
+
+        // Filter seçimləri
+        Route::get('/filters', 'getFilters')->name('appointments.filters');
+
+        // Statistikalar
+        Route::get('/stats', 'stats')->name('appointments.stats');
+
+        // Excel export
+        Route::get('/export', 'export')->name('appointments.export');
+
+        // Randevu detalları
+        Route::get('/{uuid}', 'show')->name('appointments.show');
+
+        // Randevu ləğvi
+        Route::delete('/{uuid}', 'cancel')->name('appointments.cancel');
+
+        // Rəy yazma
+        Route::post('/{uuid}/review', 'createReview')->name('appointments.review');
     });

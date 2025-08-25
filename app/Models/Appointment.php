@@ -35,6 +35,7 @@ class Appointment extends BaseModel
         'payment_id',
         'cancel_reason',
         'cancelled_at',
+        'reviewed_at',
         'location',
         'consultation_type',
         'additional_info'
@@ -48,6 +49,7 @@ class Appointment extends BaseModel
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'cancelled_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'is_paid' => 'boolean',
         'price' => 'float',
         'additional_info' => 'json'
@@ -547,5 +549,123 @@ class Appointment extends BaseModel
     public function scopeUnpaid($query): Builder
     {
         return $query->where('is_paid', false);
+    }
+
+    /**
+     * Randevu ləğv edilə bilər mi?
+     */
+    public function canCancel(): bool
+    {
+        // Artıq ləğv edilmiş və ya tamamlanmış randevular ləğv edilə bilməz
+        if (in_array($this->appointment_status, ['cancelled', 'completed', 'no-show'])) {
+            return false;
+        }
+
+        // Randevu vaxtından ən azı 2 saat əvvəl ləğv edilə bilər
+        if ($this->start_time && $this->start_time->diffInHours(now()) < 2) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Randevu yenidən planlaşdırıla bilər mi?
+     */
+    public function canReschedule(): bool
+    {
+        // Yalnız pending və confirmed statuslarda yenidən planlaşdırıla bilər
+        if (!in_array($this->appointment_status, ['pending', 'confirmed'])) {
+            return false;
+        }
+
+        // Randevu vaxtından ən azı 4 saat əvvəl yenidən planlaşdırıla bilər
+        if ($this->start_time && $this->start_time->diffInHours(now()) < 4) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Randevuya rəy yazıla bilər mi?
+     */
+    public function canReview(): bool
+    {
+        // Yalnız tamamlanmış randevular üçün rəy yazıla bilər
+        if ($this->appointment_status !== 'completed') {
+            return false;
+        }
+
+        // Artıq rəy yazılıbsa, yenidən yazıla bilməz
+        if ($this->reviews->isNotEmpty()) {
+            return false;
+        }
+
+        // Randevu bitdikdən sonra 30 gün ərzində rəy yazıla bilər
+        if ($this->end_time && $this->end_time->diffInDays(now()) > 30) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Xəstə üçün randevu sorğuları
+     */
+    public function scopeForPatient(Builder $query, int $patientId): Builder
+    {
+        return $query->where('patient_id', $patientId);
+    }
+
+    /**
+     * Status əsasında filtrasiya
+     */
+    public function scopeWithStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('appointment_status', $status);
+    }
+
+    /**
+     * Son N ay ərzindəki randevular
+     */
+    public function scopeLastMonths(Builder $query, int $months): Builder
+    {
+        return $query->whereBetween('start_time', [
+            now()->subMonths($months),
+            now()
+        ]);
+    }
+
+    /**
+     * Rəy yazılmış randevular
+     */
+    public function scopeReviewed(Builder $query): Builder
+    {
+        return $query->whereHas('reviews');
+    }
+
+    /**
+     * Rəy yazılmamış randevular
+     */
+    public function scopeNotReviewed(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('reviews');
+    }
+
+    /**
+     * Müəyyən həkimə aid randevular
+     */
+    public function scopeForDoctor(Builder $query, int $doctorId): Builder
+    {
+        return $query->where('doctor_id', $doctorId);
+    }
+
+    /**
+     * Müəyyən klinikaya aid randevular
+     */
+    public function scopeForClinic(Builder $query, int $clinicId): Builder
+    {
+        return $query->where('clinic_id', $clinicId);
     }
 }
