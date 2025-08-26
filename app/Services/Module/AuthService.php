@@ -182,7 +182,7 @@ class AuthService
      * @param array $policy Siyasət parametrləri
      * @throws BaseException Şifrə siyasəti pozulduqda
      */
-    private function validatePasswordPolicy(string $password, array $policy): void
+    public function validatePasswordPolicy(string $password, array $policy): void
     {
         $errors = '';
 

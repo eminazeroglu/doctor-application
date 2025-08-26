@@ -5,12 +5,12 @@ use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
 use App\Http\Controllers\Api\Front\AppointmentController;
 use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
-use App\Http\Controllers\Api\Front\CommentController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
 use App\Http\Controllers\Api\Front\DoctorController;
 use App\Http\Controllers\Api\Front\FaqController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
+use App\Http\Controllers\Api\Front\ProfileController;
 use App\Http\Controllers\Api\Front\UserBlockController;
 use Illuminate\Support\Facades\Route;
 
@@ -188,4 +188,34 @@ Route::controller(AppointmentController::class)
 
         // Rəy yazma
         Route::post('/{uuid}/review', 'createReview')->name('appointments.review');
+    });
+
+
+/**
+ * Profile Routes - app.php faylına əlavə olunacaq hissə
+ */
+Route::controller(ProfileController::class)
+    ->prefix('profile')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+
+        // Profil məlumatlarını əldə etmək
+        Route::get('/', 'index')->name('profile.index');
+
+        // Profil məlumatlarını yeniləmək (ümumi - ad, soyad, telefon, ünvan)
+        Route::put('/', 'update')->name('profile.update');
+
+        // Hesab tənzimləmələri (email və şifrə yeniləməsi)
+        Route::put('/account', 'updateAccount')->name('profile.updateAccount');
+
+        // Profil şəklini yeniləmək
+        Route::post('/avatar', 'updateAvatar')->name('profile.updateAvatar');
+
+        // User preferences
+        Route::get('/preferences', 'getPreferences')->name('profile.getPreferences');
+        Route::put('/preferences', 'updatePreferences')->name('profile.updatePreferences');
+
+        // Hesab idarəetməsi
+        Route::post('/deactivate', 'deactivate')->name('profile.deactivate');
+        Route::delete('/', 'destroy')->name('profile.destroy');
     });

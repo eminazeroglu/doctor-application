@@ -572,6 +572,188 @@
             }
         },
         {
+            "tag": "Profile",
+            "description": "İstifadəçi profil idarəetməsi API-ləri",
+            "endpoints": {
+                "/app/profile": {
+                    "get": {
+                        "summary": "Profil məlumatları",
+                        "description": "İstifadəçinin profil məlumatlarını qaytarır",
+                        "authorization": true
+                    },
+                    "put": {
+                        "summary": "Profil yeniləməsi",
+                        "description": "İstifadəçinin ümumi profil məlumatlarını yeniləyir (ad, soyad, telefon, ünvan)",
+                        "authorization": true,
+                        "formBody": {
+                            "name": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Ad"
+                            },
+                            "surname": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Soyad"
+                            },
+                            "phone": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Telefon nömrəsi"
+                            },
+                            "photo_path": {
+                                "type": "text",
+                                "description": "Profil şəkli (base64 format)"
+                            },
+                            "gender": {
+                                "type": "select",
+                                "options": [
+                                    "male",
+                                    "female"
+                                ],
+                                "description": "Cinsi"
+                            },
+                            "birthdate": {
+                                "type": "date",
+                                "description": "Doğum tarixi"
+                            }
+                        }
+                    },
+                    "delete": {
+                        "summary": "Hesabı silmək",
+                        "description": "İstifadəçi hesabını tamamilə silir",
+                        "authorization": true,
+                        "formBody": {
+                            "reason": {
+                                "type": "select",
+                                "required": true,
+                                "description": "Silinmə səbəbi - [\"platform_dislike\", \"no_activity\", \"personal_reasons\", \"other\"]"
+                            },
+                            "custom_reason": {
+                                "type": "text",
+                                "description": "Fərdi səbəb (reason=other olduqda mütləqdir)"
+                            },
+                            "password": {
+                                "type": "password",
+                                "required": true,
+                                "description": "Hazırki şifrə (təsdiq üçün)"
+                            }
+                        }
+                    }
+                },
+                "/app/profile/account": {
+                    "put": {
+                        "summary": "Hesab tənzimləmələri",
+                        "description": "İstifadəçinin email və şifrəsini yeniləyir",
+                        "authorization": true,
+                        "formBody": {
+                            "email": {
+                                "type": "email",
+                                "required": true,
+                                "description": "Email ünvanı"
+                            },
+                            "current_password": {
+                                "type": "password",
+                                "description": "Hazırki şifrə (yeni şifrə təyin edərkən mütləqdir)"
+                            },
+                            "password": {
+                                "type": "password",
+                                "description": "Yeni şifrə (minimum 8 simvol)"
+                            },
+                            "password_confirmation": {
+                                "type": "password",
+                                "description": "Yeni şifrə təkrarı"
+                            }
+                        }
+                    }
+                },
+                "/app/profile/avatar": {
+                    "post": {
+                        "summary": "Profil şəkli yeniləməsi",
+                        "description": "İstifadəçinin profil şəklini yeniləyir",
+                        "authorization": true,
+                        "formBody": {
+                            "photo_path": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Base64 formatında şəkil"
+                            }
+                        }
+                    }
+                },
+                "/app/profile/preferences": {
+                    "get": {
+                        "summary": "İstifadəçi tənzimləmələri",
+                        "description": "İstifadəçinin tənzimləmələrini qaytarır",
+                        "authorization": true
+                    },
+                    "put": {
+                        "summary": "Tənzimləmələr yeniləməsi",
+                        "description": "İstifadəçinin tənzimləmələrini yeniləyir",
+                        "authorization": true,
+                        "formBody": {
+                            "language": {
+                                "type": "select",
+                                "description": "İnterfeys dili - [\"az\", \"en\", \"ru\", \"tr\"]"
+                            },
+                            "dark_mode": {
+                                "type": "boolean",
+                                "description": "Tünd rejim"
+                            },
+                            "notification_settings": {
+                                "type": "object",
+                                "description": "Bildiriş tənzimləmələri",
+                                "default": {
+                                    "email_notifications": true,
+                                    "push_notifications": false
+                                }
+                            },
+                            "privacy_settings": {
+                                "type": "object",
+                                "description": "Gizlilik tənzimləmələri",
+                                "default": {
+                                    "profile_visibility": "public",
+                                    "show_online_status": true
+                                }
+                            },
+                            "timezone": {
+                                "type": "text",
+                                "description": "Saat qurşağı"
+                            },
+                            "email_frequency": {
+                                "type": "select",
+                                "description": "Email bildirişlərinin tezliyi - [\"daily\", \"weekly\", \"monthly\", \"never\"]"
+                            }
+                        }
+                    }
+                },
+                "/app/profile/deactivate": {
+                    "post": {
+                        "summary": "Hesabı deaktiv etmək",
+                        "description": "İstifadəçi hesabını müvəqqəti olaraq deaktiv edir",
+                        "authorization": true,
+                        "formBody": {
+                            "reason": {
+                                "type": "select",
+                                "required": true,
+                                "options": [
+                                    "platform_dislike",
+                                    "no_activity",
+                                    "personal_reasons",
+                                    "other"
+                                ],
+                                "description": "Deaktivasiya səbəbi"
+                            },
+                            "custom_reason": {
+                                "type": "text",
+                                "description": "Fərdi səbəb (reason=other olduqda mütləqdir)"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
             "tag": "İstinad məlumatları",
             "description": "İstinad məlumatları ilə əlaqəli API-lər",
             "endpoints": {
@@ -826,12 +1008,6 @@
             "description": "İstifadəçilər ilə əlaqəli API-lər",
             "endpoints": {
                 "/common/user/profile": {
-                    "get": {
-                        "summary": "İstifadəçi məlumatlarını qaytarır",
-                        "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
-                    }
-                },
-                "/common/user/notification": {
                     "get": {
                         "summary": "İstifadəçi məlumatlarını qaytarır",
                         "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
