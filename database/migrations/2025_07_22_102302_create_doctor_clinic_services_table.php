@@ -23,9 +23,6 @@ return new class extends Migration
             $table->text('description')->nullable(); // Əlavə təsvir
             $table->boolean('is_active')->default(true); // Aktiv xidmətdir?
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
-
-            // Eyni həkim-klinika-xidmət üçlüyünün unikallığı
-            $table->unique(['doctor_id', 'clinic_id', 'service_id']);
         });
     }
 

@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Exceptions\BaseException;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Front\DoctorCertificateResource;
+use App\Http\Resources\Front\DoctorEducationResource;
+use App\Http\Resources\Front\DoctorExperienceResource;
+use App\Http\Resources\Front\DoctorLanguageResource;
+use App\Http\Resources\Front\DoctorServiceResource;
 use App\Http\Resources\Front\UserResource;
 use App\Http\Resources\Admin\UserPreferenceResource;
 use App\Services\Module\ProfileService;
@@ -53,7 +58,6 @@ class ProfileController extends Controller
             'name' => 'required|string|max:255',
             'surname' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:users,phone,' . auth()->id(),
-            'address' => 'nullable|string|max:500',
             'photo_path' => 'nullable|string',
             'gender' => 'nullable|in:male,female',
             'birthdate' => 'nullable|date'
@@ -180,6 +184,7 @@ class ProfileController extends Controller
      * POST /api/app/profile/avatar
      *
      * @throws ValidationException
+     * @throws Exception
      */
     public function updateAvatar(Request $request): JsonResponse
     {
@@ -219,6 +224,7 @@ class ProfileController extends Controller
      * PUT /api/app/profile/preferences
      *
      * @throws ValidationException
+     * @throws Exception
      */
     public function updatePreferences(Request $request): JsonResponse
     {
@@ -240,5 +246,302 @@ class ProfileController extends Controller
             'preferences' => new UserPreferenceResource($preferences),
             'message' => t('notification.profile.preferences_updated_successfully')
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HƏKİM XİDMƏTLƏRİ - Doctor Services (Bulk Operations)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Həkimin xidmətlərini əldə edir
+     * GET /api/app/profile/doctor/services
+     * @throws BaseException
+     */
+    public function getDoctorServices(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $services = $this->profileService->getDoctorServices(auth()->user()->doctor);
+
+        return response()->json([
+            'services' => DoctorServiceResource::collection($services),
+            'message' => t('notification.doctor.services_retrieved_successfully')
+        ]);
+    }
+
+    /**
+     * Həkimin bütün xidmətlərini yenilə (bulk update)
+     * PUT /api/app/profile/doctor/services
+     * @throws BaseException
+     * @throws ValidationException
+     */
+    public function updateDoctorServices(Request $request): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $formFields = $this->validateRequest($request, [
+            'services' => 'required|array',
+            'services.*.id' => 'nullable|integer',
+            'services.*.service_id' => 'required|exists:services,id',
+            'services.*.clinic_id' => 'required|exists:clinics,id',
+            'services.*.price' => 'nullable|numeric|min:0',
+            'services.*.duration' => 'nullable|integer|min:5|max:480',
+            'services.*.description' => 'nullable|string|max:500',
+            'services.*.is_active' => 'nullable|boolean',
+        ]);
+
+        $services = $this->profileService->syncDoctorServices(
+            auth()->user()->doctor,
+            $formFields['services']
+        );
+
+        return response()->json([
+            'services' => DoctorServiceResource::collection($services),
+            'message' => t('notification.doctor.services_updated_successfully')
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HƏKİM TƏHSİL - Doctor Education (Bulk Operations)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Həkimin təhsil məlumatlarını əldə edir
+     * GET /api/app/profile/doctor/educations
+     * @throws BaseException
+     */
+    public function getDoctorEducations(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $educations = $this->profileService->getDoctorEducations(auth()->user()->doctor);
+
+        return response()->json([
+            'educations' => DoctorEducationResource::collection($educations),
+            'message' => t('notification.doctor.educations_retrieved_successfully')
+        ]);
+    }
+
+    /**
+     * Həkimin bütün təhsil məlumatlarını yenilə (bulk update)
+     * PUT /api/app/profile/doctor/educations
+     * @throws BaseException
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function updateDoctorEducations(Request $request): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $formFields = $this->validateRequest($request, [
+            'educations' => 'required|array',
+            'educations.*.university' => 'required|string|max:255',
+            'educations.*.faculty' => 'nullable|string|max:255',
+            'educations.*.degree' => 'required|string|max:255',
+            'educations.*.specialization' => 'nullable|string|max:255',
+            'educations.*.start_date' => 'required|date',
+            'educations.*.end_date' => 'nullable|date|after:educations.*.start_date',
+            'educations.*.location' => 'nullable|string|max:255',
+            'educations.*.description' => 'nullable|string|max:1000',
+            'educations.*.is_currently_studying' => 'nullable|boolean',
+            'educations.*.document_path' => 'nullable|string',
+        ]);
+
+        $educations = $this->profileService->syncDoctorEducations(
+            auth()->user()->doctor,
+            $formFields['educations']
+        );
+
+        return response()->json([
+            'educations' => DoctorEducationResource::collection($educations),
+            'message' => t('notification.doctor.educations_updated_successfully')
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HƏKİM İŞ TƏCRÜBƏSİ - Doctor Experience (Bulk Operations)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Həkimin iş təcrübəsi məlumatlarını əldə edir
+     * GET /api/app/profile/doctor/experiences
+     * @throws BaseException
+     */
+    public function getDoctorExperiences(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $experiences = $this->profileService->getDoctorExperiences(auth()->user()->doctor);
+
+        return response()->json([
+            'experiences' => DoctorExperienceResource::collection($experiences),
+            'message' => t('notification.doctor.experiences_retrieved_successfully')
+        ]);
+    }
+
+    /**
+     * Həkimin bütün iş təcrübəsi məlumatlarını yenilə (bulk update)
+     * PUT /api/app/profile/doctor/experiences
+     * @throws BaseException
+     * @throws ValidationException
+     */
+    public function updateDoctorExperiences(Request $request): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $formFields = $this->validateRequest($request, [
+            'experiences' => 'required|array',
+            'experiences.*.id' => 'nullable|integer',
+            'experiences.*.workplace' => 'required|string|max:255',
+            'experiences.*.position' => 'required|string|max:255',
+            'experiences.*.start_date' => 'required|date',
+            'experiences.*.end_date' => 'nullable|date|after:experiences.*.start_date',
+            'experiences.*.location' => 'nullable|string|max:255',
+            'experiences.*.description' => 'nullable|string|max:1000',
+            'experiences.*.is_current_job' => 'nullable|boolean',
+            'experiences.*.document_path' => 'nullable|string',
+            'experiences.*._action' => 'nullable|in:create,update,delete'
+        ]);
+
+        $experiences = $this->profileService->syncDoctorExperiences(
+            auth()->user()->doctor,
+            $formFields['experiences']
+        );
+
+        return response()->json([
+            'experiences' => DoctorExperienceResource::collection($experiences),
+            'message' => t('notification.doctor.experiences_updated_successfully')
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HƏKİM SERTİFİKATLAR - Doctor Certificates (Bulk Operations)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Həkimin sertifikatlarını əldə edir
+     * GET /api/app/profile/doctor/certificates
+     * @throws BaseException
+     */
+    public function getDoctorCertificates(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $certificates = $this->profileService->getDoctorCertificates(auth()->user()->doctor);
+
+        return response()->json([
+            'certificates' => DoctorCertificateResource::collection($certificates),
+            'message' => t('notification.doctor.certificates_retrieved_successfully')
+        ]);
+    }
+
+    /**
+     * Həkimin bütün sertifikatlarını yenilə (bulk update)
+     * PUT /api/app/profile/doctor/certificates
+     * @throws BaseException
+     * @throws ValidationException
+     */
+    public function updateDoctorCertificates(Request $request): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $formFields = $this->validateRequest($request, [
+            'certificates' => 'required|array',
+            'certificates.*.id' => 'nullable|integer',
+            'certificates.*.name' => 'required|string|max:255',
+            'certificates.*.issuing_organization' => 'required|string|max:255',
+            'certificates.*.issue_date' => 'required|date',
+            'certificates.*.expiry_date' => 'nullable|date|after:certificates.*.issue_date',
+            'certificates.*.description' => 'nullable|string|max:1000',
+            'certificates.*.document_path' => 'nullable|string',
+            'certificates.*._action' => 'nullable|in:create,update,delete'
+        ]);
+
+        $certificates = $this->profileService->syncDoctorCertificates(
+            auth()->user()->doctor,
+            $formFields['certificates']
+        );
+
+        return response()->json([
+            'certificates' => DoctorCertificateResource::collection($certificates),
+            'message' => t('notification.doctor.certificates_updated_successfully')
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HƏKİM DİL BİLİKLƏRİ - Doctor Languages (Bulk Operations)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Həkimin dil biliklərini əldə edir
+     * GET /api/app/profile/doctor/languages
+     * @throws BaseException
+     */
+    public function getDoctorLanguages(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $languages = $this->profileService->getDoctorLanguages(auth()->user()->doctor);
+
+        return response()->json([
+            'languages' => DoctorLanguageResource::collection($languages),
+            'message' => t('notification.doctor.languages_retrieved_successfully')
+        ]);
+    }
+
+    /**
+     * Həkimin bütün dil biliklərini yenilə (bulk update)
+     * PUT /api/app/profile/doctor/languages
+     * @throws BaseException
+     * @throws ValidationException
+     */
+    public function updateDoctorLanguages(Request $request): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $formFields = $this->validateRequest($request, [
+            'languages' => 'required|array',
+            'languages.*.id' => 'nullable|integer',
+            'languages.*.language' => 'required|string|max:50',
+            'languages.*.proficiency' => 'required|in:native,fluent,intermediate,basic',
+            'languages.*._action' => 'nullable|in:create,update,delete'
+        ]);
+
+        $languages = $this->profileService->syncDoctorLanguages(
+            auth()->user()->doctor,
+            $formFields['languages']
+        );
+
+        return response()->json([
+            'languages' => DoctorLanguageResource::collection($languages),
+            'message' => t('notification.doctor.languages_updated_successfully')
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER METHODS - Köməkçi metodlar
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * İstifadəçinin həkim olub-olmadığını yoxlayır
+     * @throws BaseException
+     */
+    private function ensureUserIsDoctor(): void
+    {
+        if (!auth()->user()->hasDoctor()) {
+            throw new BaseException(t('validation.user.not_doctor'), 403);
+        }
     }
 }

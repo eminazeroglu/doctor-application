@@ -46,6 +46,116 @@
             "method": "get",
             "summary": "Həkim məlumatı",
             "description": "Verilən id-ə görə həkimin məlumatlarını qaytarır"
+        },
+        {
+            "path": "/app/doctor/dashboard/summary",
+            "method": "get",
+            "summary": "Performance overview & KPIs",
+            "description": "Verilən tarix intervalında yeni vs mövcud xəstələr faizi və əsas KPI-ları qaytarır.",
+            "authorization": true,
+            "query": {
+                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
+                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" }
+            },
+            "responses": {
+                "200": {
+                    "range": ["2025-05-01", "2025-05-07"],
+                    "overview": {
+                        "new_patients_percent": 20,
+                        "existing_patients_percent": 80
+                    },
+                    "kpis": {
+                        "total_appointments": 300,
+                        "unique_patients": 180,
+                        "new_patients": 60
+                    }
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/dashboard/performance",
+            "method": "get",
+            "summary": "Performance chart (appointments & new patients)",
+            "description": "Interval üzrə (month|week) görüş sayı və yeni xəstələrin trendi.",
+            "authorization": true,
+            "query": {
+                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
+                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" },
+                "interval": { "type": "text", "description": "month | week", "default": "month" }
+            },
+            "responses": {
+                "200": {
+                    "range": ["2025-01-01","2025-07-01"],
+                    "interval": "month",
+                    "series": [
+                        { "bucket": "2025-01", "appointments": 480, "new_patients": 250 },
+                        { "bucket": "2025-02", "appointments": 350, "new_patients": 120 }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/dashboard/appointments/report",
+            "method": "get",
+            "summary": "Appointment report totals",
+            "description": "Statuslara görə görüş sayları (confirmed, unconfirmed, reschedule, cancellation, no-show).",
+            "authorization": true,
+            "query": {
+                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
+                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" }
+            },
+            "responses": {
+                "200": {
+                    "range": ["2025-05-01","2025-07-05"],
+                    "totals": {
+                        "confirmed": 300,
+                        "unconfirmed": 40,
+                        "practice_reschedules": 250,
+                        "practice_cancellations": 10,
+                        "patient_cancellations": 60,
+                        "patient_no_shows": 3
+                    }
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/dashboard/bookings/recent",
+            "method": "get",
+            "summary": "Recent booking details",
+            "description": "Son rezervlər siyahısı (vaxt aralığı + tarix + pasiyent adı).",
+            "authorization": true,
+            "query": {
+                "limit": { "type": "number", "description": "Qaytarılacaq ədəd", "default": 10 }
+            },
+            "responses": {
+                "200": {
+                    "items": [
+                        { "id": 1, "time_range": "10:00 - 11:30", "date_human": "Fri, May 10", "patient_name": "Cameron Williamson" }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/dashboard/appointments/report/export",
+            "method": "get",
+            "summary": "Download appointment report (xlsx/csv)",
+            "description": "AppointmentStatusEnum statuslarına görə appointment report-u fayl formatında yükləmək üçün endpoint.",
+            "authorization": true,
+            "query": {
+                "from": {
+                    "type": "text",
+                    "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                },
+                "to": {
+                    "type": "text",
+                    "description": "Bitmə tarixi (YYYY-MM-DD)"
+                },
+                "format": {
+                    "type": "text",
+                    "description": "Yüklənəcək fayl formatı: xlsx | csv",
+                    "default": "xlsx"
+                }
+            }
         }
     ]
 }

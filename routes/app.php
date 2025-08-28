@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
 use App\Http\Controllers\Api\Front\DoctorController;
+use App\Http\Controllers\Api\Front\DoctorDashboardController;
 use App\Http\Controllers\Api\Front\FaqController;
 use App\Http\Controllers\Api\Front\MessagingController;
 use App\Http\Controllers\Api\Front\PageController;
@@ -218,4 +219,51 @@ Route::controller(ProfileController::class)
         // Hesab idarəetməsi
         Route::post('/deactivate', 'deactivate')->name('profile.deactivate');
         Route::delete('/', 'destroy')->name('profile.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOCTOR PROFILE ROUTES - Həkim Profil Route-ları
+        |--------------------------------------------------------------------------
+        */
+
+        // Doctor Services - Həkim Xidmətləri
+        Route::prefix('doctor/services')->group(function () {
+            Route::get('/', 'getDoctorServices')->name('profile.doctor.services.index');
+            Route::put('/', 'updateDoctorServices')->name('profile.doctor.services.sync'); // Bulk update
+        });
+
+        // Doctor Education - Həkim Təhsil
+        Route::prefix('doctor/educations')->group(function () {
+            Route::get('/', 'getDoctorEducations')->name('profile.doctor.educations.index');
+            Route::put('/', 'updateDoctorEducations')->name('profile.doctor.educations.sync'); // Bulk update
+        });
+
+        // Doctor Experience - Həkim İş Təcrübəsi
+        Route::prefix('doctor/experiences')->group(function () {
+            Route::get('/', 'getDoctorExperiences')->name('profile.doctor.experiences.index');
+            Route::put('/', 'updateDoctorExperiences')->name('profile.doctor.experiences.sync'); // Bulk update
+        });
+
+        // Doctor Certificates - Həkim Sertifikatlar
+        Route::prefix('doctor/certificates')->group(function () {
+            Route::get('/', 'getDoctorCertificates')->name('profile.doctor.certificates.index');
+            Route::put('/', 'updateDoctorCertificates')->name('profile.doctor.certificates.sync'); // Bulk update
+        });
+
+        // Doctor Languages - Həkim Dil Bilikləri
+        Route::prefix('doctor/languages')->group(function () {
+            Route::get('/', 'getDoctorLanguages')->name('profile.doctor.languages.index');
+            Route::put('/', 'updateDoctorLanguages')->name('profile.doctor.languages.sync'); // Bulk update
+        });
+    });
+
+Route::controller(DoctorDashboardController::class)
+    ->prefix('doctor/dashboard')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        Route::get('/summary', 'summary');                    // üst sağ “Performance overview” + quick KPI-lar
+        Route::get('/performance', 'performance');            // sol üst chart (son 6 ay və ya verilən interval)
+        Route::get('/appointments/report', 'appointmentReport'); // sol alt “Appointment report”
+        Route::get('/bookings/recent', 'recentBookings');     // sağ alt “Recent booking details”
+        Route::get('/appointments/report/export', 'exportAppointmentReport');
     });

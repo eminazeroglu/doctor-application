@@ -175,6 +175,240 @@
                     "description": "Hazırki şifrə (təsdiq üçün)"
                 }
             }
+        },
+        {
+            "path": "/app/profile/doctor/services",
+            "method": "get",
+            "summary": "Həkimin xidmətləri",
+            "description": "Həkimin təklif etdiyi xidmətlərin siyahısını qaytarır",
+            "authorization": true,
+            "query": {
+                "clinic_id": {
+                    "type": "integer",
+                    "description": "Klinica id"
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/services",
+            "method": "put",
+            "summary": "Xidmətlərin bulk yenilənməsi",
+            "description": "Həkimin bütün xidmətlərini bir anda yenilər (bulk update). Array formatında göndərilir.",
+            "authorization": true,
+            "formBody": {
+                "services": {
+                    "type": "array",
+                    "required": true,
+                    "description": "Xidmətlər massivi",
+                    "default": [
+                        {
+                            "service_id": 10,
+                            "clinic_id": 12,
+                            "price": 60.00,
+                            "duration": 45,
+                            "description": "Yenilənmiş təsvir",
+                            "is_active": true
+                        },
+                        {
+                            "service_id": 11,
+                            "clinic_id": 12,
+                            "price": 40.00,
+                            "duration": 20,
+                            "description": "Yeni xidmət",
+                            "is_active": true
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/educations",
+            "method": "get",
+            "summary": "Həkimin təhsil məlumatları",
+            "description": "Həkimin təhsil tarixçəsini qaytarır",
+            "authorization": true
+        },
+        {
+            "path": "/app/profile/doctor/educations",
+            "method": "put",
+            "summary": "Təhsil məlumatlarının bulk yenilənməsi",
+            "description": "Həkimin bütün təhsil məlumatlarını bir anda yenilər",
+            "authorization": true,
+            "formBody": {
+                "educations": {
+                    "type": "array",
+                    "required": true,
+                    "description": "Təhsil məlumatları massivi",
+                    "default": [
+                        {
+                            "university": "Azərbaycan Tibb Universiteti",
+                            "faculty": "Tibb fakultəsi",
+                            "degree": "Həkim diplomu",
+                            "specialization": "Stomatologiya",
+                            "start_date": "2018-09-01",
+                            "end_date": "2024-06-30",
+                            "location": "Bakı, Azərbaycan",
+                            "description": "Stomatologiya üzrə ixtisas",
+                            "is_currently_studying": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/experiences",
+            "method": "get",
+            "summary": "Həkimin iş təcrübəsi",
+            "description": "Həkimin iş təcrübəsi məlumatlarını qaytarır",
+            "authorization": true
+        },
+        {
+            "path": "/app/profile/doctor/experiences",
+            "method": "put",
+            "summary": "İş təcrübəsinin bulk yenilənməsi",
+            "description": "Həkimin bütün iş təcrübəsi məlumatlarını bir anda yenilər",
+            "authorization": true,
+            "formBody": {
+                "experiences": {
+                    "type": "array",
+                    "required": true,
+                    "description": "İş təcrübəsi massivi",
+                    "default": [
+                        {
+                            "clinic_id": 1,
+                            "position": "Baş Stomatoloq",
+                            "start_date": "2022-07-01",
+                            "location": "Bakı",
+                            "description": "Stomatoloji müalicələr",
+                            "is_current_job": true
+                        },
+                        {
+                            "clinic_id": 2,
+                            "position": "Stomatoloq",
+                            "start_date": "2020-01-01",
+                            "end_date": "2022-06-30",
+                            "location": "Bakı",
+                            "is_current_job": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/certificates",
+            "method": "get",
+            "summary": "Həkimin sertifikatları",
+            "description": "Həkimin sertifikat və lisenziyalarını qaytarır",
+            "authorization": true,
+            "responses": {
+                "200": {
+                    "certificates": [
+                        {
+                            "id": 1,
+                            "name": "Stomatologiya Sertifikatı",
+                            "issuing_organization": "Səhiyyə Nazirliyi",
+                            "issue_date": "2022-08-15",
+                            "expiry_date": "2027-08-15",
+                            "description": "Ümumi stomatologiya üzrə sertifikat",
+                            "is_verified": true,
+                            "is_expired": false,
+                            "document_url": "https://api.doctap.az/storage/certificates/cert1.pdf"
+                        }
+                    ],
+                    "message": "Sertifikatlar uğurla əldə edildi"
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/certificates",
+            "method": "put",
+            "summary": "Sertifikatların bulk yenilənməsi",
+            "description": "Həkimin bütün sertifikatlarını bir anda yenilər",
+            "authorization": true,
+            "formBody": {
+                "certificates": {
+                    "type": "array",
+                    "required": true,
+                    "description": "Sertifikatlar massivi",
+                    "example": [
+                        {
+                            "id": 1,
+                            "_action": "update",
+                            "name": "Ümumi Stomatologiya Sertifikatı",
+                            "issuing_organization": "Səhiyyə Nazirliyi",
+                            "issue_date": "2022-08-15",
+                            "expiry_date": "2027-08-15",
+                            "description": "Yenilənmiş təsvir"
+                        },
+                        {
+                            "_action": "create",
+                            "name": "Ortodontiya Sertifikatı",
+                            "issuing_organization": "Beynəlxalq Ortodontiya Federasiyası",
+                            "issue_date": "2023-12-01",
+                            "expiry_date": "2028-12-01"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/languages",
+            "method": "get",
+            "summary": "Həkimin dil bilikləri",
+            "description": "Həkimin danışdığı dilləri qaytarır",
+            "authorization": true,
+            "responses": {
+                "200": {
+                    "languages": [
+                        {
+                            "id": 1,
+                            "language": "Azərbaycan dili",
+                            "proficiency": "native",
+                            "proficiency_text": "Ana dili"
+                        },
+                        {
+                            "id": 2,
+                            "language": "İngilis dili",
+                            "proficiency": "intermediate",
+                            "proficiency_text": "Orta"
+                        }
+                    ],
+                    "message": "Dil bilikləri uğurla əldə edildi"
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/languages",
+            "method": "put",
+            "summary": "Dil biliklərinin bulk yenilənməsi",
+            "description": "Həkimin bütün dil biliklərini bir anda yenilər",
+            "authorization": true,
+            "formBody": {
+                "languages": {
+                    "type": "array",
+                    "required": true,
+                    "description": "Dil bilikləri massivi",
+                    "example": [
+                        {
+                            "id": 1,
+                            "_action": "update",
+                            "language": "Azərbaycan dili",
+                            "proficiency": "native"
+                        },
+                        {
+                            "id": 2,
+                            "_action": "update",
+                            "language": "İngilis dili",
+                            "proficiency": "fluent"
+                        },
+                        {
+                            "_action": "create",
+                            "language": "Türk dili",
+                            "proficiency": "intermediate"
+                        }
+                    ]
+                }
+            }
         }
     ]
 }

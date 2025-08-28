@@ -67,7 +67,7 @@ class AppointmentSeeder extends Seeder
 
         $this->command->info('200 appointment yaradılır...');
 
-        for ($i = 0; $i < 1000; $i++) {
+        for ($i = 0; $i < 3000; $i++) {
             // Status seçimi (ağırlıqlı)
             $status = $this->getWeightedRandomStatus($appointmentStatuses);
 
