@@ -29,9 +29,10 @@ class ProfileService
     public ActivityLogService $activityLogService;
 
     public function __construct(
-        UserRepository $userRepository,
+        UserRepository     $userRepository,
         ActivityLogService $activityLogService
-    ) {
+    )
+    {
         $this->userRepository = $userRepository;
         $this->activityLogService = $activityLogService;
     }
@@ -423,52 +424,38 @@ class ProfileService
     */
 
     /**
-     * Həkimin xidmətlərini əldə edir
+     * Həkimin bacarıqlarını əldə edir
      */
-    public function getDoctorServices(Doctor $doctor): Collection
+    public function getDoctorSkills(Doctor $doctor): array
     {
-        return $doctor->services()
-            ->when(request()->has('clinic_id'), function ($query) {
-                return $query->where('clinic_id', request()->clinic_id);
-            })
-            ->get();
+        return [
+            'category_id' => $doctor->category_id,
+            'sub_category_id' => $doctor->sub_category_id,
+            'attributes' => $doctor->attributes,
+        ];
     }
 
     /**
      * Həkimin bütün xidmətlərini sinxronlaşdırır (bulk sync)
      * @throws BaseException|Exception
      */
-    public function syncDoctorServices(Doctor $doctor, array $servicesData): Collection
+    public function syncDoctorSkills(Doctor $doctor, array $data): array
     {
         try {
             DB::beginTransaction();
 
-            if (count($servicesData) > 0) {
-                DoctorClinicService::query()->where('doctor_id', $doctor->id)->delete();
+            $doctor->update([
+                'category_id' => $data['category_id'],
+                'sub_category_id' => $data['sub_category_id'],
+            ]);
 
-                foreach ($servicesData as $serviceData) {
-                    $data = collect($serviceData)->merge([
-                        'doctor_id' => $doctor->id,
-                        'is_active' => $servicesData['is_active'] ?? true
-                    ])->toArray();
-                    DoctorClinicService::query()->create($data);
-                }
+            $doctor->attributes()->delete();
 
-                $this->activityLogService->log(
-                    action: 'doctor_services_synced',
-                    model: $doctor,
-                    newData: $servicesData,
-                    additionalData: [
-                        'processed_count' => count($servicesData),
-                        'ip_address' => request()->ip(),
-                        'user_agent' => request()->userAgent()
-                    ]
-                );
-            }
+            $doctor->attributes()->createMany($data['attributes']);
 
             DB::commit();
 
-            return $doctor->fresh()->services()->get();
+            return $this->getDoctorSkills($doctor->fresh());
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -556,6 +543,7 @@ class ProfileService
      */
     public function getDoctorExperiences(Doctor $doctor): Collection
     {
+        return $doctor->doctorClinics()->with('services')->get();
         return $doctor->experiences()->orderBy('start_date', 'desc')->get();
     }
 

@@ -71,7 +71,7 @@ trait HasRelationships
     /**
      * İstifadəçinin blok etdiyi istifadəçilər
      */
-    public function blockedUsers()
+    public function blockedUsers(): HasMany
     {
         return $this->hasMany(UserBlock::class, 'blocker_id');
     }
@@ -79,19 +79,9 @@ trait HasRelationships
     /**
      * İstifadəçini blok edən istifadəçilər
      */
-    public function blockedByUsers()
+    public function blockedByUsers(): HasMany
     {
         return $this->hasMany(UserBlock::class, 'blocked_id');
-    }
-
-    /**
-     * Service
-     * */
-    public function medicalServices(): BelongsToMany
-    {
-        return $this->belongsToMany(Service::class, 'doctor_service', 'doctor_id', 'service_id')
-            ->withPivot(['custom_price', 'custom_duration', 'custom_fields'])
-            ->withTimestamps();
     }
 
     // Doctor & Patient əlaqələri

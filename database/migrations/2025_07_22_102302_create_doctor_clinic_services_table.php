@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('doctor_clinic_services', function (Blueprint $table) {
             $table->id(); // Qeydin unikal ID-si
-            $table->foreignId('doctor_id')->constrained()->onDelete('cascade'); // Həkim əlaqəsi
-            $table->foreignId('clinic_id')->constrained()->onDelete('cascade'); // Klinika əlaqəsi
+            $table->foreignId('doctor_clinic_id')->constrained('doctor_clinic')->onDelete('cascade'); // Həkim əlaqəsi
             $table->foreignId('service_id')->constrained()->onDelete('cascade'); // Xidmət əlaqəsi
             $table->decimal('price', 10, 2)->nullable(); // Xidmət qiyməti
             $table->integer('duration')->nullable(); // Xidmət müddəti (dəqiqə)

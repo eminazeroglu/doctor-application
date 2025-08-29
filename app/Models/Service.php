@@ -87,7 +87,7 @@ class Service extends BaseModel
     public function doctors(): BelongsToMany
     {
         return $this->belongsToMany(Doctor::class, 'doctor_clinic_services')
-            ->withPivot(['clinic_id', 'price', 'duration', 'description', 'is_active'])
+            ->withPivot(['price', 'duration', 'description', 'is_active'])
             ->withTimestamps();
     }
 

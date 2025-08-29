@@ -357,9 +357,13 @@ class DoctorSeeder extends Seeder
             'is_featured' => fake()->boolean(20), // 20% featured
             'years_of_experience' => fake()->numberBetween(2, 35),
             'practice_license_number' => 'LIC-' . fake()->unique()->numberBetween(100000, 999999),
-            'workplace_name' => fake()->randomElement($this->workplaces),
-            'workplace_address' => fake('az_AZ')->address,
-            'workplace_phone' => '+994' . fake('az_AZ')->randomNumber(9, true),
+            'workplace' => [
+                'name' => fake()->randomElement($this->workplaces),
+                'address' => fake('az_AZ')->address,
+                'phone' => '+994' . fake('az_AZ')->randomNumber(9, true),
+                'latitude' => fake()->latitude(40.3, 40.5), // Bakı üçün təxmini koordinatlar
+                'longitude' => fake()->longitude(49.8, 50.0),
+            ],
             'available_for_home_visit' => fake()->boolean(30),
             'available_for_online_consultation' => fake()->boolean(70),
             'home_visit_fee' => fake()->boolean(30) ? fake()->randomFloat(2, 50, 300) : null,
@@ -568,7 +572,7 @@ class DoctorSeeder extends Seeder
         $doctorClinicIds = DB::table('doctor_clinic')
             ->where('doctor_id', $doctor->id)
             ->where('is_active', 1)
-            ->pluck('clinic_id');
+            ->pluck('id');
 
         // Əgər həkimin aktiv klinikası yoxdursa, skip edirik
         if ($doctorClinicIds->isEmpty()) {
@@ -578,8 +582,7 @@ class DoctorSeeder extends Seeder
         foreach ($categoryServices as $service) {
             foreach ($doctorClinicIds as $clinicId) {
                 DoctorClinicService::create([
-                    'doctor_id' => $doctor->id,
-                    'clinic_id' => $clinicId,
+                    'doctor_clinic_id' => $clinicId,
                     'service_id' => $service->id,
                     'price' => fake()->randomFloat(2, $service->price * 0.8, $service->price * 1.2),
                     'duration' => fake()->randomElement([30, 45, 60, 90]),

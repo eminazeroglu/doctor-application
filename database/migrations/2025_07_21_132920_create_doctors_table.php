@@ -28,9 +28,16 @@ return new class extends Migration
             $table->integer('years_of_experience')->nullable(); // İş təcrübəsi (il ilə)
             $table->string('practice_license_number')->nullable(); // Həkimlik lisenziya nömrəsi
             $table->string('title')->nullable(); // Titulu (Dr., Prof. və s.)
-            $table->string('workplace_name')->nullable(); // Əsas iş yerinin adı
-            $table->string('workplace_address')->nullable(); // Əsas iş yerinin ünvanı
-            $table->string('workplace_phone')->nullable(); // Əsas iş yerinin telefonu
+            /*
+             * {
+             *  name: "",
+             *  address: "",
+             *  phone: "",
+             *  latitude: "",
+             *  longitude: "",
+             * }
+             * */
+            $table->json('workplace')->nullable();
             $table->json('social_media_links')->nullable(); // Sosial media hesabları
             $table->boolean('available_for_home_visit')->default(false); // Ev ziyarəti təklif edir?
             $table->boolean('available_for_online_consultation')->default(false); // Onlayn konsultasiya təklif edir?

@@ -226,10 +226,10 @@ Route::controller(ProfileController::class)
         |--------------------------------------------------------------------------
         */
 
-        // Doctor Services - Həkim Xidmətləri
-        Route::prefix('doctor/services')->group(function () {
-            Route::get('/', 'getDoctorServices')->name('profile.doctor.services.index');
-            Route::put('/', 'updateDoctorServices')->name('profile.doctor.services.sync'); // Bulk update
+        // Doctor Skills - Həkim Bacarıqları
+        Route::prefix('doctor/skills')->group(function () {
+            Route::get('/', 'getDoctorSkills')->name('profile.doctor.skill.index');
+            Route::put('/', 'updateDoctorSkills')->name('profile.doctor.skill.sync'); // Bulk update
         });
 
         // Doctor Education - Həkim Təhsil

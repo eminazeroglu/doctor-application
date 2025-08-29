@@ -46,6 +46,7 @@ class PatientSeeder extends Seeder
 
             for ($i = 1; $i <= 200; $i++) {
                 // User yaradırıq
+
                 $user = $this->createUser($i);
 
                 // Patient yaradırıq
@@ -92,6 +93,10 @@ class PatientSeeder extends Seeder
         $firstName = fake('az_AZ')->firstName();
         $lastName = fake('az_AZ')->lastName();
         $email = strtolower(str_replace(' ', '.', $firstName . '.' . $lastName)) . $index . '@example.com';
+
+        if ($index === 1) {
+            $email = 'patient@example.com';
+        }
 
         return User::create([
             'name' => $firstName,

@@ -37,12 +37,9 @@ class ProfileController extends Controller
      */
     public function index(): JsonResponse
     {
-        $user = $this->profileService->getUserProfile(auth()->user());
+        $user = $this->profileService->getUserProfile(auth()->id());
 
-        return response()->json([
-            'user' => new UserResource($user),
-            'message' => t('notification.profile.retrieved_successfully')
-        ]);
+        return response()->json(new UserResource($user));
     }
 
     /**
@@ -255,52 +252,44 @@ class ProfileController extends Controller
     */
 
     /**
-     * Həkimin xidmətlərini əldə edir
+     * Həkimin bacarıqlarını əldə edir
      * GET /api/app/profile/doctor/services
      * @throws BaseException
      */
-    public function getDoctorServices(): JsonResponse
+    public function getDoctorSkills(): JsonResponse
     {
         $this->ensureUserIsDoctor();
 
-        $services = $this->profileService->getDoctorServices(auth()->user()->doctor);
+        $skills = $this->profileService->getDoctorSkills(auth()->user()->doctor);
 
-        return response()->json([
-            'services' => DoctorServiceResource::collection($services),
-            'message' => t('notification.doctor.services_retrieved_successfully')
-        ]);
+        return response()->json($skills);
     }
 
     /**
-     * Həkimin bütün xidmətlərini yenilə (bulk update)
-     * PUT /api/app/profile/doctor/services
+     * Həkimin bütün bacarıqlarını yenilə (bulk update)
+     * PUT /api/app/profile/doctor/skills
      * @throws BaseException
      * @throws ValidationException
      */
-    public function updateDoctorServices(Request $request): JsonResponse
+    public function updateDoctorSkills(Request $request): JsonResponse
     {
         $this->ensureUserIsDoctor();
 
         $formFields = $this->validateRequest($request, [
-            'services' => 'required|array',
-            'services.*.id' => 'nullable|integer',
-            'services.*.service_id' => 'required|exists:services,id',
-            'services.*.clinic_id' => 'required|exists:clinics,id',
-            'services.*.price' => 'nullable|numeric|min:0',
-            'services.*.duration' => 'nullable|integer|min:5|max:480',
-            'services.*.description' => 'nullable|string|max:500',
-            'services.*.is_active' => 'nullable|boolean',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:categories,id',
+            'attributes' => 'required|array',
+            'attributes.*.attribute_id' => 'required|exists:attributes,id',
+            'attributes.*.attribute_option_id' => 'nullable|exists:attribute_options,id',
+            'attributes.*.value' => 'nullable',
         ]);
 
-        $services = $this->profileService->syncDoctorServices(
+        $skills = $this->profileService->syncDoctorSkills(
             auth()->user()->doctor,
-            $formFields['services']
+            $formFields
         );
 
-        return response()->json([
-            'services' => DoctorServiceResource::collection($services),
-            'message' => t('notification.doctor.services_updated_successfully')
-        ]);
+        return response()->json($skills);
     }
 
     /*
@@ -320,10 +309,7 @@ class ProfileController extends Controller
 
         $educations = $this->profileService->getDoctorEducations(auth()->user()->doctor);
 
-        return response()->json([
-            'educations' => DoctorEducationResource::collection($educations),
-            'message' => t('notification.doctor.educations_retrieved_successfully')
-        ]);
+        return response()->json(DoctorEducationResource::collection($educations));
     }
 
     /**
@@ -356,10 +342,7 @@ class ProfileController extends Controller
             $formFields['educations']
         );
 
-        return response()->json([
-            'educations' => DoctorEducationResource::collection($educations),
-            'message' => t('notification.doctor.educations_updated_successfully')
-        ]);
+        return response()->json(DoctorEducationResource::collection($educations));
     }
 
     /*
@@ -379,10 +362,12 @@ class ProfileController extends Controller
 
         $experiences = $this->profileService->getDoctorExperiences(auth()->user()->doctor);
 
-        return response()->json([
-            'experiences' => DoctorExperienceResource::collection($experiences),
-            'message' => t('notification.doctor.experiences_retrieved_successfully')
-        ]);
+        return response()->json($experiences->map(fn($i) => [
+            'id' => $i->id,
+            'clinic_id' => $i->clinic_id,
+            'start_date' => $i->start_date,
+            'end_date' => $i->end_date,
+        ]));
     }
 
     /**
@@ -414,10 +399,7 @@ class ProfileController extends Controller
             $formFields['experiences']
         );
 
-        return response()->json([
-            'experiences' => DoctorExperienceResource::collection($experiences),
-            'message' => t('notification.doctor.experiences_updated_successfully')
-        ]);
+        return response()->json(DoctorExperienceResource::collection($experiences));
     }
 
     /*
@@ -437,10 +419,7 @@ class ProfileController extends Controller
 
         $certificates = $this->profileService->getDoctorCertificates(auth()->user()->doctor);
 
-        return response()->json([
-            'certificates' => DoctorCertificateResource::collection($certificates),
-            'message' => t('notification.doctor.certificates_retrieved_successfully')
-        ]);
+        return response()->json(DoctorCertificateResource::collection($certificates));
     }
 
     /**
@@ -470,62 +449,7 @@ class ProfileController extends Controller
             $formFields['certificates']
         );
 
-        return response()->json([
-            'certificates' => DoctorCertificateResource::collection($certificates),
-            'message' => t('notification.doctor.certificates_updated_successfully')
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | HƏKİM DİL BİLİKLƏRİ - Doctor Languages (Bulk Operations)
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Həkimin dil biliklərini əldə edir
-     * GET /api/app/profile/doctor/languages
-     * @throws BaseException
-     */
-    public function getDoctorLanguages(): JsonResponse
-    {
-        $this->ensureUserIsDoctor();
-
-        $languages = $this->profileService->getDoctorLanguages(auth()->user()->doctor);
-
-        return response()->json([
-            'languages' => DoctorLanguageResource::collection($languages),
-            'message' => t('notification.doctor.languages_retrieved_successfully')
-        ]);
-    }
-
-    /**
-     * Həkimin bütün dil biliklərini yenilə (bulk update)
-     * PUT /api/app/profile/doctor/languages
-     * @throws BaseException
-     * @throws ValidationException
-     */
-    public function updateDoctorLanguages(Request $request): JsonResponse
-    {
-        $this->ensureUserIsDoctor();
-
-        $formFields = $this->validateRequest($request, [
-            'languages' => 'required|array',
-            'languages.*.id' => 'nullable|integer',
-            'languages.*.language' => 'required|string|max:50',
-            'languages.*.proficiency' => 'required|in:native,fluent,intermediate,basic',
-            'languages.*._action' => 'nullable|in:create,update,delete'
-        ]);
-
-        $languages = $this->profileService->syncDoctorLanguages(
-            auth()->user()->doctor,
-            $formFields['languages']
-        );
-
-        return response()->json([
-            'languages' => DoctorLanguageResource::collection($languages),
-            'message' => t('notification.doctor.languages_updated_successfully')
-        ]);
+        return response()->json(DoctorCertificateResource::collection($certificates));
     }
 
     /*

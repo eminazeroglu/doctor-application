@@ -39,10 +39,15 @@ class ReferenceResource extends JsonResource
             $result['uuid'] = $this->uuid;
         if ($this->slug)
             $result['slug'] = $this->slug;
+        if ($this->type)
+            $result['type'] = $this->type;
         if ($this->photo_path)
             $result['photo'] = $this->photo;
         if ($this->relationLoaded('children') && $this->children && $this->children->isNotEmpty()) {
             $result['children'] = ReferenceResource::collection($this->children);
+        }
+        if ($this->relationLoaded('options') && $this->options && $this->options->isNotEmpty()) {
+            $result['options'] = ReferenceResource::collection($this->options);
         }
         return $result;
     }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class DoctorClinic extends Pivot
@@ -37,6 +39,31 @@ class DoctorClinic extends Pivot
      * @var array
      */
     protected $appends = ['duration', 'is_current'];
+
+
+    /*
+     * Services
+     * */
+    public function services(): HasMany
+    {
+        return $this->hasMany(DoctorClinicService::class, 'doctor_clinic_id');
+    }
+
+    /*
+     * Doctor
+     * */
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class);
+    }
+
+    /*
+     * Clinic
+     * */
+    public function clinic(): BelongsTo
+    {
+        return $this->belongsTo(Clinic::class);
+    }
 
     /**
      * İş müddətini qaytarır.

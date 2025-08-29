@@ -87,7 +87,7 @@ class ReferenceDataController extends Controller
     */
     public function attributes(): JsonResponse
     {
-        return response()->json($this->service->fetchAttributes());
+        return response()->json(ReferenceResource::collection($this->service->fetchAttributes()));
     }
 
     /**

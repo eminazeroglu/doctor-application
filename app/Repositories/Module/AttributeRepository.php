@@ -17,6 +17,9 @@ class AttributeRepository extends BaseRepository
     {
         parent::__construct($model);
         $this->setFilter(new AttributeFilter(request()));
+        $this->with = [
+            'options'
+        ];
     }
 
     public function afterUpdate($model): void

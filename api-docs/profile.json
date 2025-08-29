@@ -177,48 +177,54 @@
             }
         },
         {
-            "path": "/app/profile/doctor/services",
+            "path": "/app/profile/doctor/skills",
             "method": "get",
-            "summary": "Həkimin xidmətləri",
-            "description": "Həkimin təklif etdiyi xidmətlərin siyahısını qaytarır",
-            "authorization": true,
-            "query": {
-                "clinic_id": {
-                    "type": "integer",
-                    "description": "Klinica id"
-                }
-            }
+            "summary": "Həkimin bacarıqları",
+            "description": "Həkimin təklif etdiyi bacarıqların siyahısını qaytarır",
+            "authorization": true
         },
         {
-            "path": "/app/profile/doctor/services",
+            "path": "/app/profile/doctor/skills",
             "method": "put",
             "summary": "Xidmətlərin bulk yenilənməsi",
             "description": "Həkimin bütün xidmətlərini bir anda yenilər (bulk update). Array formatında göndərilir.",
             "authorization": true,
             "formBody": {
-                "services": {
+                "category_id": {
+                    "type": "integer",
+                    "required": true,
+                    "description": "Kateqoriya id",
+                    "default": ""
+                },
+                "sub_category_id": {
+                    "type": "integer",
+                    "required": true,
+                    "description": "Alt Kateqoriya id",
+                    "default": ""
+                },
+                "attributes": {
                     "type": "array",
                     "required": true,
-                    "description": "Xidmətlər massivi",
+                    "description": "Burda attributlar göndərilir.",
                     "default": [
                         {
-                            "service_id": 10,
-                            "clinic_id": 12,
-                            "price": 60.00,
-                            "duration": 45,
-                            "description": "Yenilənmiş təsvir",
-                            "is_active": true
+                            "attribute_id": "1",
+                            "attribute_option_id": "2",
+                            "value": ""
                         },
                         {
-                            "service_id": 11,
-                            "clinic_id": 12,
-                            "price": 40.00,
-                            "duration": 20,
-                            "description": "Yeni xidmət",
-                            "is_active": true
+                            "attribute_id": "1",
+                            "attribute_option_id": "3",
+                            "value": ""
+                        },
+                        {
+                            "attribute_id": "2",
+                            "attribute_option_id": "2",
+                            "value": ""
                         }
                     ]
                 }
+
             }
         },
         {
@@ -346,65 +352,6 @@
                             "issuing_organization": "Beynəlxalq Ortodontiya Federasiyası",
                             "issue_date": "2023-12-01",
                             "expiry_date": "2028-12-01"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "path": "/app/profile/doctor/languages",
-            "method": "get",
-            "summary": "Həkimin dil bilikləri",
-            "description": "Həkimin danışdığı dilləri qaytarır",
-            "authorization": true,
-            "responses": {
-                "200": {
-                    "languages": [
-                        {
-                            "id": 1,
-                            "language": "Azərbaycan dili",
-                            "proficiency": "native",
-                            "proficiency_text": "Ana dili"
-                        },
-                        {
-                            "id": 2,
-                            "language": "İngilis dili",
-                            "proficiency": "intermediate",
-                            "proficiency_text": "Orta"
-                        }
-                    ],
-                    "message": "Dil bilikləri uğurla əldə edildi"
-                }
-            }
-        },
-        {
-            "path": "/app/profile/doctor/languages",
-            "method": "put",
-            "summary": "Dil biliklərinin bulk yenilənməsi",
-            "description": "Həkimin bütün dil biliklərini bir anda yenilər",
-            "authorization": true,
-            "formBody": {
-                "languages": {
-                    "type": "array",
-                    "required": true,
-                    "description": "Dil bilikləri massivi",
-                    "example": [
-                        {
-                            "id": 1,
-                            "_action": "update",
-                            "language": "Azərbaycan dili",
-                            "proficiency": "native"
-                        },
-                        {
-                            "id": 2,
-                            "_action": "update",
-                            "language": "İngilis dili",
-                            "proficiency": "fluent"
-                        },
-                        {
-                            "_action": "create",
-                            "language": "Türk dili",
-                            "proficiency": "intermediate"
                         }
                     ]
                 }

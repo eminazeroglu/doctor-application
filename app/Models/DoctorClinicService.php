@@ -11,8 +11,7 @@ class DoctorClinicService extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'doctor_id',
-        'clinic_id',
+        'doctor_clinic_id',
         'service_id',
         'price',
         'duration',

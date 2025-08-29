@@ -17,8 +17,7 @@ return new class extends Migration
             $table->id(); // Qeydin unikal ID-si
             $table->foreignId('doctor_id')->constrained()->onDelete('cascade'); // Həkim əlaqəsi
             $table->foreignId('clinic_id')->constrained()->onDelete('cascade'); // Klinika əlaqəsi
-            $table->date('start_date')->nullable(); // İşə başlama tarixi
-            $table->date('end_date')->nullable(); // İşdən çıxma tarixi
+            $table->json('start_date')->nullable();
             $table->boolean('is_main_workplace')->default(false); // Əsas iş yeridir?
             $table->boolean('is_active')->default(true); // Aktiv əlaqədir?
             $table->text('note')->nullable(); // Əlavə qeyd

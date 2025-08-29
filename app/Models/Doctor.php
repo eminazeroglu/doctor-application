@@ -34,9 +34,7 @@ class Doctor extends BaseModel
         'years_of_experience',
         'practice_license_number',
         'title',
-        'workplace_name',
-        'workplace_address',
-        'workplace_phone',
+        'workplace',
         'social_media_links',
         'available_for_home_visit',
         'available_for_online_consultation',
@@ -52,6 +50,7 @@ class Doctor extends BaseModel
      * @var array
      */
     protected $casts = [
+        'workplace' => 'json',
         'working_days' => 'json',
         'social_media_links' => 'json',
         'is_verified' => 'boolean',
@@ -201,6 +200,11 @@ class Doctor extends BaseModel
         return $this->hasMany(DoctorLanguage::class);
     }
 
+    public function doctorClinics(): HasMany
+    {
+        return $this->hasMany(DoctorClinic::class);
+    }
+
     /**
      * Həkimin çalışdığı klinikalar əlaqəsi.
      * @return BelongsToMany
@@ -237,7 +241,7 @@ class Doctor extends BaseModel
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class, 'doctor_clinic_services')
-            ->withPivot(['clinic_id', 'price', 'duration', 'description', 'is_active'])
+            ->withPivot(['price', 'duration', 'description', 'is_active'])
             ->withTimestamps();
     }
 
@@ -277,7 +281,7 @@ class Doctor extends BaseModel
      */
     public function clinicServices(int $clinicId): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'doctor_clinic_services')
+        return $this->belongsToMany(Service::class, 'doctor_clinic')
             ->wherePivot('clinic_id', $clinicId)
             ->withPivot(['price', 'duration', 'description', 'is_active'])
             ->withTimestamps();

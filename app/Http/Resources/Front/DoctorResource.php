@@ -29,12 +29,26 @@ class DoctorResource extends JsonResource
 
         $doctor = Doctor::find($this->id);
 
+        $services = [];
+
+        foreach ($doctor->doctorClinics()->get() as $clinic) {
+            foreach ($clinic->services()->get() as $item) {
+                $services[] = [
+                    'id' => $item->service->id,
+                    'slug' => $item->service->slug,
+                    'name' => $item->service->name,
+                ];
+            }
+        }
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
             'photo' => $this->user->photo,
             'fullname' => $this->full_name_with_title,
             'profession' => $profession,
+            'category_id' => $this->category_id,
+            'sub_category_id' => $this->sub_category_id,
             'rating_average' => $this->rating_average,
             'suggested_by_people' => $this->suggested_by_people,
             'total_patients' => $this->total_patients,
@@ -48,13 +62,10 @@ class DoctorResource extends JsonResource
                 'latitude' => $main_workplace['latitude'],
                 'longitude' => $main_workplace['longitude'],
             ] : [],
+            'services' => collect($services)->unique('id')->values(),
             'nearest_appointments' => $this->formatNearestSlots(),
             'available_days_for_next' => app(DoctorService::class)->getAvailableDaysForNextDays($doctor),
-            'services' => $this->services->map(fn ($i) => [
-                'id' => $i->id,
-                'slug' => $i->slug,
-                'name' => $i->name,
-            ]),
+
         ];
     }
 

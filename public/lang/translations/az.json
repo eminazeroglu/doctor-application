@@ -436,6 +436,9 @@
             "require_special_chars": "Şifrədə ən azı bir xüsusi simvol olmalıdır"
         },
         "invalidImageType": "Şəkil formatı yalnız :format olmalıdır",
-        "invalidImageSize": "Şəklin həcmi :size-dan çox ola bilməz"
+        "invalidImageSize": "Şəklin həcmi :size-dan çox ola bilməz",
+        "user": {
+            "not_doctor": "Həkim tapılmadı"
+        }
     }
 }

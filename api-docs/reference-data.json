@@ -228,23 +228,13 @@
             "path": "/reference-data/subways",
             "method": "get",
             "summary": "Metro stansiyalarının siyahısı",
-            "description": "Bütün metro stansiyalarının siyahısını qaytarır",
-            "responses": {
-                "200": [
-                    {
-                        "id": 1,
-                        "name": "Azadlıq Prospekti",
-                        "uuid": "2e47bea0-b67b-4c56-ad44-8d43c136a0ce",
-                        "slug": "azadliq-prospekti"
-                    },
-                    {
-                        "id": 2,
-                        "name": "Nəsimi",
-                        "uuid": "39cabb9c-9f7a-4472-bcd0-bfd6132ffde8",
-                        "slug": "nesimi"
-                    }
-                ]
-            }
+            "description": "Bütün metro stansiyalarının siyahısını qaytarır"
+        },
+        {
+            "path": "/reference-data/attributes",
+            "method": "get",
+            "summary": "Attribute siyahısı",
+            "description": "Bütün attributeların siyahısını qaytarır"
         }
     ]
 }
