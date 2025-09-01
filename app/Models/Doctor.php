@@ -212,7 +212,7 @@ class Doctor extends BaseModel
     public function clinics(): BelongsToMany
     {
         return $this->belongsToMany(Clinic::class, 'doctor_clinic')
-            ->withPivot(['start_date', 'end_date', 'is_main_workplace', 'is_active', 'note'])
+            ->withPivot(['work_time', 'is_main_workplace', 'is_active', 'note'])
             ->withTimestamps();
     }
 
@@ -240,7 +240,7 @@ class Doctor extends BaseModel
      */
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'doctor_clinic_services')
+        return $this->belongsToMany(Service::class, 'doctor_clinic_services', 'doctor_clinic_id', 'service_id')
             ->withPivot(['price', 'duration', 'description', 'is_active'])
             ->withTimestamps();
     }
@@ -310,7 +310,7 @@ class Doctor extends BaseModel
      * Həkimin əsas iş yerini qaytarır.
      * @return Model
      */
-    public function mainWorkplace(): Model
+    public function mainWorkplace(): Model|null
     {
         return $this->clinics()->wherePivot('is_main_workplace', true)->first();
     }

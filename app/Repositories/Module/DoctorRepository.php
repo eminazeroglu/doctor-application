@@ -397,6 +397,7 @@ class DoctorRepository extends BaseRepository
                 'user',
                 'category',
                 'subcategory',
+                'doctorClinics',
                 'clinics' => function($q) {
                     $q->where('clinics.is_active', true);
                 },
