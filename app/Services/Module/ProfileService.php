@@ -615,23 +615,33 @@ class ProfileService
 
     /**
      * Yeni sertifikat yaradır və faylı saxlayır
-     * @throws BaseException
+     * @throws BaseException|Exception
      */
-    public function createDoctorCertificate(Doctor $doctor, UploadedFile $file): DoctorCertificate
+    public function createDoctorCertificate(Doctor $doctor, array $certificatesData): \Illuminate\Support\Collection
     {
-        $uploader = (new FileUploadService())
-            ->setFile($file)
-            ->setPath("doctor_certificates/{$doctor->id}");
+        $saved = collect();
 
-        $fileName = $uploader->upload();
+        foreach ($certificatesData as $item) {
+            $file = $item['document'];
 
-        if (!$fileName) {
-            throw new BaseException('File upload failed');
+            $uploader = (new FileUploadService())
+                ->setFile($file)
+                ->setPath("doctor_certificates/{$doctor->id}");
+
+            $fileName = $uploader->upload();
+
+            if (!$fileName) {
+                throw new \Exception('File upload failed');
+            }
+
+            $certificate = $doctor->certificates()->create([
+                'document_path' => $fileName,
+            ]);
+
+            $saved->push($certificate);
         }
 
-        return $doctor->certificates()->create([
-            'document_path' => $fileName,
-        ]);
+        return $saved;
     }
 
     /**

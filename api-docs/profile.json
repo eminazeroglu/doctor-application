@@ -328,10 +328,15 @@
             "authorization": true,
             "consumes": ["multipart/form-data"],
             "formBody": {
-                "document": {
-                    "type": "file",
+                "certificates": {
+                    "type": "array",
                     "required": true,
-                    "description": "Sertifikat faylı (pdf, png, jpg, jpeg)"
+                    "description": "Sertifikatların siyahısı",
+                    "default": [
+                        {
+                            "document": "Sertifikat faylı (pdf, png, jpg, jpeg)"
+                        }
+                    ]
                 }
             },
             "responses": {

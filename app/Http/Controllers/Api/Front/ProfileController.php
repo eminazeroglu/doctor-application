@@ -442,16 +442,17 @@ class ProfileController extends Controller
         $this->ensureUserIsDoctor();
 
         $form = $this->validateRequest($request, [
-            'document' => 'required|file|mimes:pdf,png,jpg,jpeg|max:20480',
+            'certificates' => 'required|array|min:1',
+            'certificates.*.document' => 'required|file|mimes:pdf,png,jpg,jpeg|max:20480',
         ]);
 
-        $certificate = $this->profileService->createDoctorCertificate(
+        $certificates = $this->profileService->createDoctorCertificatesWithUpload(
             auth()->user()->doctor,
-            $form['document']
+            $form['certificates']
         );
 
         return response()->json([
-            'certificate' => new DoctorCertificateResource($certificate),
+            'certificates' => \App\Http\Resources\Front\DoctorCertificateResource::collection($certificates),
             'message' => t('notification.certificate.created_successfully')
         ]);
     }
