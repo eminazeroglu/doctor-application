@@ -404,14 +404,12 @@ class ProfileController extends Controller
             'experiences.*.services.*' => 'required|exists:services,id',
         ]);
 
-        dd($formFields);
-
-        $experiences = $this->profileService->syncDoctorExperiences(
+        $this->profileService->syncDoctorExperiences(
             auth()->user()->doctor,
             $formFields['experiences']
         );
 
-        return response()->json(DoctorExperienceResource::collection($experiences));
+        return $this->getDoctorExperiences();
     }
 
     /*
@@ -435,33 +433,46 @@ class ProfileController extends Controller
     }
 
     /**
-     * Həkimin bütün sertifikatlarını yenilə (bulk update)
-     * PUT /api/app/profile/doctor/certificates
-     * @throws BaseException
-     * @throws ValidationException
+     * Yeni sertifikat əlavə edir
+     * POST /api/app/profile/doctor/certificates
+     * @throws BaseException|ValidationException
      */
-    public function updateDoctorCertificates(Request $request): JsonResponse
+    public function storeDoctorCertificate(Request $request): JsonResponse
     {
         $this->ensureUserIsDoctor();
 
-        $formFields = $this->validateRequest($request, [
-            'certificates' => 'required|array',
-            'certificates.*.id' => 'nullable|integer',
-            'certificates.*.name' => 'required|string|max:255',
-            'certificates.*.issuing_organization' => 'required|string|max:255',
-            'certificates.*.issue_date' => 'required|date',
-            'certificates.*.expiry_date' => 'nullable|date|after:certificates.*.issue_date',
-            'certificates.*.description' => 'nullable|string|max:1000',
-            'certificates.*.document_path' => 'nullable|string',
-            'certificates.*._action' => 'nullable|in:create,update,delete'
+        $form = $this->validateRequest($request, [
+            'document' => 'required|file|mimes:pdf,png,jpg,jpeg|max:20480',
         ]);
 
-        $certificates = $this->profileService->syncDoctorCertificates(
+        $certificate = $this->profileService->createDoctorCertificate(
             auth()->user()->doctor,
-            $formFields['certificates']
+            $form['document']
         );
 
-        return response()->json(DoctorCertificateResource::collection($certificates));
+        return response()->json([
+            'certificate' => new DoctorCertificateResource($certificate),
+            'message' => t('notification.certificate.created_successfully')
+        ]);
+    }
+
+    /**
+     * Sertifikatı silir
+     * DELETE /api/app/profile/doctor/certificates/{id}
+     * @throws BaseException
+     */
+    public function deleteDoctorCertificate(int $id): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+
+        $this->profileService->deleteDoctorCertificate(
+            auth()->user()->doctor,
+            $id
+        );
+
+        return response()->json([
+            'message' => t('notification.certificate.deleted_successfully')
+        ]);
     }
 
     /*

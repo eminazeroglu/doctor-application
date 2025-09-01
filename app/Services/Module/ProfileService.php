@@ -7,6 +7,7 @@ use App\Exceptions\BaseException;
 use App\Mail\WelcomeEmailMail;
 use App\Models\Doctor;
 use App\Models\DoctorCertificate;
+use App\Models\DoctorClinic;
 use App\Models\DoctorClinicService;
 use App\Models\DoctorEducation;
 use App\Models\DoctorExperience;
@@ -14,14 +15,17 @@ use App\Models\DoctorLanguage;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Repositories\Module\UserRepository;
+use App\Services\App\Upload\FileUploadService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Request;
 use Exception;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileService
 {
@@ -551,52 +555,21 @@ class ProfileService
      * Həkimin bütün iş təcrübəsi məlumatlarını sinxronlaşdırır (bulk sync)
      * @throws Exception
      */
-    public function syncDoctorExperiences(Doctor $doctor, array $experiencesData): Collection
+    public function syncDoctorExperiences(Doctor $doctor, array $experiencesData)
     {
+
         try {
             DB::beginTransaction();
 
-            $existingExperiences = $doctor->experiences()->get()->keyBy('id');
+            $doctor->doctorClinics()->delete();
 
-            foreach ($experiencesData as $experienceData) {
-                $action = $experienceData['_action'] ?? 'create';
-                $experienceId = $experienceData['id'] ?? null;
-
-                unset($experienceData['_action'], $experienceData['id']);
-
-                switch ($action) {
-                    case 'create':
-                        $this->createDoctorExperienceRecord($doctor, $experienceData);
-                        break;
-
-                    case 'update':
-                        if ($experienceId && $existingExperiences->has($experienceId)) {
-                            $this->updateDoctorExperienceRecord($existingExperiences[$experienceId], $experienceData);
-                        }
-                        break;
-
-                    case 'delete':
-                        if ($experienceId && $existingExperiences->has($experienceId)) {
-                            $existingExperiences[$experienceId]->delete();
-                        }
-                        break;
-                }
+            foreach ($experiencesData as $item) {
+                $doctor->doctorClinics()->create($item);
             }
-
-            $this->activityLogService->log(
-                action: 'doctor_experiences_synced',
-                model: $doctor,
-                newData: $experiencesData,
-                additionalData: [
-                    'processed_count' => count($experiencesData),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent()
-                ]
-            );
 
             DB::commit();
 
-            return $doctor->fresh()->experiences()->orderBy('start_date', 'desc')->get();
+            return $doctor->fresh()->doctorClinics()->orderBy('created_at', 'desc')->get();
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -641,75 +614,41 @@ class ProfileService
     }
 
     /**
-     * Həkimin bütün sertifikatlarını sinxronlaşdırır (bulk sync)
+     * Yeni sertifikat yaradır və faylı saxlayır
+     * @throws BaseException
      */
-    public function syncDoctorCertificates(Doctor $doctor, array $certificatesData): Collection
+    public function createDoctorCertificate(Doctor $doctor, UploadedFile $file): DoctorCertificate
     {
-        try {
-            DB::beginTransaction();
+        $uploader = (new FileUploadService())
+            ->setFile($file)
+            ->setPath("doctor_certificates/{$doctor->id}");
 
-            $existingCertificates = $doctor->certificates()->get()->keyBy('id');
+        $fileName = $uploader->upload();
 
-            foreach ($certificatesData as $certificateData) {
-                $action = $certificateData['_action'] ?? 'create';
-                $certificateId = $certificateData['id'] ?? null;
-
-                unset($certificateData['_action'], $certificateData['id']);
-
-                switch ($action) {
-                    case 'create':
-                        $this->createDoctorCertificateRecord($doctor, $certificateData);
-                        break;
-
-                    case 'update':
-                        if ($certificateId && $existingCertificates->has($certificateId)) {
-                            $this->updateDoctorCertificateRecord($existingCertificates[$certificateId], $certificateData);
-                        }
-                        break;
-
-                    case 'delete':
-                        if ($certificateId && $existingCertificates->has($certificateId)) {
-                            $existingCertificates[$certificateId]->delete();
-                        }
-                        break;
-                }
-            }
-
-            $this->activityLogService->log(
-                action: 'doctor_certificates_synced',
-                model: $doctor,
-                newData: $certificatesData,
-                additionalData: [
-                    'processed_count' => count($certificatesData),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent()
-                ]
-            );
-
-            DB::commit();
-
-            return $doctor->fresh()->certificates()->orderBy('issue_date', 'desc')->get();
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            $this->activityLogService->logError(
-                action: 'doctor_certificates_sync_error',
-                message: $e->getMessage(),
-                model: $doctor
-            );
-            throw $e;
+        if (!$fileName) {
+            throw new BaseException('File upload failed');
         }
+
+        return $doctor->certificates()->create([
+            'document_path' => $fileName,
+        ]);
     }
 
-    private function createDoctorCertificateRecord(Doctor $doctor, array $data): void
+    /**
+     * Sertifikatı silir və faylı storage-dan təmizləyir
+     */
+    public function deleteDoctorCertificate(Doctor $doctor, int $id): void
     {
-        $data['doctor_id'] = $doctor->id;
-        DoctorCertificate::create($data);
-    }
+        $certificate = $doctor->certificates()->where('id', $id)->firstOrFail();
 
-    private function updateDoctorCertificateRecord(DoctorCertificate $certificate, array $data): void
-    {
-        $certificate->update($data);
+        if ($certificate->document_path) {
+            (new FileUploadService())
+                ->setPath("doctor_certificates/{$doctor->id}")
+                ->setRemoveFile($certificate->document_path)
+                ->delete("doctor_certificates/{$doctor->id}", $certificate->document_path);
+        }
+
+        $certificate->delete();
     }
 
     /*

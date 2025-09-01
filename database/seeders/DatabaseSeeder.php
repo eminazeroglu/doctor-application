@@ -22,23 +22,23 @@ class DatabaseSeeder extends Seeder
         $this->call(SettingSeeder::class);
         $this->call(PermissionSeeder::class);
         $this->call(TranslationSeeder::class);
-        //if (App::environment('local')) {
-        $this->call(PageSeeder::class);
-        $this->call(SeoLinkSeeder::class);
-        $this->call(LocationSeeder::class);
-        $this->call(AttributeSeeder::class);
-        $this->call(CategorySeeder::class);
-        $this->call(ServiceSeeder::class);
-        $this->call(MessagingSystemSeeder::class);
-        $this->call(CommentSeeder::class);
-        $this->call(ComplaintSeeder::class);
-        $this->call(ClinicSeeder::class);
-        $this->call(DoctorSeeder::class);
-        $this->call(PatientSeeder::class);
-        $this->call(AppointmentSeeder::class);
-        $this->call(ReviewSeeder::class);
-        $this->call(NotificationSeeder::class);
-        $this->call(PaymentSeeder::class);
-        //}
+        if (App::environment('local')) {
+            $this->call(PageSeeder::class);
+            $this->call(SeoLinkSeeder::class);
+            $this->call(LocationSeeder::class);
+            $this->call(AttributeSeeder::class);
+            $this->call(CategorySeeder::class);
+            $this->call(ServiceSeeder::class);
+            $this->call(MessagingSystemSeeder::class);
+            $this->call(CommentSeeder::class);
+            $this->call(ComplaintSeeder::class);
+            $this->call(ClinicSeeder::class);
+            $this->call(DoctorSeeder::class);
+            $this->call(PatientSeeder::class);
+            $this->call(AppointmentSeeder::class);
+            $this->call(ReviewSeeder::class);
+            $this->call(NotificationSeeder::class);
+            $this->call(PaymentSeeder::class);
+        }
     }
 }

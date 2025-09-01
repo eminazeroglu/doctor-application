@@ -278,7 +278,7 @@
                 "experiences": {
                     "type": "array",
                     "required": true,
-                    "description": "İş təcrübəsi massivi",
+                    "description": "Əgər istifadəçi əli ilə klinika əlavə etsə o zaman clinic_id göndərilmir. custom_clinic deyə bir object göndərilir. İçərsində name, latitude, longitude",
                     "default": [
                         {
                             "clinic_id": 1,
@@ -322,33 +322,36 @@
         },
         {
             "path": "/app/profile/doctor/certificates",
-            "method": "put",
-            "summary": "Sertifikatların bulk yenilənməsi",
-            "description": "Həkimin bütün sertifikatlarını bir anda yenilər",
+            "method": "post",
+            "summary": "Yeni sertifikat əlavə et",
+            "description": "Həkim üçün yeni sertifikat faylı yükləyir",
             "authorization": true,
+            "consumes": ["multipart/form-data"],
             "formBody": {
-                "certificates": {
-                    "type": "array",
+                "document": {
+                    "type": "file",
                     "required": true,
-                    "description": "Sertifikatlar massivi",
-                    "example": [
-                        {
-                            "id": 1,
-                            "_action": "update",
-                            "name": "Ümumi Stomatologiya Sertifikatı",
-                            "issuing_organization": "Səhiyyə Nazirliyi",
-                            "issue_date": "2022-08-15",
-                            "expiry_date": "2027-08-15",
-                            "description": "Yenilənmiş təsvir"
-                        },
-                        {
-                            "_action": "create",
-                            "name": "Ortodontiya Sertifikatı",
-                            "issuing_organization": "Beynəlxalq Ortodontiya Federasiyası",
-                            "issue_date": "2023-12-01",
-                            "expiry_date": "2028-12-01"
-                        }
-                    ]
+                    "description": "Sertifikat faylı (pdf, png, jpg, jpeg)"
+                }
+            },
+            "responses": {
+                "200": {
+                    "certificate": {
+                        "id": 1,
+                        "document_path": "storage/doctor_certificates/5/abc123.pdf"
+                    }
+                }
+            }
+        },
+        {
+            "path": "/app/profile/doctor/certificates/{id}",
+            "method": "delete",
+            "summary": "Sertifikat sil",
+            "description": "ID ilə verilən sertifikatı və onun faylını silir",
+            "authorization": true,
+            "responses": {
+                "200": {
+                    "message": "Sertifikat uğurla silindi"
                 }
             }
         }

@@ -247,13 +247,8 @@ Route::controller(ProfileController::class)
         // Doctor Certificates - Həkim Sertifikatlar
         Route::prefix('doctor/certificates')->group(function () {
             Route::get('/', 'getDoctorCertificates')->name('profile.doctor.certificates.index');
-            Route::put('/', 'updateDoctorCertificates')->name('profile.doctor.certificates.sync'); // Bulk update
-        });
-
-        // Doctor Languages - Həkim Dil Bilikləri
-        Route::prefix('doctor/languages')->group(function () {
-            Route::get('/', 'getDoctorLanguages')->name('profile.doctor.languages.index');
-            Route::put('/', 'updateDoctorLanguages')->name('profile.doctor.languages.sync'); // Bulk update
+            Route::post('/', 'storeDoctorCertificate')->name('profile.doctor.certificates.store');
+            Route::delete('/{id}', 'deleteDoctorCertificate')->name('profile.doctor.certificates.delete');
         });
     });
 
