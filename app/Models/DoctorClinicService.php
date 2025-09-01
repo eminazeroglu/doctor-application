@@ -33,18 +33,9 @@ class DoctorClinicService extends BaseModel
      * Xidmətə aid həkim əlaqəsi.
      * @return BelongsTo
      */
-    public function doctor(): BelongsTo
+    public function doctorClinic(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class);
-    }
-
-    /**
-     * Xidmətə aid klinika əlaqəsi.
-     * @return BelongsTo
-     */
-    public function clinic(): BelongsTo
-    {
-        return $this->belongsTo(Clinic::class);
+        return $this->belongsTo(DoctorClinic::class);
     }
 
     /**

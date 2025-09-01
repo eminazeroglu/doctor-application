@@ -361,13 +361,24 @@ class ProfileController extends Controller
         $this->ensureUserIsDoctor();
 
         $experiences = $this->profileService->getDoctorExperiences(auth()->user()->doctor);
+        $experiences = $experiences->map(function ($i) {
+            $item = [
+                'id' => $i->id,
+                'clinic_id' => $i->clinic_id,
+                'profession' => $i->profession,
+                'work_time' => $i->work_time,
+                'services' => $i->services()->pluck('id')->toArray(),
+            ];
 
-        return response()->json($experiences->map(fn($i) => [
-            'id' => $i->id,
-            'clinic_id' => $i->clinic_id,
-            'start_date' => $i->start_date,
-            'end_date' => $i->end_date,
-        ]));
+            if (!$i->clinic_id && $i->custom_clinic && $i->custom_clinic->name) {
+                unset($item['clinic_id']);
+                $item['custom_clinic'] = $i->custom_clinic;
+            }
+
+            return $item;
+        });
+
+        return response()->json($experiences);
     }
 
     /**
@@ -382,17 +393,18 @@ class ProfileController extends Controller
 
         $formFields = $this->validateRequest($request, [
             'experiences' => 'required|array',
-            'experiences.*.id' => 'nullable|integer',
-            'experiences.*.workplace' => 'required|string|max:255',
-            'experiences.*.position' => 'required|string|max:255',
-            'experiences.*.start_date' => 'required|date',
-            'experiences.*.end_date' => 'nullable|date|after:experiences.*.start_date',
-            'experiences.*.location' => 'nullable|string|max:255',
-            'experiences.*.description' => 'nullable|string|max:1000',
-            'experiences.*.is_current_job' => 'nullable|boolean',
-            'experiences.*.document_path' => 'nullable|string',
-            'experiences.*._action' => 'nullable|in:create,update,delete'
+            'experiences.*.clinic_id' => 'required|exists:clinics,id',
+            'experiences.*.profession' => 'required|string|max:255',
+            'experiences.*.work_time' => 'nullable|array',
+            'experiences.*.work_time.start_day' => 'nullable',
+            'experiences.*.work_time.start_time' => 'nullable',
+            'experiences.*.work_time.end_day' => 'nullable',
+            'experiences.*.work_time.end_time' => 'nullable',
+            'experiences.*.services' => 'required|array',
+            'experiences.*.services.*' => 'required|exists:services,id',
         ]);
+
+        dd($formFields);
 
         $experiences = $this->profileService->syncDoctorExperiences(
             auth()->user()->doctor,

@@ -16,8 +16,15 @@ return new class extends Migration
         Schema::create('doctor_clinic', function (Blueprint $table) {
             $table->id(); // Qeydin unikal ID-si
             $table->foreignId('doctor_id')->constrained()->onDelete('cascade'); // Həkim əlaqəsi
-            $table->foreignId('clinic_id')->constrained()->onDelete('cascade'); // Klinika əlaqəsi
-            $table->json('start_date')->nullable();
+            $table->foreignId('clinic_id')->nullable()->constrained()->nullOnDelete(); // Klinika əlaqəsi
+            /**
+             * name
+             * latitude
+             * longitude
+            */
+            $table->json('custom_clinic')->nullable();
+            $table->string('profession')->nullable();
+            $table->json('work_time')->nullable();
             $table->boolean('is_main_workplace')->default(false); // Əsas iş yeridir?
             $table->boolean('is_active')->default(true); // Aktiv əlaqədir?
             $table->text('note')->nullable(); // Əlavə qeyd

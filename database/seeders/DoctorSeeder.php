@@ -10,6 +10,7 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\DoctorAttributeValue;
 use App\Models\DoctorCertificate;
+use App\Models\DoctorClinic;
 use App\Models\DoctorClinicService;
 use App\Models\DoctorEducation;
 use App\Models\DoctorExperience;
@@ -185,9 +186,9 @@ class DoctorSeeder extends Seeder
         $attributeTypes = ['text', 'number', 'boolean', 'select', 'multiselect'];
         $type = fake()->randomElement($attributeTypes);
 
-        return match($type) {
+        return match ($type) {
             'text' => fake()->sentence(3),
-            'number' => (string) fake()->numberBetween(1, 100),
+            'number' => (string)fake()->numberBetween(1, 100),
             'boolean' => fake()->boolean() ? 'true' : 'false',
             'select' => fake()->randomElement(['Option 1', 'Option 2', 'Option 3']),
             'multiselect' => implode(',', fake()->randomElements(['Tag 1', 'Tag 2', 'Tag 3'], rand(1, 2))),
@@ -301,13 +302,13 @@ class DoctorSeeder extends Seeder
         }
 
         for ($i = 0; $i < $count; $i++) {
-            $this->createSingleDoctor($categories, $services, $clinics, $i);
+            $this->createSingleDoctor($categories, $clinics, $services, $i);
         }
 
         $this->command->info("✅ $count həkim uğurla yaradıldı!");
     }
 
-    private function createSingleDoctor($categories, $services, $clinics, $index): void
+    private function createSingleDoctor($categories, $clinics, $services, $index): void
     {
         // Random həkim məlumatları
         $doctorInfo = collect($this->doctorNames)->random();
@@ -317,7 +318,7 @@ class DoctorSeeder extends Seeder
         $user = User::create([
             'name' => $doctorInfo['name'],
             'surname' => $doctorInfo['surname'],
-            'email' => 'doctor' . ($index + 1) . '@doctap.az',
+            'email' => 'doctor_' . ($index + 1) . '@doctap.az',
             'password' => Hash::make('password123'),
             'username' => Str::slug($doctorInfo['name'] . '-' . $doctorInfo['surname']) . '-' . ($index + 1),
             'phone' => '+994' . fake('az_AZ')->randomNumber(9, true),
@@ -542,18 +543,42 @@ class DoctorSeeder extends Seeder
         $selectedClinics = $clinics->random($clinicCount);
 
         foreach ($selectedClinics as $index => $clinic) {
-            // doctor_clinic pivot cədvəlinə direct məlumat əlavə edirik
-            DB::table('doctor_clinic')->insert([
-                'doctor_id' => $doctor->id,
-                'clinic_id' => $clinic->id,
-                'start_date' => fake()->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d'),
-                'end_date' => fake()->boolean(20) ? fake()->dateTimeBetween('-1 year', 'now')->format('Y-m-d') : null,
-                'is_main_workplace' => $index === 0 ? 1 : 0, // İlk klinika əsas iş yeri
-                'is_active' => fake()->boolean(90) ? 1 : 0,
-                'note' => fake()->boolean(30) ? 'Həkim bu klinikada ' . fake()->numberBetween(1, 5) . ' il işləyib' : null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $timeRand = rand(0, 2);
+            $customClinic = rand(1, 4);
+
+            if ($customClinic === 2) {
+                DoctorClinic::query()->create([
+                    'doctor_id' => $doctor->id,
+                    'custom_clinic' => [
+                        'name' => fake()->company . ' Klinikası',
+                        'latitude' => fake()->latitude(40.3, 40.5), // Bakı üçün təxmini koordinatlar
+                        'longitude' => fake()->longitude(49.8, 50.0),
+                    ],
+                    'profession' => fake()->randomElement(['Həkim', 'Baş həkim', 'Şöbə müdiri', 'Konsultant həkim']),
+                    'is_main_workplace' => $index === 0 ? 1 : 0, // İlk klinika əsas iş yeri
+                    'is_active' => fake()->boolean(90) ? 1 : 0,
+                    'note' => fake()->boolean(30) ? 'Həkim bu klinikada ' . fake()->numberBetween(1, 5) . ' il işləyib' : null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } else {
+                DoctorClinic::query()->create([
+                    'doctor_id' => $doctor->id,
+                    'clinic_id' => $clinic->id,
+                    'work_time' => [
+                        'start_day' => rand(1, 3),
+                        'start_time' => ['09:00', '10:00', '11:00'][$timeRand],
+                        'end_day' => rand(4, 7),
+                        'end_time' => ['18:00', '19:00', '20:00'][$timeRand],
+                    ],
+                    'profession' => fake()->randomElement(['Həkim', 'Baş həkim', 'Şöbə müdiri', 'Konsultant həkim']),
+                    'is_main_workplace' => $index === 0 ? 1 : 0, // İlk klinika əsas iş yeri
+                    'is_active' => fake()->boolean(90) ? 1 : 0,
+                    'note' => fake()->boolean(30) ? 'Həkim bu klinikada ' . fake()->numberBetween(1, 5) . ' il işləyib' : null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 
@@ -598,6 +623,7 @@ class DoctorSeeder extends Seeder
         // Həkimin işlədiyi klinikları alırıq
         $doctorClinicIds = DB::table('doctor_clinic')
             ->where('doctor_id', $doctor->id)
+            ->whereNotNull('clinic_id')
             ->where('is_active', 1)
             ->pluck('clinic_id');
 

@@ -16,8 +16,9 @@ class DoctorClinic extends Pivot
     protected $fillable = [
         'doctor_id',
         'clinic_id',
-        'start_date',
-        'end_date',
+        'profession',
+        'custom_clinic',
+        'work_time',
         'is_main_workplace',
         'is_active',
         'note'
@@ -32,6 +33,8 @@ class DoctorClinic extends Pivot
         'end_date' => 'date',
         'is_main_workplace' => 'boolean',
         'is_active' => 'boolean',
+        'work_time' => 'object',
+        'custom_clinic' => 'object',
     ];
 
     /**

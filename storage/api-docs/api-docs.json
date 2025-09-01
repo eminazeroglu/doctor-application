@@ -1007,19 +1007,18 @@
                                 "default": [
                                     {
                                         "clinic_id": 1,
-                                        "position": "Baş Stomatoloq",
-                                        "start_date": "2022-07-01",
-                                        "location": "Bakı",
-                                        "description": "Stomatoloji müalicələr",
-                                        "is_current_job": true
-                                    },
-                                    {
-                                        "clinic_id": 2,
-                                        "position": "Stomatoloq",
-                                        "start_date": "2020-01-01",
-                                        "end_date": "2022-06-30",
-                                        "location": "Bakı",
-                                        "is_current_job": false
+                                        "profession": "Baş Həkiim",
+                                        "work_time": {
+                                            "end_day": 4,
+                                            "end_time": "20:00",
+                                            "start_day": 3,
+                                            "start_time": "11:00"
+                                        },
+                                        "services": [
+                                            3,
+                                            5,
+                                            7
+                                        ]
                                     }
                                 ]
                             }

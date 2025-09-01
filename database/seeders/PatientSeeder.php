@@ -92,16 +92,11 @@ class PatientSeeder extends Seeder
     {
         $firstName = fake('az_AZ')->firstName();
         $lastName = fake('az_AZ')->lastName();
-        $email = strtolower(str_replace(' ', '.', $firstName . '.' . $lastName)) . $index . '@example.com';
-
-        if ($index === 1) {
-            $email = 'patient@example.com';
-        }
 
         return User::create([
             'name' => $firstName,
             'surname' => $lastName,
-            'email' => $email,
+            'email' => 'patient_' . ($index + 1) . '@example.com',
             'password' => Hash::make('password123'),
             'username' => strtolower(str_replace(' ', '_', $firstName . '_' . $lastName)) . '_' . $index,
             'phone' => '+994' . fake()->numberBetween(50, 99) . fake()->numberBetween(1000000, 9999999),
