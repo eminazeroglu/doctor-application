@@ -54,12 +54,21 @@
             "description": "Verilən tarix intervalında yeni vs mövcud xəstələr faizi və əsas KPI-ları qaytarır.",
             "authorization": true,
             "query": {
-                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
-                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" }
+                "from": {
+                    "type": "text",
+                    "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                },
+                "to": {
+                    "type": "text",
+                    "description": "Bitmə tarixi (YYYY-MM-DD)"
+                }
             },
             "responses": {
                 "200": {
-                    "range": ["2025-05-01", "2025-05-07"],
+                    "range": [
+                        "2025-05-01",
+                        "2025-05-07"
+                    ],
                     "overview": {
                         "new_patients_percent": 20,
                         "existing_patients_percent": 80
@@ -79,17 +88,38 @@
             "description": "Interval üzrə (month|week) görüş sayı və yeni xəstələrin trendi.",
             "authorization": true,
             "query": {
-                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
-                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" },
-                "interval": { "type": "text", "description": "month | week", "default": "month" }
+                "from": {
+                    "type": "text",
+                    "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                },
+                "to": {
+                    "type": "text",
+                    "description": "Bitmə tarixi (YYYY-MM-DD)"
+                },
+                "interval": {
+                    "type": "text",
+                    "description": "month | week",
+                    "default": "month"
+                }
             },
             "responses": {
                 "200": {
-                    "range": ["2025-01-01","2025-07-01"],
+                    "range": [
+                        "2025-01-01",
+                        "2025-07-01"
+                    ],
                     "interval": "month",
                     "series": [
-                        { "bucket": "2025-01", "appointments": 480, "new_patients": 250 },
-                        { "bucket": "2025-02", "appointments": 350, "new_patients": 120 }
+                        {
+                            "bucket": "2025-01",
+                            "appointments": 480,
+                            "new_patients": 250
+                        },
+                        {
+                            "bucket": "2025-02",
+                            "appointments": 350,
+                            "new_patients": 120
+                        }
                     ]
                 }
             }
@@ -101,12 +131,21 @@
             "description": "Statuslara görə görüş sayları (confirmed, unconfirmed, reschedule, cancellation, no-show).",
             "authorization": true,
             "query": {
-                "from": { "type": "text", "description": "Başlanğıc tarix (YYYY-MM-DD)" },
-                "to":   { "type": "text", "description": "Bitmə tarixi (YYYY-MM-DD)" }
+                "from": {
+                    "type": "text",
+                    "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                },
+                "to": {
+                    "type": "text",
+                    "description": "Bitmə tarixi (YYYY-MM-DD)"
+                }
             },
             "responses": {
                 "200": {
-                    "range": ["2025-05-01","2025-07-05"],
+                    "range": [
+                        "2025-05-01",
+                        "2025-07-05"
+                    ],
                     "totals": {
                         "confirmed": 300,
                         "unconfirmed": 40,
@@ -125,12 +164,21 @@
             "description": "Son rezervlər siyahısı (vaxt aralığı + tarix + pasiyent adı).",
             "authorization": true,
             "query": {
-                "limit": { "type": "number", "description": "Qaytarılacaq ədəd", "default": 10 }
+                "limit": {
+                    "type": "number",
+                    "description": "Qaytarılacaq ədəd",
+                    "default": 10
+                }
             },
             "responses": {
                 "200": {
                     "items": [
-                        { "id": 1, "time_range": "10:00 - 11:30", "date_human": "Fri, May 10", "patient_name": "Cameron Williamson" }
+                        {
+                            "id": 1,
+                            "time_range": "10:00 - 11:30",
+                            "date_human": "Fri, May 10",
+                            "patient_name": "Cameron Williamson"
+                        }
                     ]
                 }
             }
@@ -154,6 +202,174 @@
                     "type": "text",
                     "description": "Yüklənəcək fayl formatı: xlsx | csv",
                     "default": "xlsx"
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar",
+            "method": "get",
+            "summary": "Calendar feed",
+            "authorization": true,
+            "query": {
+                "from": {
+                    "type": "text",
+                    "description": "YYYY-MM-DD"
+                },
+                "to": {
+                    "type": "text",
+                    "description": "YYYY-MM-DD"
+                }
+            },
+            "responses": {
+                "200": {
+                    "items": []
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar/availability/recurring",
+            "method": "post",
+            "summary": "Create recurring availability",
+            "authorization": true,
+            "formBody": {
+                "start_date": {
+                    "type": "date",
+                    "required": true,
+                    "default": "2025-09-04"
+                },
+                "end_date": {
+                    "type": "date",
+                    "required": true,
+                    "default": "2025-09-04"
+                },
+                "from_time": {
+                    "type": "time",
+                    "required": true,
+                    "default": "14:00"
+                },
+                "to_time": {
+                    "type": "time",
+                    "required": true,
+                    "default": "16:00"
+                },
+                "frequency": {
+                    "type": "string",
+                    "required": true,
+                    "default": "daily",
+                    "description": "daily|weekly|monthly"
+                },
+                "every": {
+                    "type": "integer",
+                    "required": true,
+                    "default": "1"
+                },
+                "days": {
+                    "type": "array",
+                    "required": false,
+                    "default": [1,3,4]
+                },
+                "clinic_id": {
+                    "type": "integer",
+                    "required": false,
+                    "default": 3
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar/availability/recurring/{id}",
+            "method": "put",
+            "summary": "Update recurring availability",
+            "authorization": true,
+            "formBody": {
+                "start_date": {
+                    "type": "date",
+                    "required": true,
+                    "default": "2025-09-04"
+                },
+                "end_date": {
+                    "type": "date",
+                    "required": true,
+                    "default": "2025-09-04"
+                },
+                "from_time": {
+                    "type": "time",
+                    "required": true,
+                    "default": "14:00"
+                },
+                "to_time": {
+                    "type": "time",
+                    "required": true,
+                    "default": "16:00"
+                },
+                "frequency": {
+                    "type": "string",
+                    "required": true,
+                    "default": "daily",
+                    "description": "daily|weekly|monthly"
+                },
+                "every": {
+                    "type": "integer",
+                    "required": true,
+                    "default": "1"
+                },
+                "days": {
+                    "type": "array",
+                    "required": false,
+                    "default": [1,3,4]
+                },
+                "clinic_id": {
+                    "type": "integer",
+                    "required": false,
+                    "default": 3
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar/availability/recurring/{id}",
+            "method": "delete",
+            "summary": "Delete recurring availability",
+            "authorization": true
+        },
+        {
+            "path": "/app/doctor/calendar/unavailability",
+            "method": "post",
+            "summary": "Create unavailability",
+            "authorization": true,
+            "formBody": {
+                "start": {
+                    "type": "datetime",
+                    "required": true,
+                    "description": "YYYY-MM-DD HH:mm",
+                    "default": "2025-09-15 16:00"
+                },
+                "end": {
+                    "type": "datetime",
+                    "required": true,
+                    "description": "YYYY-MM-DD HH:mm",
+                    "default": "2025-09-15 18:00"
+                },
+                "note": {
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar/unavailability/{id}",
+            "method": "delete",
+            "summary": "Delete unavailability",
+            "authorization": true
+        },
+        {
+            "path": "/app/doctor/calendar/appointments/{id}/status",
+            "method": "put",
+            "summary": "Update appointment status",
+            "authorization": true,
+            "formBody": {
+                "status": "<AppointmentStatusEnum value>"
+            },
+            "responses": {
+                "200": {
+                    "appointment": {}
                 }
             }
         }

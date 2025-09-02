@@ -20,6 +20,7 @@ use App\Models\DoctorUnavailability;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\UserPreference;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -41,15 +42,9 @@ class DoctorSeeder extends Seeder
     public function run(): void
     {
         try {
-            // 1. Əvvəlcə mövcud həkim məlumatlarını silirik
             $this->clearExistingDoctorData();
-
-            // 2. Əsas məlumatları hazırlayırıq
             $this->prepareData();
-
-            // 3. Həkimlər yaradırıq
-            $this->createDoctors(50); // 50 həkim yaradacağıq
-
+            $this->createDoctors(50);
         } catch (\Exception $e) {
             $this->command->error('DoctorSeeder xətası: ' . $e->getMessage());
             throw $e;
@@ -63,11 +58,9 @@ class DoctorSeeder extends Seeder
     {
         $this->command->info('Mövcud həkim məlumatları silinir...');
 
-        // Foreign key constraint-ləri müvəqqəti olaraq söndürürük
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         try {
-            // Həkim ilə əlaqəli cədvəlləri düzgün ardıcıllıqla təmizləyirik
             $tablesToClear = [
                 'doctor_attribute_values',
                 'doctor_schedules',
@@ -90,7 +83,6 @@ class DoctorSeeder extends Seeder
                 }
             }
 
-            // Həkim tipində olan istifadəçiləri və onların preferences-lərini silirik
             if ($this->tableExists('users') && $this->tableExists('user_preferences')) {
                 $doctorUserIds = DB::table('users')
                     ->where('user_type', UserTypeEnum::Doctor)
@@ -110,19 +102,14 @@ class DoctorSeeder extends Seeder
             }
 
             $this->command->info('✅ Mövcud həkim məlumatları uğurla silindi.');
-
         } catch (\Exception $e) {
             $this->command->error('❌ Məlumat silinərkən xəta: ' . $e->getMessage());
             throw $e;
         } finally {
-            // Foreign key constraint-ləri yenidən aktivləşdiririk
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         }
     }
 
-    /**
-     * Cədvəlin mövcudluğunu yoxlayır
-     */
     private function tableExists(string $table): bool
     {
         try {
@@ -134,7 +121,6 @@ class DoctorSeeder extends Seeder
 
     protected function addAttributesToDoctor(Doctor $doctor): void
     {
-        // Kateqoriyaya aid atributları alırıq.
         if (!$doctor->category || !method_exists($doctor->category, 'attributes')) {
             return;
         }
@@ -145,23 +131,20 @@ class DoctorSeeder extends Seeder
             return;
         }
 
-        // Random sayda atribut seçirik (məsələn, 3-5 atribut)
         $randomAttributes = $categoryAttributes->shuffle()->take(rand(3, min(5, $categoryAttributes->count())));
 
         foreach ($randomAttributes as $categoryAttribute) {
             $attribute = $categoryAttribute->attribute;
-
             if (!$attribute) {
                 continue;
             }
 
-            // Bu atributun artıq bu elan üçün qeyd olunub-olmadığını yoxlayırıq
             $exists = DoctorAttributeValue::where('doctor_id', $doctor->id)
                 ->where('attribute_id', $attribute->id)
                 ->exists();
 
             if ($exists) {
-                continue; // Təkrar varsa, bu atributu atlayırıq
+                continue;
             }
 
             $data = [
@@ -171,7 +154,6 @@ class DoctorSeeder extends Seeder
             ];
 
             $attributeOption = $attribute?->options()->inRandomOrder()->first();
-
             if ($attributeOption) {
                 $data['attribute_option_id'] = $attributeOption->id;
             }
@@ -182,7 +164,6 @@ class DoctorSeeder extends Seeder
 
     private function generateAttributeValue($attribute): string
     {
-        // Attribut tipinə görə dəyər yaradırıq
         $attributeTypes = ['text', 'number', 'boolean', 'select', 'multiselect'];
         $type = fake()->randomElement($attributeTypes);
 
@@ -198,7 +179,6 @@ class DoctorSeeder extends Seeder
 
     private function prepareData(): void
     {
-        // Universitetlər
         $this->universities = [
             'Azərbaycan Tibb Universiteti',
             'Azərbaycan Dövlət Həkimləri Təkmilləşdirmə İnstitutu',
@@ -212,7 +192,6 @@ class DoctorSeeder extends Seeder
             'Kiev Tibb Universiteti'
         ];
 
-        // İş yerləri
         $this->workplaces = [
             'Respublika Klinik Xəstəxanası',
             'Mərkəzi Klinik Xəstəxana',
@@ -226,7 +205,6 @@ class DoctorSeeder extends Seeder
             'Yeni Klinik'
         ];
 
-        // Sertifikat növləri
         $this->certificateTypes = [
             'Tibb İxtisas Diplomu',
             'Residency Sertifikatı',
@@ -238,7 +216,6 @@ class DoctorSeeder extends Seeder
             'Pediatrik Intensiv Terapiya Sertifikatı'
         ];
 
-        // Dillər
         $this->languages = [
             ['language' => 'Azərbaycan dili', 'proficiency' => 'native'],
             ['language' => 'Türk dili', 'proficiency' => 'fluent'],
@@ -248,7 +225,6 @@ class DoctorSeeder extends Seeder
             ['language' => 'Fars dili', 'proficiency' => 'basic'],
         ];
 
-        // Sosial media platformları
         $this->socialPlatforms = [
             'facebook' => 'https://facebook.com/',
             'instagram' => 'https://instagram.com/',
@@ -258,7 +234,6 @@ class DoctorSeeder extends Seeder
             'telegram' => 'https://t.me/',
         ];
 
-        // Həkim adları
         $this->doctorNames = [
             ['name' => 'Rəşad', 'surname' => 'Məmmədov', 'title' => 'Dr.'],
             ['name' => 'Aysel', 'surname' => 'Həsənova', 'title' => 'Dr.'],
@@ -280,21 +255,18 @@ class DoctorSeeder extends Seeder
 
     private function createDoctors(int $count): void
     {
-        // Mövcud kateqoriyaları alırıq
         $categories = Category::where('is_active', true)->get();
         if ($categories->isEmpty()) {
             $this->command->info('Kateqoriya tapılmadı! Əvvəl CategorySeeder işə salın.');
             return;
         }
 
-        // Mövcud xidmətləri alırıq
         $services = Service::where('is_active', true)->get();
         if ($services->isEmpty()) {
             $this->command->info('Xidmət tapılmadı! Əvvəl ServiceSeeder işə salın.');
             return;
         }
 
-        // Mövcud klinikları alırıq
         $clinics = Clinic::where('is_active', true)->get();
         if ($clinics->isEmpty()) {
             $this->command->info('Klinika tapılmadı! Əvvəl ClinicSeeder işə salın.');
@@ -310,11 +282,9 @@ class DoctorSeeder extends Seeder
 
     private function createSingleDoctor($categories, $clinics, $services, $index): void
     {
-        // Random həkim məlumatları
         $doctorInfo = collect($this->doctorNames)->random();
         $gender = fake()->randomElement([GenderEnum::Male, GenderEnum::Female]);
 
-        // 1. User yaradırıq
         $user = User::create([
             'name' => $doctorInfo['name'],
             'surname' => $doctorInfo['surname'],
@@ -329,7 +299,6 @@ class DoctorSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        // 2. User preferences yaradırıq
         UserPreference::create([
             'user_id' => $user->id,
             'language' => 'az',
@@ -340,7 +309,6 @@ class DoctorSeeder extends Seeder
             ],
         ]);
 
-        // 3. Doctor profili yaradırıq
         $category = $categories->random();
         $subCategories = $categories->where('parent_id', $category->id);
         $subCategory = $subCategories->isNotEmpty() ? $subCategories->random() : null;
@@ -354,15 +322,15 @@ class DoctorSeeder extends Seeder
             'consultation_fee' => fake()->randomFloat(2, 20, 200),
             'consultation_duration' => fake()->randomElement([30, 45, 60]),
             'working_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-            'is_verified' => fake()->boolean(80), // 80% verified
-            'is_featured' => fake()->boolean(20), // 20% featured
+            'is_verified' => fake()->boolean(80),
+            'is_featured' => fake()->boolean(20),
             'years_of_experience' => fake()->numberBetween(2, 35),
             'practice_license_number' => 'LIC-' . fake()->unique()->numberBetween(100000, 999999),
             'workplace' => [
                 'name' => fake()->randomElement($this->workplaces),
                 'address' => fake('az_AZ')->address,
                 'phone' => '+994' . fake('az_AZ')->randomNumber(9, true),
-                'latitude' => fake()->latitude(40.3, 40.5), // Bakı üçün təxmini koordinatlar
+                'latitude' => fake()->latitude(40.3, 40.5),
                 'longitude' => fake()->longitude(49.8, 50.0),
             ],
             'available_for_home_visit' => fake()->boolean(30),
@@ -370,42 +338,29 @@ class DoctorSeeder extends Seeder
             'home_visit_fee' => fake()->boolean(30) ? fake()->randomFloat(2, 50, 300) : null,
             'online_consultation_fee' => fake()->boolean(70) ? fake()->randomFloat(2, 15, 100) : null,
             'social_media_links' => $this->generateSocialMediaLinks($user->username),
-            'average_rating' => fake()->numberBetween(300, 500), // 3.0-5.0 arası
+            'average_rating' => fake()->numberBetween(300, 500),
             'total_ratings' => fake()->numberBetween(5, 200),
             'total_patients' => fake()->numberBetween(50, 2000),
         ]);
 
-        // 4. Təhsil məlumatları əlavə edirik
         $this->createEducation($doctor);
-
-        // 5. İş təcrübəsi əlavə edirik
         $this->createExperience($doctor);
-
-        // 6. Sertifikatlar əlavə edirik
         $this->createCertificates($doctor);
-
-        // 7. Dil bilikləri əlavə edirik
         $this->createLanguages($doctor);
-
-        // 8. Klinika əlaqələri yaradırıq
         $this->createClinicRelations($doctor, $clinics);
 
-        // 9. Xidmətlər əlavə edirik (yalnız cədvəllər mövcudsa)
         if ($this->tableExists('doctor_clinic_services')) {
             $this->createDoctorServices($doctor, $services, $clinics);
         }
 
-        // 10. İş cədvəli yaradırıq (yalnız cədvəl mövcudsa)
         if ($this->tableExists('doctor_schedules')) {
             $this->createSchedules($doctor, $clinics);
         }
 
-        // 11. Məşğulluq vaxtları əlavə edirik (yalnız cədvəl mövcudsa)
         if ($this->tableExists('doctor_unavailability')) {
             $this->createUnavailabilities($doctor);
         }
 
-        // 12. Atributları əlavə edirik (yalnız cədvəl mövcudsa)
         if ($this->tableExists('doctor_attribute_values')) {
             $this->addAttributesToDoctor($doctor);
         }
@@ -425,7 +380,6 @@ class DoctorSeeder extends Seeder
 
     private function generateSocialMediaLinks($username): ?array
     {
-        // 60% həkimlərin sosial media hesabları var
         if (!fake()->boolean(60)) {
             return null;
         }
@@ -474,7 +428,7 @@ class DoctorSeeder extends Seeder
         $experienceCount = fake()->numberBetween(2, 5);
 
         for ($i = 0; $i < $experienceCount; $i++) {
-            $isCurrent = $i === 0 && fake()->boolean(70); // İlk iş yeri hal-hazırki ola bilər
+            $isCurrent = $i === 0 && fake()->boolean(70);
 
             DoctorExperience::create([
                 'doctor_id' => $doctor->id,
@@ -551,11 +505,11 @@ class DoctorSeeder extends Seeder
                     'doctor_id' => $doctor->id,
                     'custom_clinic' => [
                         'name' => fake()->company . ' Klinikası',
-                        'latitude' => fake()->latitude(40.3, 40.5), // Bakı üçün təxmini koordinatlar
+                        'latitude' => fake()->latitude(40.3, 40.5),
                         'longitude' => fake()->longitude(49.8, 50.0),
                     ],
                     'profession' => fake()->randomElement(['Həkim', 'Baş həkim', 'Şöbə müdiri', 'Konsultant həkim']),
-                    'is_main_workplace' => $index === 0 ? 1 : 0, // İlk klinika əsas iş yeri
+                    'is_main_workplace' => $index === 0 ? 1 : 0,
                     'is_active' => fake()->boolean(90) ? 1 : 0,
                     'note' => fake()->boolean(30) ? 'Həkim bu klinikada ' . fake()->numberBetween(1, 5) . ' il işləyib' : null,
                     'created_at' => now(),
@@ -572,7 +526,7 @@ class DoctorSeeder extends Seeder
                         'end_time' => ['18:00', '19:00', '20:00'][$timeRand],
                     ],
                     'profession' => fake()->randomElement(['Həkim', 'Baş həkim', 'Şöbə müdiri', 'Konsultant həkim']),
-                    'is_main_workplace' => $index === 0 ? 1 : 0, // İlk klinika əsas iş yeri
+                    'is_main_workplace' => $index === 0 ? 1 : 0,
                     'is_active' => fake()->boolean(90) ? 1 : 0,
                     'note' => fake()->boolean(30) ? 'Həkim bu klinikada ' . fake()->numberBetween(1, 5) . ' il işləyib' : null,
                     'created_at' => now(),
@@ -584,22 +538,20 @@ class DoctorSeeder extends Seeder
 
     private function createDoctorServices(Doctor $doctor, $services, $clinics): void
     {
-        // Həkimin kateqoriyasına uyğun xidmətləri seçirik
-        $categoryServices = $services->where('category_id', $doctor->category);
+        // DÜZƏLİŞ: doctor->category_id ilə filtre
+        $categoryServices = $services->where('category_id', $doctor->category_id);
+
         if ($categoryServices->isEmpty()) {
-            // Əgər kateqoriyaya uyğun xidmət yoxdursa, random seçirik
             $categoryServices = $services->random(fake()->numberBetween(3, 8));
         } else {
             $categoryServices = $categoryServices->random(min($categoryServices->count(), fake()->numberBetween(3, 8)));
         }
 
-        // Həkimin işlədiyi klinikları alırıq
         $doctorClinicIds = DB::table('doctor_clinic')
             ->where('doctor_id', $doctor->id)
             ->where('is_active', 1)
             ->pluck('id');
 
-        // Əgər həkimin aktiv klinikası yoxdursa, skip edirik
         if ($doctorClinicIds->isEmpty()) {
             return;
         }
@@ -609,7 +561,7 @@ class DoctorSeeder extends Seeder
                 DoctorClinicService::create([
                     'doctor_clinic_id' => $clinicId,
                     'service_id' => $service->id,
-                    'price' => fake()->randomFloat(2, $service->price * 0.8, $service->price * 1.2),
+                    'price' => fake()->randomFloat(2, max(10, ($service->price ?? 50) * 0.8), ($service->price ?? 100) * 1.2),
                     'duration' => fake()->randomElement([30, 45, 60, 90]),
                     'description' => fake()->boolean(40) ? 'Həkimin bu xidmət üçün əlavə qeydi' : null,
                     'is_active' => fake()->boolean(95),
@@ -618,109 +570,97 @@ class DoctorSeeder extends Seeder
         }
     }
 
+    /**
+     * DÜZƏLİŞ: Recurring availability strukturu ilə schedule yarat
+     */
     private function createSchedules(Doctor $doctor, $clinics): void
     {
-        // Həkimin işlədiyi klinikları alırıq
-        $doctorClinicIds = DB::table('doctor_clinic')
+        // Aktiv klinikalar (clinic_id lazımdır)
+        $clinicIds = DB::table('doctor_clinic')
             ->where('doctor_id', $doctor->id)
             ->whereNotNull('clinic_id')
             ->where('is_active', 1)
             ->pluck('clinic_id');
 
-        // Əgər həkimin aktiv klinikası yoxdursa, skip edirik
-        if ($doctorClinicIds->isEmpty()) {
+        if ($clinicIds->isEmpty()) {
             return;
         }
 
-        $workDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        // 1-2 fərqli recurring interval
+        $recurringCount = fake()->numberBetween(1, 2);
 
-        foreach ($doctorClinicIds as $clinicId) {
-            foreach ($workDays as $day) {
-                // Hər gün işləmir, bəzi günlər boş ola bilər
-                if (fake()->boolean(85)) { // 85% ehtimalla işləyir
-                    $startHour = fake()->numberBetween(8, 10);
-                    $endHour = fake()->numberBetween(16, 19);
+        for ($i = 0; $i < $recurringCount; $i++) {
+            $clinicId = $clinicIds->random();
 
-                    DoctorSchedule::create([
-                        'doctor_id' => $doctor->id,
-                        'clinic_id' => $clinicId,
-                        'day_of_week' => $day,
-                        'start_time' => sprintf('%02d:00:00', $startHour),
-                        'end_time' => sprintf('%02d:00:00', $endHour),
-                        'is_active' => true,
-                        'max_appointments' => fake()->numberBetween(8, 20),
-                        'appointment_duration' => fake()->randomElement([30, 45, 60]),
-                        'note' => fake()->boolean(20) ? 'İş cədvəli qeydi' : null,
-                    ]);
-                }
-            }
+            // Tarix aralığı: bu həftədən başlayıb ~6-10 həftəlik
+            $startDate = Carbon::now()->startOfWeek()->addWeeks(fake()->numberBetween(0, 2))->toDateString();
+            $endDate   = Carbon::parse($startDate)->addWeeks(fake()->numberBetween(6, 10))->toDateString();
+
+            // Həftəlik tezlik: every 1 və ya 2
+            $every     = fake()->randomElement([1, 2]);
+            // Günlər: həftənin 2-4 günü
+            $daysCount = fake()->numberBetween(2, 4);
+            $days      = collect([1,2,3,4,5])->random($daysCount)->values()->toArray(); // 1..5 (Mon..Fri)
+
+            // Saat aralığı
+            $startHour = fake()->numberBetween(8, 11);
+            $endHour   = fake()->numberBetween(max($startHour + 6, 15), 20);
+
+            DoctorSchedule::create([
+                'doctor_id'  => $doctor->id,
+                'clinic_id'  => $clinicId,
+
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'from_time'  => sprintf('%02d:00', $startHour),
+                'to_time'    => sprintf('%02d:00', $endHour),
+
+                'frequency'  => 'weekly',
+                'every'      => $every,
+                'days'       => $days,
+
+                'is_active'  => true,
+                'note'       => fake()->boolean(20) ? 'Recurrence schedule qeydi' : null,
+            ]);
         }
     }
 
+    /**
+     * DÜZƏLİŞ: Unavailability start_time/end_time/note ilə
+     */
     private function createUnavailabilities(Doctor $doctor): void
     {
-        // Həkimin işlədiyi klinikları alırıq
-        $doctorClinicIds = DB::table('doctor_clinic')
+        $clinicIds = DB::table('doctor_clinic')
             ->where('doctor_id', $doctor->id)
             ->where('is_active', 1)
             ->pluck('clinic_id');
 
-        // Əgər həkimin aktiv klinikası yoxdursa, skip edirik
-        if ($doctorClinicIds->isEmpty()) {
-            return;
-        }
-
-        // Hər həkim üçün 2-6 məşğulluq yaradırıq
         $unavailabilityCount = fake()->numberBetween(2, 6);
 
         for ($i = 0; $i < $unavailabilityCount; $i++) {
-            $clinicId = fake()->boolean(70) ? $doctorClinicIds->random() : null; // 70% ehtimalla konkret klinikaya aid
+            $clinicId = ($clinicIds->isNotEmpty() && fake()->boolean(70)) ? $clinicIds->random() : null;
 
-            // Məşğulluq növlərini təyin edirik
-            $unavailabilityTypes = [
-                ['reason' => 'Məzuniyyət', 'duration_days' => fake()->numberBetween(7, 21)],
-                ['reason' => 'Xəstəlik məzuniyyəti', 'duration_days' => fake()->numberBetween(3, 10)],
-                ['reason' => 'Konfrans/Seminar', 'duration_days' => fake()->numberBetween(1, 3)],
-                ['reason' => 'Şəxsi məşğuliyyət', 'duration_days' => fake()->numberBetween(1, 2)],
-                ['reason' => 'Tibbi müayinə', 'duration_days' => 1],
-                ['reason' => 'Ailə mərasimi', 'duration_days' => fake()->numberBetween(1, 3)],
-            ];
+            // Keçmiş və ya gələcək interval
+            $isPast = fake()->boolean(60);
+            $start  = $isPast
+                ? fake()->dateTimeBetween('-6 months', '-1 week')
+                : fake()->dateTimeBetween('+1 week', '+3 months');
 
-            $unavailabilityType = fake()->randomElement($unavailabilityTypes);
-
-            // Keçmiş və gələcək tarixlər arasında seçim
-            $isPast = fake()->boolean(60); // 60% keçmiş, 40% gələcək
-
-            if ($isPast) {
-                $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
-            } else {
-                $startDate = fake()->dateTimeBetween('+1 week', '+3 months');
-            }
-
-            $endDate = (clone $startDate)->modify('+' . $unavailabilityType['duration_days'] . ' days');
-
-            // Təkrarlanan məşğulluq (məs: hər həftə çərşənbə)
-            $isRecurring = fake()->boolean(20); // 20% təkrarlanan
-            $recurringPattern = null;
-
-            if ($isRecurring) {
-                $patterns = [
-                    'weekly_wednesday' => 'Hər çərşənbə',
-                    'monthly_first_friday' => 'Hər ayın ilk cüməsi',
-                    'biweekly_monday' => 'İki həftədə bir bazar ertəsi',
-                ];
-                $recurringPattern = fake()->randomElement($patterns);
-            }
+            // 1-3 gün arası
+            $durationDays = fake()->numberBetween(1, 3);
+            $end = (clone $start)->modify("+{$durationDays} days");
 
             DoctorUnavailability::create([
-                'doctor_id' => $doctor->id,
-                'clinic_id' => $clinicId,
-                'start_datetime' => $startDate->format('Y-m-d H:i:s'),
-                'end_datetime' => $endDate->format('Y-m-d H:i:s'),
-                'reason' => $unavailabilityType['reason'],
-                'description' => $this->generateUnavailabilityDescription($unavailabilityType['reason']),
-                'is_recurring' => $isRecurring,
-                'recurring_pattern' => $recurringPattern,
+                'doctor_id'  => $doctor->id,
+                'clinic_id'  => $clinicId,
+                'start_time' => Carbon::instance($start)->format('Y-m-d H:i:s'),
+                'end_time'   => Carbon::instance($end)->format('Y-m-d H:i:s'),
+                'note'       => fake()->boolean(70)
+                    ? fake()->randomElement([
+                        'Məzuniyyət', 'Konfrans/Seminar', 'Şəxsi məşğuliyyət',
+                        'Tibbi müayinə', 'Ailə mərasimi'
+                    ])
+                    : null,
             ]);
         }
     }
@@ -732,11 +672,6 @@ class DoctorSeeder extends Seeder
                 'Ailə ilə dincəlmək üçün planlaşdırılmış məzuniyyət',
                 'İllik məzuniyyət dövrü',
                 'Şəxsi istirahət üçün vaxt',
-            ],
-            'Xəstəlik məzuniyyəti' => [
-                'Sağlamlıq problemləri səbəbilə müvəqqəti əlçatmazlıq',
-                'Tibbi müalicə prosesi',
-                'Bərpa dövrü',
             ],
             'Konfrans/Seminar' => [
                 'Peşəkar inkişaf üçün tibbi konfrans',

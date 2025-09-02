@@ -2,147 +2,175 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DoctorSchedule extends BaseModel
 {
+    use HasFactory;
+
+    protected $table = 'doctor_schedules';
+
     /**
-     * Kütləvi təyin edilə bilən atributlar.
-     * @var array
+     * Mass-assignable sahələr
      */
     protected $fillable = [
         'uuid',
         'doctor_id',
         'clinic_id',
-        'day_of_week',
-        'start_time',
-        'end_time',
+
+        // Recurring availability
+        'start_date',     // Y-m-d
+        'end_date',       // Y-m-d
+        'from_time',      // H:i
+        'to_time',        // H:i
+        'frequency',      // daily|weekly|monthly
+        'every',          // 1,2,3...
+        'days',           // json: [0..6]
+
         'is_active',
-        'max_appointments',
-        'appointment_duration',
-        'note'
+        'note',
     ];
 
     /**
-     * Verilənlər tipini çevrilməli olan atributlar.
-     * @var array
+     * Type cast-lar
      */
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-        'is_active' => 'boolean',
-        'max_appointments' => 'integer',
-        'appointment_duration' => 'integer',
+        'start_date' => 'date:Y-m-d',
+        'end_date'   => 'date:Y-m-d',
+        'from_time'  => 'string',
+        'to_time'    => 'string',
+        'every'      => 'integer',
+        'days'       => 'array',
+        'is_active'  => 'boolean',
     ];
 
     /**
-     * Avtomatik əlavə edilən atributlar.
-     * @var array
+     * Hesablanmış sahələr
      */
-    protected $appends = ['day_name', 'time_range', 'duration'];
+    protected $appends = [
+        'time_range',          // "HH:mm - HH:mm"
+        'duration_minutes',    // int (dəqiqə)
+    ];
 
-    /**
-     * Günün adını Azərbaycan dilində qaytarır.
-     * @return AttributeAlias
-     */
-    public function dayName(): AttributeAlias
-    {
-        return new AttributeAlias(
-            get: function () {
-                return match($this->day_of_week) {
-                    'Monday' => 'Bazar ertəsi',
-                    'Tuesday' => 'Çərşənbə axşamı',
-                    'Wednesday' => 'Çərşənbə',
-                    'Thursday' => 'Cümə axşamı',
-                    'Friday' => 'Cümə',
-                    'Saturday' => 'Şənbə',
-                    'Sunday' => 'Bazar',
-                    default => $this->day_of_week
-                };
-            }
-        );
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Saat aralığını qaytarır.
-     * @return AttributeAlias
-     */
-    public function timeRange(): AttributeAlias
-    {
-        return new AttributeAlias(
-            get: function () {
-                return $this->start_time->format('H:i') . ' - ' . $this->end_time->format('H:i');
-            }
-        );
-    }
-
-    /**
-     * İş saatlarının ümumi müddətini (dəqiqə ilə) qaytarır.
-     * @return AttributeAlias
-     */
-    public function duration(): AttributeAlias
-    {
-        return new AttributeAlias(
-            get: function () {
-                return $this->start_time->diffInMinutes($this->end_time);
-            }
-        );
-    }
-
-    /**
-     * İş cədvəlinə aid həkim əlaqəsi.
-     * @return BelongsTo
-     */
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
     }
 
-    /**
-     * İş cədvəlinə aid klinika əlaqəsi.
-     * @return BelongsTo
-     */
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
     }
 
-    /**
-     * Gün ərzində yaradıla biləcək randevu sayını hesablayır.
-     * @return int
-     */
-    public function calculatePossibleAppointments(): int
-    {
-        $totalMinutes = $this->duration;
-        $appointmentDuration = $this->appointment_duration;
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
 
-        return (int) floor($totalMinutes / $appointmentDuration);
+    /**
+     * HH:mm - HH:mm formatında vaxt aralığı
+     */
+    public function timeRange(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: fn () => sprintf('%s - %s', $this->from_time, $this->to_time)
+        );
     }
 
     /**
-     * Gün ərzində mümkün olan randevu vaxtlarını qaytarır.
-     * @return array
+     * from_time → to_time aralığının dəqiqə ilə uzunluğu
      */
-    public function getPossibleTimeSlots(): array
+    public function durationMinutes(): AttributeAlias
     {
-        $startTime = $this->start_time->copy();
-        $endTime = $this->end_time->copy();
-        $duration = $this->appointment_duration;
+        return new AttributeAlias(
+            get: function () {
+                $start = Carbon::createFromFormat('H:i', $this->from_time);
+                $end   = Carbon::createFromFormat('H:i', $this->to_time);
+                return $start->diffInMinutes($end);
+            }
+        );
+    }
 
-        $timeSlots = [];
-        $currentTime = $startTime->copy();
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
 
-        while ($currentTime->copy()->addMinutes($duration)->lte($endTime)) {
-            $timeSlots[] = [
-                'start' => $currentTime->format('H:i'),
-                'end' => $currentTime->copy()->addMinutes($duration)->format('H:i')
-            ];
+    /**
+     * Yalnız aktiv cədvəllər
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 
-            $currentTime->addMinutes($duration);
+    /**
+     * Müəyyən həkim üçün
+     */
+    public function scopeForDoctor($query, int $doctorId)
+    {
+        return $query->where('doctor_id', $doctorId);
+    }
+
+    /**
+     * Verilmiş tarix aralığı ilə kəsişən cədvəllər
+     */
+    public function scopeIntersectsDateRange($query, string $from, string $to)
+    {
+        return $query->where(function ($q) use ($from, $to) {
+            $q->whereBetween('start_date', [$from, $to])
+                ->orWhereBetween('end_date',   [$from, $to])
+                ->orWhere(function ($q2) use ($from, $to) {
+                    $q2->where('start_date', '<=', $from)
+                        ->where('end_date',   '>=', $to);
+                });
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Weekly üçün “every N week” addımının uyğunluğunu yoxlayır
+     * (Service tərəfdə də eynisi var – lazım olsa UI üçün də yararlıdır)
+     */
+    public function matchesWeekStep(Carbon $candidate): bool
+    {
+        if ($this->frequency !== 'weekly') {
+            return true;
         }
 
-        return $timeSlots;
+        $start = Carbon::parse($this->start_date)->startOfWeek();
+        $diff  = $start->diffInWeeks($candidate->copy()->startOfWeek());
+        $every = max((int)$this->every, 1);
+
+        return $diff % $every === 0;
     }
 
+    /**
+     * Weekly üçün gün uyğunluğunu yoxlayır (0..6; 0=Sun)
+     */
+    public function matchesWeekDay(Carbon $candidate): bool
+    {
+        if ($this->frequency !== 'weekly') {
+            return true;
+        }
+
+        $days = is_array($this->days) ? $this->days : [];
+        return in_array((int)$candidate->dayOfWeek, $days, true);
+    }
 }

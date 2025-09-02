@@ -14,17 +14,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('doctor_unavailability', function (Blueprint $table) {
-            $table->id(); // Qeydin unikal ID-si
-            $table->key(); // Unikal UUID
-            $table->foreignId('doctor_id')->constrained()->onDelete('cascade'); // Həkim əlaqəsi
-            $table->foreignId('clinic_id')->nullable()->constrained()->nullOnDelete(); // Klinika əlaqəsi (NULL - bütün klinikalar üçün)
-            $table->dateTime('start_datetime'); // Başlama tarixi və saatı
-            $table->dateTime('end_datetime'); // Bitmə tarixi və saatı
-            $table->string('reason')->nullable(); // Məşğulluq səbəbi
-            $table->text('description')->nullable(); // Əlavə təsvir
-            $table->boolean('is_recurring')->default(false); // Təkrarlanan məşğulluqdur?
-            $table->string('recurring_pattern')->nullable(); // Təkrarlanma qaydası
-            $table->timestamps(); // Yaradılma və yenilənmə vaxtları
+            $table->id();
+            $table->key(); // uuid
+
+            // Əlaqələr
+            $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('clinic_id')->nullable()->constrained()->nullOnDelete();
+
+            // Interval
+            $table->dateTime('start_time'); // əvvəlki start_datetime əvəzinə
+            $table->dateTime('end_time');   // əvvəlki end_datetime əvəzinə
+
+            // Qeyd
+            $table->string('note')->nullable(); // reason/description yerinə tək sahə
+
+            $table->timestamps();
+
+            // Sorğular üçün indekslər
+            $table->index(['doctor_id', 'start_time', 'end_time']);
+            $table->index(['clinic_id']);
         });
     }
 

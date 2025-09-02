@@ -91,6 +91,14 @@ class ReferenceDataController extends Controller
     }
 
     /**
+     * Xidmətlər listəsi
+     */
+    public function services(): JsonResponse
+    {
+        return response()->json(ReferenceResource::collection($this->service->fetchServices()));
+    }
+
+    /**
      * Attributelara ait bütün tipləri gətirir
      * */
     public function attributeTypes(): JsonResponse

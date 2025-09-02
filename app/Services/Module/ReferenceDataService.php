@@ -155,6 +155,14 @@ class ReferenceDataService
     }
 
     /**
+     * Xidmətlərin listəsi
+     */
+    public function fetchServices()
+    {
+        return app(ServiceService::class)->findActiveList();
+    }
+
+    /**
      * Attributlara aid bütün tipləri listələyir
      * */
     public function fetchAttributeTypes()

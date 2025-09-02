@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Front\AppointmentController;
 use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
+use App\Http\Controllers\Api\Front\DoctorCalendarController;
 use App\Http\Controllers\Api\Front\DoctorController;
 use App\Http\Controllers\Api\Front\DoctorDashboardController;
 use App\Http\Controllers\Api\Front\FaqController;
@@ -261,4 +262,24 @@ Route::controller(DoctorDashboardController::class)
         Route::get('/appointments/report', 'appointmentReport'); // sol alt “Appointment report”
         Route::get('/bookings/recent', 'recentBookings');     // sağ alt “Recent booking details”
         Route::get('/appointments/report/export', 'exportAppointmentReport');
+    });
+
+Route::controller(DoctorCalendarController::class)
+    ->prefix('doctor/calendar')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        // Kalendar feed (appointments + schedules + unavailability)
+        Route::get('/', 'index');
+
+        // Recurring availability
+        Route::post('/availability/recurring', 'storeRecurring');
+        Route::put('/availability/recurring/{id}', 'updateRecurring');
+        Route::delete('/availability/recurring/{id}', 'destroyRecurring');
+
+        // Unavailability (busy)
+        Route::post('/unavailability', 'storeUnavailability');
+        Route::delete('/unavailability/{id}', 'destroyUnavailability');
+
+        // Appointment status management (agenda popup)
+        Route::put('/appointments/{id}/status', 'updateAppointmentStatus');
     });

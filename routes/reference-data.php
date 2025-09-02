@@ -12,6 +12,7 @@ Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/languages', 'languages')->name('languages');
     Route::get('/languages/{locale}/translates', 'languageWithTranslates')->name('languageWithTranslates');
     Route::get('/system/image-watermark-positions', 'systemImageWatermarkPosition')->name('systemImageWatermarkPosition');
+    Route::get('/services', 'services')->name('services');
     Route::get('/attributes', 'attributes')->name('attributes');
     Route::get('/attribute-types', 'attributeTypes')->name('attributeTypes');
     Route::get('/attribute-positions', 'attributePositions')->name('attributePositions');

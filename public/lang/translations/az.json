@@ -426,6 +426,16 @@
             "list_inactive": "Mail siyahısı aktiv deyil",
             "campaign_not_running": "Kampaniya hazırda aktiv deyil",
             "empty_recipient_list": "Boş alıcı siyahısı"
+        },
+        "calendar": {
+            "recurring_created": "Təkrarlanan uyğunluq yaradıldı",
+            "recurring_updated": "Təkrarlanan uyğunluq yeniləndi",
+            "recurring_deleted": "Təkrarlanan uyğunluq silindi",
+            "unavailability_created": "Məşğulluq intervalı əlavə olundu",
+            "unavailability_deleted": "Məşğulluq intervalı silindi"
+        },
+        "appointment": {
+            "status_updated": "Görüş statusu yeniləndi"
         }
     },
     "validation": {
@@ -439,6 +449,18 @@
         "invalidImageSize": "Şəklin həcmi :size-dan çox ola bilməz",
         "user": {
             "not_doctor": "Həkim tapılmadı"
+        },
+        "date_range": {
+            "invalid": "Tarix aralığı yanlışdır"
+        },
+        "calendar": {
+            "cannot_create_in_past": "Keçmiş tarix üçün əlavə etmək olmaz",
+            "cannot_edit_past": "Keçmiş periodu redaktə etmək olmaz",
+            "cannot_delete_past": "Keçmiş periodu silmək olmaz",
+            "overlaps_locked_appointment": "Təsdiqlənmiş/tamamlanmış görüşlə üst-üstə düşür",
+            "overlaps_existing_availability": "Bu tarix və saat üçün artıq mövcud uyğunluq var",
+            "overlaps_unavailability": "Bu tarix və saat üçün artıq mövcud məşqulluq var",
+            "clinic_not_assigned_to_doctor": "Seçilmiş klinika həkimə aid deyil"
         }
     }
 }

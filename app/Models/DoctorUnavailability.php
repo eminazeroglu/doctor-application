@@ -8,111 +8,95 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DoctorUnavailability extends BaseModel
 {
     /**
-     * İstifadə ediləcək cədvəl adı.
+     * Cədvəlin adı.
      * @var string
      */
     protected $table = 'doctor_unavailability';
 
     /**
-     * Kütləvi təyin edilə bilən atributlar.
+     * Mass-assignable sahələr.
      * @var array
      */
     protected $fillable = [
         'uuid',
         'doctor_id',
         'clinic_id',
-        'start_datetime',
-        'end_datetime',
-        'reason',
-        'description',
-        'is_recurring',
-        'recurring_pattern'
+        'start_time',   // datetime
+        'end_time',     // datetime
+        'note',         // nullable string
     ];
 
     /**
-     * Verilənlər tipini çevrilməli olan atributlar.
+     * Cast-lar.
      * @var array
      */
     protected $casts = [
-        'start_datetime' => 'datetime',
-        'end_datetime' => 'datetime',
-        'is_recurring' => 'boolean',
+        'start_time' => 'datetime',
+        'end_time'   => 'datetime',
     ];
 
     /**
-     * Avtomatik əlavə edilən atributlar.
+     * Hesablanmış atributlar.
      * @var array
      */
-    protected $appends = ['datetime_range', 'is_active', 'is_expired', 'duration'];
+    protected $appends = [
+        'time_range',        // "dd.mm.YY HH:ii - dd.mm.YY HH:ii"
+        'is_active',         // bool
+        'is_expired',        // bool
+        'duration_minutes',  // int (dəqiqə)
+    ];
 
-    /**
-     * Tarix və saat aralığını qaytarır.
-     * @return AttributeAlias
-     */
-    public function datetimeRange(): AttributeAlias
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    public function timeRange(): AttributeAlias
     {
         return new AttributeAlias(
             get: function () {
-                $start = $this->start_datetime->format('d.m.Y H:i');
-                $end = $this->end_datetime->format('d.m.Y H:i');
-
-                return $start . ' - ' . $end;
+                $start = $this->start_time?->format('d.m.Y H:i');
+                $end   = $this->end_time?->format('d.m.Y H:i');
+                return ($start && $end) ? ($start . ' - ' . $end) : null;
             }
         );
     }
 
-    /**
-     * Məşğulluğun hal-hazırda aktiv olub-olmadığını yoxlayır.
-     * @return AttributeAlias
-     */
     public function isActive(): AttributeAlias
     {
         return new AttributeAlias(
-            get: function () {
-                return now()->between($this->start_datetime, $this->end_datetime);
-            }
+            get: fn () => $this->start_time && $this->end_time && now()->between($this->start_time, $this->end_time)
         );
     }
 
-    /**
-     * Məşğulluq müddətinin bitib-bitmədiyini yoxlayır.
-     * @return AttributeAlias
-     */
     public function isExpired(): AttributeAlias
     {
         return new AttributeAlias(
-            get: function () {
-                return $this->end_datetime->isPast();
-            }
+            get: fn () => $this->end_time ? $this->end_time->isPast() : false
         );
     }
 
-    /**
-     * Məşğulluğun müddətini (dəqiqə ilə) qaytarır.
-     * @return AttributeAlias
-     */
-    public function getDurationAttribute(): AttributeAlias
+    public function durationMinutes(): AttributeAlias
     {
         return new AttributeAlias(
-            get: function () {
-                return $this->start_datetime->diffInMinutes($this->end_datetime);
-            }
+            get: fn () => ($this->start_time && $this->end_time)
+                ? $this->start_time->diffInMinutes($this->end_time)
+                : 0
         );
     }
 
-    /**
-     * Məşğulluq qeydinə aid həkim əlaqəsi.
-     * @return BelongsTo
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
+
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
     }
 
-    /**
-     * Məşğulluq qeydinə aid klinika əlaqəsi.
-     * @return BelongsTo
-     */
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
