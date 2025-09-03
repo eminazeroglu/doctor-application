@@ -677,6 +677,11 @@
                             "to": {
                                 "type": "text",
                                 "description": "YYYY-MM-DD"
+                            },
+                            "is_agency": {
+                                "type": "boolean",
+                                "description": "Agendanın əldə edilməsi üçün true göndəririk",
+                                "default": false
                             }
                         },
                         "responses": {
@@ -825,16 +830,107 @@
                         "authorization": true
                     }
                 },
-                "/app/doctor/calendar/appointments/{id}/status": {
+                "/app/doctor/appointments": {
+                    "get": {
+                        "summary": "Appointment siyahısı (filter + sort + pagination)",
+                        "authorization": true,
+                        "query": {
+                            "per_page": {
+                                "type": "number",
+                                "description": "Səhifə ölçüsü (1..100)",
+                                "default": 10
+                            },
+                            "search": {
+                                "type": "string",
+                                "description": "Pasiyent adına görə axtarış (name/surname)"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Vergüllə ayrılmış çoxlu status: pending,confirmed,cancelled,completed,no-show,rescheduled"
+                            },
+                            "clinic_id": {
+                                "type": "number",
+                                "description": "Klinika ID (doctor_clinic əlaqəsi üzrə)"
+                            },
+                            "from": {
+                                "type": "date",
+                                "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                            },
+                            "to": {
+                                "type": "date",
+                                "description": "Bitmə tarixi (YYYY-MM-DD) — from tarixindən kiçik ola bilməz"
+                            }
+                        }
+                    }
+                },
+                "/app/doctor/appointments/{id}": {
+                    "get": {
+                        "summary": "Appointment detalları",
+                        "authorization": true
+                    }
+                },
+                "/app/doctor/appointments/{id}/status": {
                     "put": {
-                        "summary": "Update appointment status",
+                        "summary": "Appointment statusunu dəyiş",
                         "authorization": true,
                         "formBody": {
-                            "status": "<AppointmentStatusEnum value>"
-                        },
-                        "responses": {
-                            "200": {
-                                "appointment": []
+                            "status": {
+                                "type": "string",
+                                "required": true,
+                                "default": "pending",
+                                "description": [
+                                    "pending",
+                                    "confirmed",
+                                    "cancelled",
+                                    "completed",
+                                    "no-show",
+                                    "rescheduled"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "/app/doctor/appointments/{id}/reschedule": {
+                    "put": {
+                        "summary": "Appointment üçün yeni tarix/saat təyin et",
+                        "authorization": true,
+                        "formBody": {
+                            "start": {
+                                "type": "datetime",
+                                "required": true,
+                                "description": "YYYY-MM-DD HH:mm",
+                                "default": "2025-09-14 14:00"
+                            },
+                            "end": {
+                                "type": "datetime",
+                                "required": true,
+                                "description": "YYYY-MM-DD HH:mm (start-dan sonra)",
+                                "default": "2025-09-14 17:00"
+                            },
+                            "clinic_id": {
+                                "type": "number",
+                                "required": false,
+                                "description": "Yeni klinika (boş buraxılsa hazırkı qalır)",
+                                "default": "3"
+                            },
+                            "service_id": {
+                                "type": "number",
+                                "required": false,
+                                "description": "Yeni servis (boş buraxılsa hazırkı qalır)",
+                                "default": "6"
+                            }
+                        }
+                    }
+                },
+                "/app/doctor/appointments/{id}/note": {
+                    "put": {
+                        "summary": "Appointment üçün qeyd (note) əlavə/yenilə",
+                        "authorization": true,
+                        "formBody": {
+                            "note": {
+                                "type": "string",
+                                "required": true,
+                                "max": 1000
                             }
                         }
                     }

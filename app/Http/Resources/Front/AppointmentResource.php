@@ -90,11 +90,11 @@ class AppointmentResource extends JsonResource
                 'cancelled_by' => $this->cancelled_by ?? 'patient',
             ]),
 
-            // Screen 1 - Qiymətləndir düyməsi üçün
+            // Qiymətləndir düyməsi üçün
             'can_review' => $this->canReview(),
             'has_review' => $this->reviews->isNotEmpty(),
 
-            // Screen 2 - Ləğv etmə üçün
+            // Ləğv etmə üçün
             'can_cancel' => $this->canCancel(),
             'can_reschedule' => $this->canReschedule(),
 

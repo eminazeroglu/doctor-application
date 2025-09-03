@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Front\AppointmentController;
 use App\Http\Controllers\Api\Front\BlogController;
 use App\Http\Controllers\Api\Front\CategoryController;
 use App\Http\Controllers\Api\Front\ComplaintsController;
+use App\Http\Controllers\Api\Front\DoctorAppointmentController;
 use App\Http\Controllers\Api\Front\DoctorCalendarController;
 use App\Http\Controllers\Api\Front\DoctorController;
 use App\Http\Controllers\Api\Front\DoctorDashboardController;
@@ -134,16 +135,6 @@ Route::controller(MessagingController::class)
     });
 
 /**
- * Doctor Routes
- * */
-Route::controller(DoctorController::class)
-    ->prefix('doctors')
-    ->group(function () {
-        Route::post('/search', 'doctorSearch')->name('doctor.search');
-        Route::get('/{id}/view', 'doctorView')->name('doctor.view');
-    });
-
-/**
  * Blog Routes
  * */
 Route::controller(BlogController::class)
@@ -253,14 +244,24 @@ Route::controller(ProfileController::class)
         });
     });
 
+/**
+ * Doctor Routes
+ * */
+Route::controller(DoctorController::class)
+    ->prefix('doctors')
+    ->group(function () {
+        Route::post('/search', 'doctorSearch')->name('doctor.search');
+        Route::get('/{id}/view', 'doctorView')->name('doctor.view');
+    });
+
 Route::controller(DoctorDashboardController::class)
     ->prefix('doctor/dashboard')
     ->middleware(['auth:sanctum'])
     ->group(function () {
-        Route::get('/summary', 'summary');                    // üst sağ “Performance overview” + quick KPI-lar
-        Route::get('/performance', 'performance');            // sol üst chart (son 6 ay və ya verilən interval)
-        Route::get('/appointments/report', 'appointmentReport'); // sol alt “Appointment report”
-        Route::get('/bookings/recent', 'recentBookings');     // sağ alt “Recent booking details”
+        Route::get('/summary', 'summary');
+        Route::get('/performance', 'performance');
+        Route::get('/appointments/report', 'appointmentReport');
+        Route::get('/bookings/recent', 'recentBookings');
         Route::get('/appointments/report/export', 'exportAppointmentReport');
     });
 
@@ -282,4 +283,15 @@ Route::controller(DoctorCalendarController::class)
 
         // Appointment status management (agenda popup)
         Route::put('/appointments/{id}/status', 'updateAppointmentStatus');
+    });
+
+Route::controller(DoctorAppointmentController::class)
+    ->middleware('auth:sanctum')
+    ->prefix('doctor/appointments')
+    ->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}/status', 'updateStatus');
+        Route::put('/{id}/reschedule', 'reschedule');
+        Route::put('/{id}/note', 'updateNote');
     });

@@ -22,7 +22,7 @@ class DoctorCalendarService
     public function resolveDateRange(?string $from, ?string $to): array
     {
         $start = $from ? CarbonImmutable::parse($from)->startOfDay() : now()->startOfWeek();
-        $end   = $to   ? CarbonImmutable::parse($to)->endOfDay()   : now()->endOfWeek();
+        $end = $to ? CarbonImmutable::parse($to)->endOfDay() : now()->endOfWeek();
 
         if ($end->lt($start)) {
             throw new BaseException(t('validation.date_range.invalid'), 422);
@@ -53,52 +53,58 @@ class DoctorCalendarService
             ->whereIn('appointment_status', $this->lockedStatuses())
             ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_time', [$start, $end])
-                    ->orWhereBetween('end_time',   [$start, $end])
+                    ->orWhereBetween('end_time', [$start, $end])
                     ->orWhere(function ($q2) use ($start, $end) {
                         $q2->where('start_time', '<=', $start)
-                            ->where('end_time',   '>=', $end);
+                            ->where('end_time', '>=', $end);
                     });
             })
             ->exists();
     }
 
-    /** Kalendar feed: appointments + schedules + unavailability */
-    public function getCalendarFeed(int $userId, $from, $to): array
+    private function getAppointmentsForDoctor(int $doctorId, $from, $to): Collection
     {
-        $doctorId = $this->doctorIdByUser($userId);
-
-        // Appointments
-        $appointments = Appointment::query()
-            ->with(['patient.user:id,name,surname', 'clinic:id,name'])
+        return Appointment::query()
+            ->with(['patient.user', 'clinic:id,name'])
             ->where('doctor_id', $doctorId)
             ->where(function ($q) use ($from, $to) {
                 $q->whereBetween('start_time', [$from, $to])
-                    ->orWhereBetween('end_time',   [$from, $to])
+                    ->orWhereBetween('end_time', [$from, $to])
                     ->orWhere(function ($q2) use ($from, $to) {
                         $q2->where('start_time', '<=', $from)
-                            ->where('end_time',   '>=', $to);
+                            ->where('end_time', '>=', $to);
                     });
             })
             ->get()
-            ->map(fn ($a) => [
-                'id'          => $a->id,
-                'type'        => 'appointment',
-                'start'       => $a->start_time,
-                'end'         => $a->end_time,
-                'status'      => $a->appointment_status,
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'type' => 'appointment',
+                'start' => $a->start_time,
+                'end' => $a->end_time,
+                'status' => $a->appointment_status,
                 'clinic_name' => $a->clinic?->name,
-                'title'       => trim(($a->patient?->user?->name ?? '') . ' ' . ($a->patient?->user?->surname ?? '')),
+                'title' => trim(($a->patient?->user?->name ?? '') . ' ' . ($a->patient?->user?->surname ?? '')),
+                'patient' => [
+                    'fullname' => $a->patient->user->fullname,
+                    'photo' => $a->patient->user->photo,
+                    'email' => $a->patient->user->email,
+                    'phone' => $a->patient->user->phone,
+                ],
+                'service' => $a->service->name,
             ]);
+    }
 
+    private function getScheduleForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
+    {
         // Schedules (recurring availability) — aralığa düşən occurence-ləri generasiya edirik
         $schedules = DoctorSchedule::query()
             ->where('doctor_id', $doctorId)
             ->where(function ($q) use ($from, $to) {
                 $q->whereBetween('start_date', [$from->toDateString(), $to->toDateString()])
-                    ->orWhereBetween('end_date',   [$from->toDateString(), $to->toDateString()])
+                    ->orWhereBetween('end_date', [$from->toDateString(), $to->toDateString()])
                     ->orWhere(function ($q2) use ($from, $to) {
                         $q2->where('start_date', '<=', $from->toDateString())
-                            ->where('end_date',   '>=', $to->toDateString());
+                            ->where('end_date', '>=', $to->toDateString());
                     });
             })
             ->get();
@@ -122,14 +128,14 @@ class DoctorCalendarService
 
             foreach ($range as $d) {
                 $start = Carbon::parse($d->toDateString() . ' ' . $s->from_time);
-                $end   = Carbon::parse($d->toDateString() . ' ' . $s->to_time);
+                $end = Carbon::parse($d->toDateString() . ' ' . $s->to_time);
                 $scheduleEvents->push([
-                    'id'          => $s->id,
-                    'type'        => 'schedule',
-                    'start'       => $start->toDateTimeString(),
-                    'end'         => $end->toDateTimeString(),
+                    'id' => $s->id,
+                    'type' => 'schedule',
+                    'start' => $start->toDateTimeString(),
+                    'end' => $end->toDateTimeString(),
                     'clinic_name' => $s->clinic?->name ?? null,
-                    'title'       => 'Available',
+                    'title' => 'Available',
                 ]);
             }
         }
@@ -139,31 +145,47 @@ class DoctorCalendarService
             ->where('doctor_id', $doctorId)
             ->where(function ($q) use ($from, $to) {
                 $q->whereBetween('start_time', [$from, $to])
-                    ->orWhereBetween('end_time',   [$from, $to])
+                    ->orWhereBetween('end_time', [$from, $to])
                     ->orWhere(function ($q2) use ($from, $to) {
                         $q2->where('start_time', '<=', $from)
-                            ->where('end_time',   '>=', $to);
+                            ->where('end_time', '>=', $to);
                     });
             })
             ->get()
-            ->map(fn ($u) => [
-                'id'    => $u->id,
-                'type'  => 'unavailability',
+            ->map(fn($u) => [
+                'id' => $u->id,
+                'type' => 'unavailability',
                 'start' => $u->start_time,
-                'end'   => $u->end_time,
+                'end' => $u->end_time,
                 'title' => $u->note ?? 'Busy',
             ]);
 
-        return [
-            'items' => $appointments->concat($scheduleEvents)->concat($busy)->values()
-        ];
+        return $scheduleEvents->concat($busy)->values();
+    }
+
+    /** Kalendar feed: appointments + schedules + unavailability */
+    public function getCalendarFeed(int $userId, $from, $to): array
+    {
+        $doctorId = $this->doctorIdByUser($userId);
+
+        $requestType = request()->get('is_agency');
+
+        if ($requestType === 'true') {
+            return [
+                'items' => $this->getAppointmentsForDoctor($doctorId, $from, $to)
+            ];
+        } else {
+            return [
+                'items' => $this->getScheduleForDoctor($doctorId, $from, $to)
+            ];
+        }
     }
 
     /** Weekly step helper: start_date-dən etibarən hər N həftə uyğun gəlirmi */
     private function weekStepMatches(string $startDate, Carbon $candidate, int $every): bool
     {
         $start = Carbon::parse($startDate)->startOfWeek();
-        $diff  = $start->diffInWeeks($candidate->copy()->startOfWeek());
+        $diff = $start->diffInWeeks($candidate->copy()->startOfWeek());
         return $diff % max($every, 1) === 0;
     }
 
@@ -197,11 +219,12 @@ class DoctorCalendarService
      * - weekly üçün günlər kəsişir
      */
     private function hasRecurringScheduleOverlap(
-        int $doctorId,
-        int $clinicId,
+        int   $doctorId,
+        int   $clinicId,
         array $data,
-        ?int $excludeId = null
-    ): bool {
+        ?int  $excludeId = null
+    ): bool
+    {
         $q = DoctorSchedule::query()
             ->where('doctor_id', $doctorId)
             ->where('clinic_id', $clinicId);
@@ -213,10 +236,10 @@ class DoctorCalendarService
         // əvvəlcə tarix aralığı üzrə kəsişənləri götürək
         $candidates = $q->where(function ($q2) use ($data) {
             $q2->whereBetween('start_date', [$data['start_date'], $data['end_date']])
-                ->orWhereBetween('end_date',   [$data['start_date'], $data['end_date']])
+                ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
                 ->orWhere(function ($q3) use ($data) {
                     $q3->where('start_date', '<=', $data['start_date'])
-                        ->where('end_date',   '>=', $data['end_date']);
+                        ->where('end_date', '>=', $data['end_date']);
                 });
         })
             ->get();
@@ -258,9 +281,9 @@ class DoctorCalendarService
 
     private function hasLockedAppointmentsForRecurringDelete(int $doctorId, DoctorSchedule $rec): bool
     {
-        $now       = Carbon::now()->startOfDay();
+        $now = Carbon::now()->startOfDay();
         $startDate = Carbon::parse($rec->start_date)->startOfDay();
-        $endDate   = Carbon::parse($rec->end_date)->endOfDay();
+        $endDate = Carbon::parse($rec->end_date)->endOfDay();
 
         // Yalnız gələcək hissəni nəzərə alaq
         $windowStart = $now->greaterThan($startDate) ? $now : $startDate;
@@ -272,13 +295,13 @@ class DoctorCalendarService
             ->whereIn('appointment_status', $this->lockedStatuses()) // Confirmed və Completed
             ->where(function ($q) use ($windowStart, $endDate) {
                 $q->whereBetween('start_time', [$windowStart, $endDate])
-                    ->orWhereBetween('end_time',   [$windowStart, $endDate])
+                    ->orWhereBetween('end_time', [$windowStart, $endDate])
                     ->orWhere(function ($q2) use ($windowStart, $endDate) {
                         $q2->where('start_time', '<=', $windowStart)
-                            ->where('end_time',   '>=', $endDate);
+                            ->where('end_time', '>=', $endDate);
                     });
             })
-            ->get(['id','start_time','end_time']);
+            ->get(['id', 'start_time', 'end_time']);
 
         if ($locked->isEmpty()) {
             return false;
@@ -286,7 +309,7 @@ class DoctorCalendarService
 
         // Occurence-ləri tarix üzrə gəz
         $period = \Carbon\CarbonPeriod::create($windowStart, $endDate);
-        $days   = is_array($rec->days) ? $rec->days : (json_decode($rec->days ?? '[]', true) ?: []);
+        $days = is_array($rec->days) ? $rec->days : (json_decode($rec->days ?? '[]', true) ?: []);
 
         foreach ($period as $d) {
             // yalnız uyğun günləri burax
@@ -300,8 +323,8 @@ class DoctorCalendarService
             }
             // (daily/monthly üçün eyni şablon genişlənə bilər; hazırda weekly əsas ssenaridir)
 
-            $occStart = Carbon::parse($d->toDateString().' '.$rec->from_time);
-            $occEnd   = Carbon::parse($d->toDateString().' '.$rec->to_time);
+            $occStart = Carbon::parse($d->toDateString() . ' ' . $rec->from_time);
+            $occEnd = Carbon::parse($d->toDateString() . ' ' . $rec->to_time);
 
             foreach ($locked as $a) {
                 // Klassik vaxt overlap: A_start < B_end && A_end > B_start
@@ -320,10 +343,10 @@ class DoctorCalendarService
             ->where('doctor_id', $doctorId)
             ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_time', [$start, $end])
-                    ->orWhereBetween('end_time',   [$start, $end])
+                    ->orWhereBetween('end_time', [$start, $end])
                     ->orWhere(function ($q2) use ($start, $end) {
                         $q2->where('start_time', '<=', $start)
-                            ->where('end_time',   '>=', $end);
+                            ->where('end_time', '>=', $end);
                     });
             });
 
@@ -360,13 +383,13 @@ class DoctorCalendarService
         return DoctorSchedule::create([
             'doctor_id' => $doctorId,
             'clinic_id' => $data['clinic_id'],
-            'start_date'=> $data['start_date'],
-            'end_date'  => $data['end_date'],
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'],
             'from_time' => $data['from_time'],
-            'to_time'   => $data['to_time'],
+            'to_time' => $data['to_time'],
             'frequency' => $data['frequency'],
-            'every'     => $data['every'],
-            'days'      => $data['days'] ?? [],
+            'every' => $data['every'],
+            'days' => $data['days'] ?? [],
         ]);
     }
 
@@ -376,7 +399,7 @@ class DoctorCalendarService
     public function updateRecurringAvailability(int $userId, int $id, array $data)
     {
         $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $rec    = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
+        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
 
         // Keçmişi dəyişmək olmaz
         if (Carbon::parse($data['start_date'])->lt(now()->startOfDay())) {
@@ -396,13 +419,13 @@ class DoctorCalendarService
 
         $rec->update([
             'clinic_id' => $data['clinic_id'],
-            'start_date'=> $data['start_date'],
-            'end_date'  => $data['end_date'],
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'],
             'from_time' => $data['from_time'],
-            'to_time'   => $data['to_time'],
+            'to_time' => $data['to_time'],
             'frequency' => $data['frequency'],
-            'every'     => $data['every'],
-            'days'      => $data['days'] ?? [],
+            'every' => $data['every'],
+            'days' => $data['days'] ?? [],
         ]);
 
         return $rec;
@@ -414,7 +437,7 @@ class DoctorCalendarService
     public function deleteRecurringAvailability(int $userId, int $id): void
     {
         $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $rec    = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
+        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
 
         // Keçmişdəki periodu silmək olmaz (tam keçmişsə)
         if (Carbon::parse($rec->start_date)->lt(now()->startOfDay())) {
@@ -437,7 +460,7 @@ class DoctorCalendarService
         $doctorId = $this->doctorIdByUser($userId);
 
         $start = Carbon::parse($data['start']);
-        $end   = Carbon::parse($data['end']);
+        $end = Carbon::parse($data['end']);
 
         if ($start->lt(now())) {
             throw new BaseException(t('validation.calendar.cannot_create_in_past'), 422);
@@ -454,10 +477,10 @@ class DoctorCalendarService
         }
 
         return DoctorUnavailability::create([
-            'doctor_id'  => $doctorId,
+            'doctor_id' => $doctorId,
             'start_time' => $start,
-            'end_time'   => $end,
-            'note'       => $data['note'] ?? null,
+            'end_time' => $end,
+            'note' => $data['note'] ?? null,
         ]);
     }
 
@@ -467,7 +490,7 @@ class DoctorCalendarService
     public function deleteUnavailability(int $userId, int $id): void
     {
         $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $item   = DoctorUnavailability::where('doctor_id', $doctor->id)->findOrFail($id);
+        $item = DoctorUnavailability::where('doctor_id', $doctor->id)->findOrFail($id);
 
         if (Carbon::parse($item->start_time)->lt(now())) {
             throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
@@ -516,7 +539,7 @@ class DoctorCalendarService
             }
 
             $start = Carbon::parse($d->toDateString() . ' ' . $data['from_time']);
-            $end   = Carbon::parse($d->toDateString() . ' ' . $data['to_time']);
+            $end = Carbon::parse($d->toDateString() . ' ' . $data['to_time']);
 
             if ($this->hasLockedAppointmentsOverlap($doctorId, $start, $end)) {
                 throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
