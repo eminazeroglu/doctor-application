@@ -39,7 +39,11 @@
                 },
                 "attributes": {
                     "type": "object",
-                    "description": "Dinamik atributlar üzrə axtarış. Açar kimi atribut ID-si, dəyər kimi seçim ID-si və ya dəyər istifadə olunur. Məsələn: {\"1\": 5} - Atribut ID 1 (Marka), Option ID 5 (BMW); {\"2\": 12} - Model, X5; {\"3\": \"2018-2022\"} - İl aralığı; {\"4\": [2,5,7]} - Çoxlu seçim halında (məs: Rənglər)."
+                    "description": "Dinamik atributlar üzrə axtarış. Açar kimi atribut ID-si, dəyər kimi seçim ID-si və ya dəyər istifadə olunur. Məsələn: {\"1\": 5} - Atribut ID 1 (Marka), Option ID 5 (BMW); {\"2\": 12} - Model, X5; {\"3\": \"2018-2022\"} - İl aralığı; {\"4\": [2,5,7]} - Çoxlu seçim halında (məs: Rənglər).",
+                    "default": {
+                        "1": [2],
+                        "2": [11]
+                    }
                 },
                 "page": {
                     "type": "number",

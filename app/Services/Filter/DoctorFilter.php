@@ -92,7 +92,7 @@ class DoctorFilter extends BaseFilter
     protected function filterCityId($query, $value): Builder
     {
         return $query->whereHas('clinics', function($clinicQuery) use ($value) {
-            $clinicQuery->where('clinic.city_id', $value);
+            $clinicQuery->where('clinics.city_id', $value);
         });
     }
 
@@ -102,7 +102,7 @@ class DoctorFilter extends BaseFilter
     protected function filterRegionId($query, $value): Builder
     {
         return $query->whereHas('clinics', function($clinicQuery) use ($value) {
-            $clinicQuery->where('clinic.region_id', $value);
+            $clinicQuery->where('clinics.region_id', $value);
         });
     }
 
@@ -112,7 +112,7 @@ class DoctorFilter extends BaseFilter
     protected function filterSubwayId($query, $value): Builder
     {
         return $query->whereHas('clinics', function($clinicQuery) use ($value) {
-            $clinicQuery->where('clinic.subway_id', $value);
+            $clinicQuery->where('clinics.subway_id', $value);
         });
     }
 
