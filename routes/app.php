@@ -289,9 +289,11 @@ Route::controller(DoctorAppointmentController::class)
     ->middleware('auth:sanctum')
     ->prefix('doctor/appointments')
     ->group(function () {
-        Route::get('/', 'index');
-        Route::get('/{id}', 'show');
-        Route::put('/{id}/status', 'updateStatus');
-        Route::put('/{id}/reschedule', 'reschedule');
-        Route::put('/{id}/note', 'updateNote');
+        Route::get('/', 'index')->name('appointments.doctorIndex');
+        Route::get('/report', 'report')->name('appointments.doctorReport');
+        Route::get('/{id}', 'show')->name('appointments.doctorShow');
+        Route::put('/{id}/status', 'updateStatus')->name('appointments.doctorStatus');
+        Route::put('/{id}/reschedule', 'reschedule')->name('appointments.doctorReschedule');
+        Route::put('/{id}/note', 'updateNote')->name('appointments.doctorNote');
+        Route::delete('/{id}', 'cancel')->name('appointments.doctorCancel');
     });

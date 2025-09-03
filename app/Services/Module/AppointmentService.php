@@ -10,6 +10,7 @@ use App\Models\DoctorUnavailability;
 use App\Repositories\Module\AppointmentRepository;
 use App\Services\BaseCrudService;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -49,7 +50,7 @@ class AppointmentService extends BaseCrudService
             DB::commit();
             return $appointment;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -81,7 +82,7 @@ class AppointmentService extends BaseCrudService
             DB::commit();
             return $updatedAppointment;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -107,7 +108,7 @@ class AppointmentService extends BaseCrudService
             DB::commit();
             return $updatedAppointment;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -419,7 +420,7 @@ class AppointmentService extends BaseCrudService
     /**
      * UUID ilə xəstənin randevusunu tapır
      */
-    public function getAppointmentByUuid(string $uuid, int $patientId): ?Appointment
+    public function getAppointmentByUuid(string $uuid, int $patientId, $userType = 'patient'): ?Appointment
     {
         return $this->repository->model->newQuery()
             ->with([
@@ -432,7 +433,7 @@ class AppointmentService extends BaseCrudService
                 'reminders'
             ])
             ->where('uuid', $uuid)
-            ->where('patient_id', $patientId)
+            ->where($userType. '_id', $patientId)
             ->first();
     }
 
@@ -479,6 +480,7 @@ class AppointmentService extends BaseCrudService
 
     /**
      * Randevu ləğv edir (Screen 2 üçün)
+     * @throws Exception
      */
     public function cancelAppointment(Appointment $appointment, array $cancelData): Appointment
     {
@@ -525,7 +527,7 @@ class AppointmentService extends BaseCrudService
             DB::commit();
             return $appointment->fresh();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }

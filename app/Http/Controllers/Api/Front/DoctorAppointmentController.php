@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api\Front;
 use App\Exceptions\BaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Front\AppointmentResource;
+use App\Services\Module\AppointmentService;
 use App\Services\Module\DoctorAppointmentService;
 use App\Traits\Controller\HasValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -123,5 +125,87 @@ class DoctorAppointmentController extends Controller
             'appointment' => new AppointmentResource($appointment),
             'message'     => t('notification.appointment.note_updated')
         ]);
+    }
+
+    /**
+     * GET /api/doctor/appointments/report
+     * Appointment report (stats + list)
+     * @throws ValidationException
+     */
+    public function report(Request $request): JsonResponse
+    {
+        $data = $this->validateRequest($request, [
+            'from'        => 'nullable|date',
+            'to'          => 'nullable|date|after_or_equal:from',
+            'clinic_id'   => 'nullable|integer|exists:clinics,id',
+            'status'      => 'nullable|string',
+            'per_page'    => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $result = $this->service->report(auth()->id(), $data);
+
+        return response()->json($result);
+    }
+
+    /**
+     * DELETE /api/app/appointments/{uuid}
+     * @throws BaseException
+     * @throws ValidationException
+     */
+    public function cancel(Request $request, string $uuid): JsonResponse
+    {
+        $this->validateRequest(
+            $request,
+            [
+                'reasons' => 'required|array|min:1',
+                'reasons.*' => 'string|in:doctor_dislike,time_conflict,found_another_doctor,personal_reason,other',
+                'custom_reason' => 'nullable|string|max:500',
+                'note' => 'nullable|string|max:1000'
+            ],
+            [
+                'reasons.required' => 'Ləğv səbəbi seçilməlidir',
+                'reasons.min' => 'Ən azı bir səbəb seçilməlidir'
+            ]
+        );
+
+
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            throw new BaseException(['message' => 'Xəstə profili tapılmadı'], 404);
+        }
+
+        $appointment = app(AppointmentService::class)->getAppointmentByUuid($uuid, $doctor->id, 'doctor');
+
+        if (!$appointment) {
+            throw new BaseException(['message' => 'Randevu tapılmadı'], 404);
+        }
+
+        // Randevu ləğv edilə bilər mi yoxlanılır
+        if (!app(AppointmentService::class)->canCancel($appointment)) {
+            throw new BaseException([
+                'message' => 'Bu randevu artıq ləğv edilə bilməz'
+            ], 422);
+        }
+
+        $cancelData = [
+            'reasons' => $request->reasons,
+            'custom_reason' => $request->custom_reason,
+            'note' => $request->note,
+            'cancelled_by' => 'doctor'
+        ];
+
+        $cancelledAppointment = app(AppointmentService::class)->cancelAppointment(
+            $appointment,
+            $cancelData
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Randevu uğurla ləğv edildi',
+            'data' => new AppointmentResource($cancelledAppointment)
+        ]);
+
+
     }
 }

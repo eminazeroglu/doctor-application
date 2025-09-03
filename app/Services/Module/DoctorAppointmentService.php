@@ -4,6 +4,7 @@ namespace App\Services\Module;
 
 use App\Enums\AppointmentStatusEnum;
 use App\Exceptions\BaseException;
+use App\Http\Resources\Front\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
@@ -208,5 +209,57 @@ class DoctorAppointmentService
         $appointment= Appointment::where('doctor_id', $doctorId)->findOrFail($id);
         $appointment->update(['notes' => $note]);
         return $appointment->fresh(['patient.user','clinic','service']);
+    }
+
+    /**
+     * Appointment report (stats + list)
+     */
+    public function report(int $userId, array $filters): array
+    {
+        $doctorId = $this->doctorIdByUser($userId);
+
+        $q = Appointment::query()
+            ->with(['patient.user', 'clinic'])
+            ->where('doctor_id', $doctorId);
+
+        // filterlər
+        if (!empty($filters['from'])) {
+            $q->where('start_time', '>=', Carbon::parse($filters['from'])->startOfDay());
+        }
+        if (!empty($filters['to'])) {
+            $q->where('start_time', '<=', Carbon::parse($filters['to'])->endOfDay());
+        }
+        if (!empty($filters['clinic_id'])) {
+            $q->where('clinic_id', $filters['clinic_id']);
+        }
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $statuses = array_filter(array_map('trim', explode(',', $filters['status'])));
+            $q->whereIn('appointment_status', $statuses);
+        }
+
+        // siyahı
+        $perPage = (int)($filters['per_page'] ?? 10);
+        $list = $q->orderBy('start_time', 'desc')->paginate($perPage);
+
+        // statistikalar
+        $stats = [
+            'confirmed'        => Appointment::where('doctor_id', $doctorId)->where('appointment_status', AppointmentStatusEnum::Confirmed)->count(),
+            'not_confirmed'    => Appointment::where('doctor_id', $doctorId)->where('appointment_status', AppointmentStatusEnum::Pending)->count(),
+            'completed'        => Appointment::where('doctor_id', $doctorId)->where('appointment_status', AppointmentStatusEnum::Completed)->count(),
+            'doctor_cancelled' => Appointment::where('doctor_id', $doctorId)->where('cancelled_by', 'doctor')->count(),
+            'patient_cancelled'=> Appointment::where('doctor_id', $doctorId)->where('cancelled_by', 'patient')->count(),
+            'no_show'          => Appointment::where('doctor_id', $doctorId)->where('appointment_status', AppointmentStatusEnum::NoShow)->count(),
+        ];
+
+        return [
+            'stats' => $stats,
+            'items' => AppointmentResource::collection($list),
+            'meta'  => [
+                'current_page' => $list->currentPage(),
+                'per_page'     => $list->perPage(),
+                'total'        => $list->total(),
+                'last_page'    => $list->lastPage(),
+            ]
+        ];
     }
 }

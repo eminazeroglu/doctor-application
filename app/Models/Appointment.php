@@ -25,7 +25,7 @@ class Appointment extends BaseModel
         'patient_id',
         'clinic_id',
         'service_id',
-        'appointment_status',  // appointment_status_id yerinə appointment_status
+        'appointment_status',
         'start_time',
         'end_time',
         'complaint',
@@ -34,6 +34,7 @@ class Appointment extends BaseModel
         'is_paid',
         'payment_id',
         'cancel_reason',
+        'cancelled_by',
         'cancelled_at',
         'reviewed_at',
         'location',

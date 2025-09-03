@@ -92,6 +92,8 @@ class AppointmentSeeder extends Seeder
                 $isPaid = $faker->boolean(60); // 60% ehtimal
             }
 
+            $isCanceled = $status === AppointmentStatusEnum::Cancelled;
+
             $appointmentData = [
                 'uuid' => Str::uuid(),
                 'doctor_id' => $doctor->id,
@@ -105,7 +107,9 @@ class AppointmentSeeder extends Seeder
                 'notes' => $faker->boolean(70) ? $faker->sentence($faker->numberBetween(5, 15)) : null,
                 'price' => $price,
                 'is_paid' => $isPaid,
-                'cancel_reason' => $status === AppointmentStatusEnum::Cancelled ? $this->getCancelReason($faker) : null,
+                'cancel_reason' => $isCanceled ? $this->getCancelReason($faker) : null,
+                'cancelled_at' => $isCanceled ? $faker->dateTimeBetween('now', '3months') : null,
+                'cancelled_by' => $isCanceled ? fake()->randomElement(['doctor', 'patient']) : null,
                 'location' => $clinic->address,
                 'consultation_type' => $faker->randomElement($consultationTypes),
                 'additional_info' => $faker->boolean(30) ? [

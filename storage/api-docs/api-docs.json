@@ -883,6 +883,39 @@
                         }
                     }
                 },
+                "/app/doctor/appointments/report": {
+                    "get": {
+                        "summary": "Appointment siyahısı (filter + sort + pagination)",
+                        "authorization": true,
+                        "query": {
+                            "per_page": {
+                                "type": "number",
+                                "description": "Səhifə ölçüsü (1..100)",
+                                "default": 10
+                            },
+                            "search": {
+                                "type": "string",
+                                "description": "Pasiyent adına görə axtarış (name/surname)"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Vergüllə ayrılmış çoxlu status: pending,confirmed,cancelled,completed,no-show,rescheduled"
+                            },
+                            "clinic_id": {
+                                "type": "number",
+                                "description": "Klinika ID (doctor_clinic əlaqəsi üzrə)"
+                            },
+                            "from": {
+                                "type": "date",
+                                "description": "Başlanğıc tarix (YYYY-MM-DD)"
+                            },
+                            "to": {
+                                "type": "date",
+                                "description": "Bitmə tarixi (YYYY-MM-DD) — from tarixindən kiçik ola bilməz"
+                            }
+                        }
+                    }
+                },
                 "/app/doctor/appointments/{id}": {
                     "get": {
                         "summary": "Appointment detalları",
@@ -951,6 +984,30 @@
                                 "type": "string",
                                 "required": true,
                                 "max": 1000
+                            }
+                        }
+                    }
+                },
+                "/app/doctor/appointments/{uuid}": {
+                    "delete": {
+                        "authorization": true,
+                        "summary": "Randevu ləğv etmə",
+                        "description": "Randevunu ləğv etmək üçün uuid göndəririk",
+                        "formBody": {
+                            "reasons": {
+                                "type": "array",
+                                "required": true,
+                                "description": "Burda səbəbləri göndəririk. 'doctor_dislike' => 'Həkimi bəyənmirəm',\n 'time_conflict' => 'Vaxtım uyğun gəlmir',\n 'found_another_doctor' => 'Başqa həkim tapdım',\n 'personal_reason' => 'Şəxsi səbəbə görə',",
+                                "default": [
+                                    "doctor_dislike",
+                                    "time_conflict"
+                                ]
+                            },
+                            "custom_reason": {
+                                "type": "text",
+                                "required": true,
+                                "description": "Səbəb",
+                                "default": "Burda istifadəçinin başqa səbəbi yazılır"
                             }
                         }
                     }

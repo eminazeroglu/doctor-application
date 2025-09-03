@@ -197,7 +197,6 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Screen 2: Randevu ləğvi
      * DELETE /api/app/appointments/{uuid}
      * @throws BaseException
      * @throws ValidationException

@@ -32,6 +32,7 @@ return new class extends Migration
             $table->foreignId('payment_id')->nullable()->constrained()->nullOnDelete(); // Ödəniş əlaqəsi
             $table->text('cancel_reason')->nullable(); // Ləğv səbəbi
             $table->dateTime('cancelled_at')->nullable(); // Ləğv Tarixi
+            $table->string('cancelled_by')->nullable(); // Ləğv Edən user növü
             $table->timestamp('reviewed_at')->nullable(); // Rəy yazılma vaxtını saxlamaq üçün
             $table->index('reviewed_at'); // Index əlavə edirik performans üçün
             $table->string('location')->nullable(); // Yer (klinikada, onlayn, ev ziyarəti)
