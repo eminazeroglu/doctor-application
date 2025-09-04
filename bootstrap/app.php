@@ -97,9 +97,9 @@ function registerCustomMiddleware(Middleware $middleware): void
         'auth.admin_control' => AdminControl::class,
         'auth.optional' => OptionalAuthSanctum::class,
         'check.blocked' => CheckBlockedCredentials::class,
-//        'api.logging' => ApiLoggingMiddleware::class,
-//        'api.protection' => ApiProtectionMiddleware::class,
-//        'api.signature' => ApiSignatureMiddleware::class,
+        'api.logging' => ApiLoggingMiddleware::class,
+        'api.protection' => ApiProtectionMiddleware::class,
+        'api.signature' => ApiSignatureMiddleware::class,
     ]);
 
     // CSRF qoruması istisnaları
