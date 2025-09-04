@@ -55,7 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
 function registerApiRoutes(): void
 {
-    $defaultMiddleware = ['api', 'api.protection'];
+    $defaultMiddleware = ['api'];
+    //$defaultMiddleware = ['api', 'api.protection'];
     $authMiddleware = array_merge($defaultMiddleware, ['auth:sanctum', 'auth.user_control']);
 
     // Admin marşrutları
