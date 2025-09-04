@@ -173,7 +173,7 @@ class Clinic extends BaseModel
     public function doctors(): BelongsToMany
     {
         return $this->belongsToMany(Doctor::class, 'doctor_clinic')
-            ->withPivot(['start_date', 'end_date', 'is_main_workplace', 'is_active', 'note'])
+            ->withPivot(['is_main_workplace', 'is_active', 'note'])
             ->withTimestamps();
     }
 

@@ -40,8 +40,8 @@ class DoctorSchedule extends BaseModel
     protected $casts = [
         'start_date' => 'date:Y-m-d',
         'end_date'   => 'date:Y-m-d',
-        'from_time'  => 'string',
-        'to_time'    => 'string',
+        'from_time'  => 'datetime:H:i:s',
+        'to_time'    => 'datetime:H:i:s',
         'every'      => 'integer',
         'days'       => 'array',
         'is_active'  => 'boolean',
@@ -94,9 +94,17 @@ class DoctorSchedule extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                $start = Carbon::createFromFormat('H:i', $this->from_time);
-                $end   = Carbon::createFromFormat('H:i', $this->to_time);
-                return $start->diffInMinutes($end);
+                if (!$this->from_time || !$this->to_time) {
+                    return 0;
+                }
+
+                try {
+                    $start = Carbon::parse($this->from_time);
+                    $end   = Carbon::parse($this->to_time);
+                    return $start->diffInMinutes($end);
+                } catch (\Exception $e) {
+                    return 0;
+                }
             }
         );
     }

@@ -65,7 +65,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterCategoryId($query, $value): Builder
     {
-        return $query->where('category', $value);
+        return $query->where('category_id', $value);
     }
 
     /**
@@ -73,7 +73,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterSubcategoryId($query, $value): Builder
     {
-        return $query->where('sub_category', $value);
+        return $query->where('sub_category_id', $value);
     }
 
     /**
@@ -122,8 +122,7 @@ class DoctorFilter extends BaseFilter
     protected function filterServiceId(Builder $query, $value): Builder
     {
         return $query->whereHas('services', function($serviceQuery) use ($value) {
-            $serviceQuery->where('service_id', $value)
-                ->where('is_active', true);
+            $serviceQuery->where('service_id', $value);
         });
     }
 

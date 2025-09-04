@@ -19,7 +19,11 @@ class DoctorController extends Controller
 
     public function doctorSearch(): JsonResponse
     {
-        return response()->json(DoctorResource::collection($this->doctorRepository->doctorSearch(request())));
+        $items = $this->doctorRepository->doctorSearch(request());
+        return response()->json([
+            'items' => DoctorResource::collection($items),
+            'total' => $items->total()
+        ]);
     }
 
     public function doctorView($id): JsonResponse

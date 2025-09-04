@@ -1,6 +1,13 @@
 <?php
 
 use App\Enums\ActivityLogActionEnum;
+use App\Http\Middleware\AdminControl;
+use App\Http\Middleware\ApiLoggingMiddleware;
+use App\Http\Middleware\ApiProtectionMiddleware;
+use App\Http\Middleware\ApiSignatureMiddleware;
+use App\Http\Middleware\CheckBlockedCredentials;
+use App\Http\Middleware\OptionalAuthSanctum;
+use App\Http\Middleware\UserControl;
 use App\Services\Module\ActivityLogService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\QueryException;
@@ -86,13 +93,13 @@ function registerCustomMiddleware(Middleware $middleware): void
 {
     // Core middleware-lər
     $middleware->alias([
-        'auth.user_control' => \App\Http\Middleware\UserControl::class,
-        'auth.admin_control' => \App\Http\Middleware\AdminControl::class,
-        'auth.optional' => \App\Http\Middleware\OptionalAuthSanctum::class,
-        'check.blocked' => \App\Http\Middleware\CheckBlockedCredentials::class,
-        'api.logging' => \App\Http\Middleware\ApiLoggingMiddleware::class,
-        'api.protection' => \App\Http\Middleware\ApiProtectionMiddleware::class,
-        'api.signature' => \App\Http\Middleware\ApiSignatureMiddleware::class,
+        'auth.user_control' => UserControl::class,
+        'auth.admin_control' => AdminControl::class,
+        'auth.optional' => OptionalAuthSanctum::class,
+        'check.blocked' => CheckBlockedCredentials::class,
+        'api.logging' => ApiLoggingMiddleware::class,
+        'api.protection' => ApiProtectionMiddleware::class,
+        'api.signature' => ApiSignatureMiddleware::class,
     ]);
 
     // CSRF qoruması istisnaları
