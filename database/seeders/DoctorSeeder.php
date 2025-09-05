@@ -397,7 +397,7 @@ class DoctorSeeder extends Seeder
 
     private function createEducation(Doctor $doctor): void
     {
-        if (!$this->tableExists('doctor_educations')) {
+        if (!$this->tableExists('doctor_education')) {
             return;
         }
 
