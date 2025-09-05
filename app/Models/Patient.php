@@ -126,7 +126,10 @@ class Patient extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return $this->user->name . ' ' . $this->user->surname;
+                if ($this->user) {
+                    return $this->user->name . ' ' . $this->user->surname;
+                }
+                return null;
             }
         );
     }

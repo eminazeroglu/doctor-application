@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Cache::flush();
-        $this->call(UserSeeder::class);
-        $this->call(SettingSeeder::class);
-        $this->call(PermissionSeeder::class);
-        $this->call(TranslationSeeder::class);
         if (App::environment('local')) {
+            $this->call(UserSeeder::class);
+            $this->call(SettingSeeder::class);
+            $this->call(PermissionSeeder::class);
+            $this->call(TranslationSeeder::class);
             $this->call(PageSeeder::class);
             $this->call(SeoLinkSeeder::class);
             $this->call(LocationSeeder::class);
