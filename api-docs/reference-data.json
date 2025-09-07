@@ -21,6 +21,24 @@
             }
         },
         {
+            "path": "/reference-data/search/doctor-or-service",
+            "method": "get",
+            "summary": "Həkim və ya Xidmət",
+            "description": "Həkim və ya Xidmətin siyahısını qaytarır",
+            "query": {
+                "q": {
+                    "type": "string",
+                    "description": "Burdada axtarılan mətin yazılır"
+                }
+            }
+        },
+        {
+            "path": "/reference-data/home",
+            "method": "get",
+            "summary": "Ana səhifə",
+            "description": "Ana səhifəyə aid məlumatların siyahısını qaytarır"
+        },
+        {
             "path": "/reference-data/languages",
             "method": "get",
             "summary": "Dillərin siyahısı",

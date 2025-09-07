@@ -4,9 +4,14 @@ namespace App\Services\Module;
 
 use App\Enums\GenderEnum;
 use App\Enums\ImageWatermarkPositionEnum;
+use App\Enums\UserStatusEnum;
+use App\Enums\UserTypeEnum;
 use App\Http\Resources\Admin\BaseResource;
 use App\Models\Language;
 use App\Models\Role;
+use App\Models\Service;
+use App\Models\Slider;
+use App\Models\User;
 use App\Repositories\Module\CategoryRepository;
 use App\Repositories\Module\CityRepository;
 use App\Repositories\Module\ClinicRepository;
@@ -27,12 +32,12 @@ class ReferenceDataService
     protected ClinicRepository $clinicRepository;
 
     public function __construct(
-        CategoryRepository       $categoryRepository,
-        CountryRepository        $countryRepository,
-        CityRepository           $cityRepository,
-        RegionRepository         $regionRepository,
-        SubwayRepository         $subwayRepository,
-        ClinicRepository         $clinicRepository,
+        CategoryRepository $categoryRepository,
+        CountryRepository  $countryRepository,
+        CityRepository     $cityRepository,
+        RegionRepository   $regionRepository,
+        SubwayRepository   $subwayRepository,
+        ClinicRepository   $clinicRepository,
     )
     {
         $this->categoryRepository = $categoryRepository;
@@ -62,6 +67,78 @@ class ReferenceDataService
         ]);
     }
 
+    /**
+     * Doctor Or Service
+     * */
+    public function fetchDoctorOrService($search): array
+    {
+        $doctors = User::query()
+            ->where('user_type', UserTypeEnum::Doctor)
+            ->where('status', UserStatusEnum::Active)
+            ->fullName($search)
+            ->limit(5)
+            ->get()
+            ->map(function ($user) {
+                $result = [
+                    'fullname' => $user->full_name,
+                    'photo' => $user->photo
+                ];
+
+                if ($user->doctor->mainWorkplace()?->pivot) {
+                    $result['profession'] = $user->doctor->mainWorkplace()->pivot->profession;
+                }
+
+                return $result;
+            });
+
+        $services = Service::query()
+            ->translationSearchInLanguage($search)
+            ->limit(5)
+            ->get();
+
+        return [
+            'services' => $services,
+            'doctors' => $doctors
+        ];
+    }
+
+    /**
+     * Home Page
+     * */
+    public function fetchHomePage(): array
+    {
+        $sliders = Slider::query()
+            ->active()
+            ->get()
+            ->map(function ($slider) {
+                return [
+                    'title' => $slider->title,
+                    'description' => $slider->description,
+                    'button_text' => $slider->button_text,
+                    'button_link' => $slider->button_link,
+                    'photo' => $slider->photo,
+                ];
+            });
+
+        $homeStatistic = setting('homeStatistic');
+
+        $info = setting('info');
+
+        return [
+            'app_link' => [
+                'google' => $info['google_app_link'],
+                'apple' => $info['apple_app_link'],
+            ],
+            'join_us_wallpaper' => $info['join_us_wallpaper_path'],
+            'homeStatistic' => [
+                'clinic_count' => $homeStatistic['clinic_count'],
+                'doctor_count' => $homeStatistic['doctor_count'],
+                'patient_count' => $homeStatistic['patient_count'],
+                'practicing_doctor_count' => $homeStatistic['practicing_doctor_count']
+            ],
+            'sliders' => $sliders
+        ];
+    }
 
     /*
      * Languages

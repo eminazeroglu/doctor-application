@@ -860,10 +860,6 @@
                                 "description": "Səhifə ölçüsü (1..100)",
                                 "default": 10
                             },
-                            "search": {
-                                "type": "string",
-                                "description": "Pasiyent adına görə axtarış (name/surname)"
-                            },
                             "status": {
                                 "type": "string",
                                 "description": "Vergüllə ayrılmış çoxlu status: pending,confirmed,cancelled,completed,no-show,rescheduled"
@@ -1459,6 +1455,24 @@
                                 }
                             ]
                         }
+                    }
+                },
+                "/reference-data/search/doctor-or-service": {
+                    "get": {
+                        "summary": "Həkim və ya Xidmət",
+                        "description": "Həkim və ya Xidmətin siyahısını qaytarır",
+                        "query": {
+                            "q": {
+                                "type": "string",
+                                "description": "Burdada axtarılan mətin yazılır"
+                            }
+                        }
+                    }
+                },
+                "/reference-data/home": {
+                    "get": {
+                        "summary": "Ana səhifə",
+                        "description": "Ana səhifəyə aid məlumatların siyahısını qaytarır"
                     }
                 },
                 "/reference-data/languages": {

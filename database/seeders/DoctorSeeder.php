@@ -293,6 +293,7 @@ class DoctorSeeder extends Seeder
             'username' => Str::slug($doctorInfo['name'] . '-' . $doctorInfo['surname']) . '-' . ($index + 1),
             'phone' => '+994' . fake('az_AZ')->randomNumber(9, true),
             'gender' => $gender,
+            'photo_path' => 'photo-'. rand(1, 5) . '.jpg',
             'birthdate' => fake()->dateTimeBetween('-65 years', '-25 years')->format('Y-m-d'),
             'user_type' => UserTypeEnum::Doctor,
             'status' => UserStatusEnum::Active,

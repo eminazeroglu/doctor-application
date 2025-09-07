@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/permissions', 'permissions')->middleware(['auth:sanctum', 'auth:admin_control'])->name('permissions');
     Route::get('/genders', 'genders')->name('genders');
+    Route::get('/search/doctor-or-service', 'doctorOrService')->name('doctorOrService');
+    Route::get('/home', 'home')->name('home');
     Route::get('/languages', 'languages')->name('languages');
     Route::get('/languages/{locale}/translates', 'languageWithTranslates')->name('languageWithTranslates');
     Route::get('/system/image-watermark-positions', 'systemImageWatermarkPosition')->name('systemImageWatermarkPosition');

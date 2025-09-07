@@ -21,7 +21,11 @@ class BlogController extends Controller
 
     public function blogSearch()
     {
-        return response()->json(BlogResource::collection($this->blogService->blogSearch()));
+        $blogs = $this->blogService->blogSearch();
+        return response()->json([
+            'items' => BlogResource::collection($blogs),
+            'total' => $blogs->total()
+        ]);
     }
 
     public function blogView($slug)

@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\Admin\ReviewController;
 use App\Http\Controllers\Api\Admin\SeoLinkController;
 use App\Http\Controllers\Api\Admin\ServiceController;
 use App\Http\Controllers\Api\Admin\SettingController;
+use App\Http\Controllers\Api\Admin\SliderController;
 use App\Http\Controllers\Api\Admin\SubwayController;
 use App\Http\Controllers\Api\Admin\TranslationController;
 use App\Http\Controllers\Api\Admin\UserController;
@@ -297,3 +298,7 @@ Route::resource('blogs', BlogController::class);
 
 // Faq
 Route::resource('faqs', FaqController::class);
+
+
+// Slider
+Route::resource('sliders', SliderController::class);

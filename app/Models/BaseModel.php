@@ -49,7 +49,7 @@ abstract class BaseModel extends Model
         if (!isset(static::$columnsCache[$tableName])) {
             $cacheKey = "table.columns.{$tableName}";
 
-            static::$columnsCache[$tableName] = Cache::remember($cacheKey, now()->addWeek(), function() use($tableName) {
+            static::$columnsCache[$tableName] = Cache::remember($cacheKey, now()->addWeek(), function () use ($tableName) {
                 $dbName = config('database.connections.' . config('database.default') . '.database');
 
                 try {
@@ -112,7 +112,7 @@ abstract class BaseModel extends Model
         static::creating(function (Model $model) {
             // Cədvəldə uuid sütunu varsa və dəyər təyin olunmayıbsa
             if ($model->tableHasColumn('uuid') && !$model->uuid) {
-                $model->uuid = (string) Str::uuid();
+                $model->uuid = (string)Str::uuid();
             }
         });
     }
@@ -202,6 +202,100 @@ abstract class BaseModel extends Model
         return $query->where('created_by', Auth::id());
     }
 
+    public function scopeTranslationSearch($query, $search, $fieldName = 'name')
+    {
+        // Əgər translates column-u yoxdursa, adi axtarış edirik
+        if (!$this->tableHasColumn('translates')) {
+            return $query->where($fieldName, 'LIKE', "%{$search}%");
+        }
+
+        $lang = currentLang();
+
+        return $query->where("translates->{$lang}->{$fieldName}", 'LIKE', "%{$search}%");
+    }
+
+    // Çoxlu field-lərdə axtarış üçün
+    public function scopeTranslationSearchMultiple($query, $search, array $fieldNames = ['name'])
+    {
+        // Əgər translates column-u yoxdursa, adi axtarış edirik
+        if (!$this->tableHasColumn('translates')) {
+            return $query->where(function ($q) use ($search, $fieldNames) {
+                foreach ($fieldNames as $field) {
+                    $q->orWhere($field, 'LIKE', "%{$search}%");
+                }
+            });
+        }
+
+        $lang = currentLang();
+
+        return $query->where(function ($q) use ($search, $fieldNames, $lang) {
+            foreach ($fieldNames as $field) {
+                $q->orWhere("translates->{$lang}->{$field}", 'LIKE', "%{$search}%");
+            }
+        });
+    }
+
+    // Bütün dillərdə axtarış üçün scope
+    public function scopeTranslationSearchAllLanguages($query, $search, $fieldName = 'name')
+    {
+        // Əgər translates column-u yoxdursa, adi axtarış edirik
+        if (!$this->tableHasColumn('translates')) {
+            return $query->where($fieldName, 'LIKE', "%{$search}%");
+        }
+
+        // Bütün aktiv dilləri əldə edirik (TranslationService-dən)
+        $languages = app(\App\Services\Module\TranslationService::class)
+            ->getActiveLanguages()
+            ->pluck('locale')
+            ->toArray();
+
+        return $query->where(function ($q) use ($search, $fieldName, $languages) {
+            foreach ($languages as $lang) {
+                $q->orWhere("translates->{$lang}->{$fieldName}", 'LIKE', "%{$search}%");
+            }
+        });
+    }
+
+    // Spesifik dildə axtarış üçün scope
+    public function scopeTranslationSearchInLanguage($query, $search, $fieldName = 'name', $language = null)
+    {
+        $lang = $language ?: currentLang();
+
+        if (!$this->tableHasColumn('translates')) {
+            return $query->whereRaw("LOWER({$fieldName}) LIKE ?", ['%' . strtolower($search) . '%']);
+        }
+
+        return $query->whereRaw(
+            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(translates, '$.{$lang}.{$fieldName}'))) LIKE ?",
+            ['%' . strtolower($search) . '%']
+        );
+    }
+
+    // Translation field-in boş olub-olmadığını yoxlayan scope
+    public function scopeWhereTranslationNotEmpty($query, $fieldName = 'name', $language = null)
+    {
+        if (!$this->tableHasColumn('translates')) {
+            return $query->whereNotNull($fieldName)->where($fieldName, '!=', '');
+        }
+
+        $lang = $language ?: currentLang();
+
+        return $query->whereNotNull("translates->{$lang}->{$fieldName}")
+            ->where("translates->{$lang}->{$fieldName}", '!=', '');
+    }
+
+    // Translation field-in spesifik dəyərə bərabər olub-olmadığını yoxlayan scope
+    public function scopeWhereTranslation($query, $fieldName, $value, $language = null)
+    {
+        if (!$this->tableHasColumn('translates')) {
+            return $query->where($fieldName, $value);
+        }
+
+        $lang = $language ?: currentLang();
+
+        return $query->where("translates->{$lang}->{$fieldName}", $value);
+    }
+
     // Relationships
     public function creator(): BelongsTo
     {
@@ -217,26 +311,25 @@ abstract class BaseModel extends Model
     protected function createdAt(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? Carbon::parse($value)->toIso8601String() : null,
+            get: fn($value) => $value ? Carbon::parse($value)->toIso8601String() : null,
         );
     }
 
     protected function updatedAt(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? Carbon::parse($value)->toIso8601String() : null,
+            get: fn($value) => $value ? Carbon::parse($value)->toIso8601String() : null,
         );
     }
 
     public function photo(): Attribute
     {
         return new Attribute(
-            get: function() {
+            get: function () {
                 // Əgər HasImage trait-i varsa və getImageUrl metodu mövcuddursa
                 if (in_array(HasImage::class, class_uses_recursive($this)) && method_exists($this, 'getImageUrl')) {
                     return $this->getImageUrl('photo_path');
-                }
-                // Əgər HasTranslate trait-i varsa və getTranslation metodu mövcuddursa
+                } // Əgər HasTranslate trait-i varsa və getTranslation metodu mövcuddursa
                 elseif (in_array(HasTranslate::class, class_uses_recursive($this)) &&
                     method_exists($this, 'getTranslatableImageFields') &&
                     method_exists($this, 'getTranslation')) {
@@ -279,8 +372,7 @@ abstract class BaseModel extends Model
                             return $photoName;
                         }
                     }
-                }
-                // Heç biri yoxdursa, default dəyəri qaytaraq
+                } // Heç biri yoxdursa, default dəyəri qaytaraq
                 else {
                     return url('uploads/photos/setting/default_photo.webp');
                 }
@@ -301,4 +393,5 @@ abstract class BaseModel extends Model
         }
         return null;
     }
+
 }

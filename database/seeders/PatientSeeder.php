@@ -101,6 +101,7 @@ class PatientSeeder extends Seeder
             'username' => strtolower(str_replace(' ', '_', $firstName . '_' . $lastName)) . '_' . $index,
             'phone' => '+994' . fake()->numberBetween(50, 99) . fake()->numberBetween(1000000, 9999999),
             'gender' => fake()->randomElement(GenderEnum::getValues()),
+            'photo_path' => 'photo-'. rand(1, 5) . '.jpg',
             'birthdate' => fake()->dateTimeBetween('-80 years', '-18 years')->format('Y-m-d'),
             'user_type' => UserTypeEnum::User,
             'status' => UserStatusEnum::Active,

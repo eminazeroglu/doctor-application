@@ -32,6 +32,22 @@ class ReferenceDataController extends Controller
     }
 
     /**
+     * Doctor Or Service
+     * */
+    public function doctorOrService(): JsonResponse
+    {
+        return response()->json($this->service->fetchDoctorOrService(request()->get('q')));
+    }
+
+    /**
+     * Home Page
+     * */
+    public function home(): JsonResponse
+    {
+        return response()->json($this->service->fetchHomePage());
+    }
+
+    /**
      * Languages
      * */
     public function languages(): JsonResponse

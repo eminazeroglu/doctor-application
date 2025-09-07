@@ -21,6 +21,7 @@ class SettingSeeder extends Seeder
         // Now let's seed each setting group one by one
         try {
             $this->seedSiteInfo();
+            $this->seedHomePageStatistic();
             $this->seedMailSettings();
             $this->seedSocialMedia();
             $this->seedSeoSettings();
@@ -28,9 +29,6 @@ class SettingSeeder extends Seeder
             $this->seedSecuritySettings();
             $this->seedSystemSettings();
             $this->seedSocialPageSettings();
-            $this->seedStorySettings();
-            $this->seedListingTitleSettings();
-            $this->seedReferralSettings();
 
             artisan::call('repo:clear');
         }
@@ -64,6 +62,7 @@ class SettingSeeder extends Seeder
             'favicon' => 'favicon.png',
             'wallpaper' => 'wallpaper.png',
             'watermark' => 'watermark.png',
+            'join_us_wallpaper' => 'join_us_wallpaper.jpg',
             'default_image' => 'default_image.png',
             'email' => 'info@example.com',
             'phone' => [
@@ -80,7 +79,9 @@ class SettingSeeder extends Seeder
                 'friday' => '09:00 - 18:00',
                 'saturday' => '09:00 - 18:00',
                 'sunday' => '09:00 - 18:00',
-            ]
+            ],
+            'google_app_link' => 'https://www.google.com/',
+            'apple_app_link' => 'https://www.apple.com/',
         ]);
     }
 
@@ -98,6 +99,16 @@ class SettingSeeder extends Seeder
             'password' => env('MAIL_PASSWORD'),
             'from_address' => env('MAIL_FROM_ADDRESS'),
             'from_name' => env('MAIL_FROM_NAME')
+        ]);
+    }
+
+    private function seedHomePageStatistic(): void
+    {
+        $this->createSetting('homeStatistic', [
+            'patient_count' => 23643,
+            'doctor_count' => 6475,
+            'practicing_doctor_count' => 1482,
+            'clinic_count' => 560,
         ]);
     }
 
@@ -141,20 +152,6 @@ class SettingSeeder extends Seeder
                 'url' => 'https://t.me/mywebsite',
                 'icon' => 'fab fa-telegram',
                 'active' => true
-            ]
-        ]);
-    }
-
-    private function seedStorySettings(): void
-    {
-        $this->createSetting('story', [
-            'day_limit' => [
-                'regular_user' => 3, // Adi istifadəçi üçün günlük 3 story
-                'store' => 10 // Mağaza üçün günlük 10 story
-            ],
-            'image_limit' => [
-                'regular_user' => 5, // Adi istifadəçi üçün bir story-də 5 şəkil
-                'store' => 15 // Mağaza üçün bir story-də 15 şəkil
             ]
         ]);
     }
@@ -309,64 +306,6 @@ class SettingSeeder extends Seeder
                 'redirect' => 'https://your-domain.com/api/auth/callback/linkedin',
                 'is_active' => true
             ]
-        ]);
-    }
-
-    private function seedListingTitleSettings(): void
-    {
-        $this->createSetting('listing', [
-            'pattern' => ':category :attributes :price, :city :region',
-
-            // Atributlar üçün
-            'attribute_settings' => [
-                'use_only_display_everywhere' => true,
-                'separator' => ', '
-            ],
-
-            'cache_settings' => [
-                'enabled' => true,  // cache aktivdir/deyil
-                'ttl' => 3600,  // saniyə ilə (1 saat)
-                'prefix' => 'listing_title:'  // cache key prefix
-            ],
-
-            // Qiymət formatı
-            'price_settings' => [
-                'pattern' => ':price :currency'
-            ],
-
-            // Ümumi formatlaşdırma
-            'formatting' => [
-                'max_length' => 100,
-                'capitalize_words' => false
-            ],
-        ]);
-    }
-
-    private function seedReferralSettings(): void
-    {
-        $this->createSetting('referral', [
-            // Əsas bonus məbləğləri
-            'rewards' => [
-                'referrer_amount' => 10.00,    // Dəvət edən üçün,
-                'referee_amount' => 5.00,      // Dəvət olunan üçün
-            ],
-
-            // Elan sayına görə əlavə bonuslar
-            'listing_rewards' => [
-                'limit3' => 5.00,    // 3 elan = 5 AZN
-                'limit5' => 10.00,   // 5 elan = 10 AZN
-                'limit10' => 25.00   // 10 elan = 25 AZN
-            ],
-
-            // Sistem parametrləri
-            'system' => [
-                'link' => '/register',         // Qeydiyyatda keçmək üçün link?
-                'auto_generate_code' => true,  // Qeydiyyatda avtomatik kod yaradılsın?
-                'code_uppercase' => true,      // Referral kod böyük hərflərlər olsun?
-                'code_length' => 8,            // Referral kodun uzunluğu
-                'expire_days' => 30,           // Referral linkin etibarlılıq müddəti
-                'max_referrals_per_day' => 10  // Gündəlik maksimum dəvət sayı
-            ],
         ]);
     }
 

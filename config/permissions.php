@@ -50,7 +50,7 @@ $permissionArr = [
         "permission_read",
         "permission_status",
     ],
-"complaint" => [
+    "complaint" => [
         "complaint_create",
         "complaint_update",
         "complaint_delete",
@@ -109,7 +109,7 @@ $permissionArr = [
         "terms_read",
         "terms_status",
     ],
-"country" => [
+    "country" => [
         "country_create",
         "country_update",
         "country_delete",
@@ -158,7 +158,7 @@ $permissionArr = [
         "customer_read",
         "customer_status",
     ],
-"appointment" => [
+    "appointment" => [
         "appointment_create",
         "appointment_update",
         "appointment_delete",
@@ -220,6 +220,13 @@ $permissionArr = [
         "faq_delete",
         "faq_read",
         "faq_status",
+    ],
+    "slider" => [
+        "slider_create",
+        "slider_update",
+        "slider_delete",
+        "slider_read",
+        "slider_status",
     ],
 ];
 

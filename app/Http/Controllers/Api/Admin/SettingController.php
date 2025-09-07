@@ -68,6 +68,7 @@ class SettingController extends ApiController
     public function update(Request $request, mixed $id): JsonResponse
     {
         if ($this->authorizeAction('update')) {
+
             // Əvvəlcə mövcud settingi əldə edirik
             $setting = $this->service->get($id);
 
@@ -162,7 +163,7 @@ class SettingController extends ApiController
     private function getImageFields(string $key): array
     {
         return match($key) {
-            'info' => ['logo', 'logo_dark', 'mobile_logo', 'mobile_logo_dark', 'favicon', 'wallpaper', 'watermark', 'default_image'],
+            'info' => ['logo', 'logo_dark', 'mobile_logo', 'mobile_logo_dark', 'favicon', 'wallpaper', 'watermark', 'join_us_wallpaper', 'default_image'],
             default => []
         };
     }
