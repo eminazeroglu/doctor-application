@@ -26,8 +26,8 @@ class DoctorController extends Controller
         ]);
     }
 
-    public function doctorView($id): JsonResponse
+    public function doctorView($slug): JsonResponse
     {
-        return response()->json(new DoctorViewResource($this->doctorRepository->doctorView($id)));
+        return response()->json(new DoctorViewResource($this->doctorRepository->doctorView($slug)));
     }
 }

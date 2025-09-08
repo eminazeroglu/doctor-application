@@ -79,7 +79,9 @@ class ReferenceDataService
             ->limit(5)
             ->get()
             ->map(function ($user) {
+
                 $result = [
+                    'username' => $user->username,
                     'fullname' => $user->full_name,
                     'photo' => $user->photo
                 ];
@@ -94,7 +96,15 @@ class ReferenceDataService
         $services = Service::query()
             ->translationSearchInLanguage($search)
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'category_id' => $service->category_id,
+                ];
+            });
 
         return [
             'services' => $services,

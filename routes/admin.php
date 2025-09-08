@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\Admin\FaqController;
 use App\Http\Controllers\Api\Admin\LanguageController;
 use App\Http\Controllers\Api\Admin\MessagingController;
 use App\Http\Controllers\Api\Admin\NotificationController;
+use App\Http\Controllers\Api\Admin\NotificationLogController;
+use App\Http\Controllers\Api\Admin\NotificationTemplateController;
 use App\Http\Controllers\Api\Admin\PageController;
 use App\Http\Controllers\Api\Admin\PatientController;
 use App\Http\Controllers\Api\Admin\PaymentController;
@@ -79,14 +81,54 @@ Route::prefix('settings')->as('settings.')->group(function () {
 });
 
 /**
- * Notification Routes
- * */
+ * Notification Management Routes
+ */
 Route::controller(NotificationController::class)->prefix('notifications')->group(function () {
+    // Əsas CRUD əməliyyatları
     Route::get('/', 'index')->name('notifications.index');
     Route::post('/', 'store')->name('notifications.store');
-    Route::get('/filters', 'filters')->name('notifications.filters');
+    Route::get('/{id}', 'show')->name('notifications.show');
     Route::delete('/{id}', 'destroy')->name('notifications.destroy');
+
+    // Toplu notification əməliyyatları
+    Route::post('/bulk-send', 'bulkSend')->name('notifications.bulkSend');
+    Route::post('/send-to-all', 'sendToAll')->name('notifications.sendToAll');
     Route::post('/bulk-delete', 'bulkDelete')->name('notifications.bulkDelete');
+
+    // Köməkçi route-lar
+    Route::get('/filters/data', 'filters')->name('notifications.filters');
+    Route::get('/statistics/admin', 'statistics')->name('notifications.statistics');
+    Route::post('/send-scheduled', 'sendScheduled')->name('notifications.sendScheduled');
+    Route::post('/test', 'sendTest')->name('notifications.test');
+
+    // Telegram notification
+    Route::post('/telegram', 'sendTelegram')->name('notifications.telegram');
+
+    // User axtarış (notification göndərmək üçün)
+    Route::get('/users/search', 'searchUsers')->name('notifications.searchUsers');
+});
+
+/**
+ * Notification Templates Routes
+ */
+Route::controller(NotificationTemplateController::class)->prefix('notification-templates')->group(function () {
+    Route::get('/', 'index')->name('notification-templates.index');
+    Route::post('/', 'store')->name('notification-templates.store');
+    Route::get('/{id}', 'show')->name('notification-templates.show');
+    Route::put('/{id}', 'update')->name('notification-templates.update');
+    Route::delete('/{id}', 'destroy')->name('notification-templates.destroy');
+    Route::post('/{id}/action', 'action')->name('notification-templates.action');
+    Route::get('/filters/data', 'filters')->name('notification-templates.filters');
+});
+
+/**
+ * Notification Logs Routes (opsional)
+ */
+Route::controller(NotificationLogController::class)->prefix('notification-logs')->group(function () {
+    Route::get('/', 'index')->name('notification-logs.index');
+    Route::get('/filters/data', 'filters')->name('notification-logs.filters');
+    Route::get('/statistics', 'statistics')->name('notification-logs.statistics');
+    Route::delete('/cleanup', 'cleanup')->name('notification-logs.cleanup');
 });
 
 /**

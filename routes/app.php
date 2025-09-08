@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\NotificationController;
+use App\Http\Controllers\Api\Front\NotificationController;
 use App\Http\Controllers\Api\Admin\SeoLinkToolsController;
 use App\Http\Controllers\Api\Front\AppointmentController;
 use App\Http\Controllers\Api\Front\BlogController;

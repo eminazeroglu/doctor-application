@@ -58,10 +58,10 @@
             }
         },
         {
-            "path": "/app/doctors/{id}/view",
+            "path": "/app/doctors/{username}/view",
             "method": "get",
             "summary": "Həkim məlumatı",
-            "description": "Verilən id-ə görə həkimin məlumatlarını qaytarır"
+            "description": "Verilən username-ə görə həkimin məlumatlarını qaytarır"
         },
         {
             "path": "/app/doctor/dashboard/summary",

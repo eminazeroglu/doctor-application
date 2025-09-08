@@ -415,8 +415,8 @@ class DoctorRepository extends BaseRepository
         });
     }
 
-    public function doctorView($id)
+    public function doctorView($slug)
     {
-        return app(DoctorService::class)->getDoctorWithAvailability($id);
+        return app(DoctorService::class)->getDoctorWithAvailability($slug);
     }
 }

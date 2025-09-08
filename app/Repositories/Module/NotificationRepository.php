@@ -12,6 +12,7 @@ class NotificationRepository extends BaseRepository
     {
         parent::__construct($model);
         $this->setFilter(new NotificationFilter(request()));
+        $this->with = ['user'];
     }
 
     // Add any additional methods here

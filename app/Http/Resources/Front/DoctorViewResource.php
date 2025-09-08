@@ -33,6 +33,7 @@ class DoctorViewResource extends JsonResource
             'id' => $this->id,
             'uuid' => $this->uuid,
             'photo' => $this->user->photo,
+            'username' => $this->user->username,
             'fullname' => $this->full_name_with_title,
             'profession' => $profession,
             'rating_average' => $this->rating_average,

@@ -521,10 +521,10 @@
                         }
                     }
                 },
-                "/app/doctors/{id}/view": {
+                "/app/doctors/{username}/view": {
                     "get": {
                         "summary": "Həkim məlumatı",
-                        "description": "Verilən id-ə görə həkimin məlumatlarını qaytarır"
+                        "description": "Verilən username-ə görə həkimin məlumatlarını qaytarır"
                     }
                 },
                 "/app/doctor/dashboard/summary": {

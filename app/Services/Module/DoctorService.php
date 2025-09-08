@@ -163,7 +163,7 @@ class DoctorService extends BaseCrudService
         return $doctors;
     }
 
-    public function getDoctorWithAvailability($id)
+    public function getDoctorWithAvailability($slug)
     {
         $doctor = Doctor::with([
             'user',
@@ -176,7 +176,9 @@ class DoctorService extends BaseCrudService
             'languages',
             'services',
             'reviews' => fn($q) => $q->with('patient.user')
-        ])->findOrFail($id);
+        ])
+            ->whereRelation('user','username', $slug)
+            ->firstOrFail();
 
         $doctor->available_days = $this->getAvailableDaysForNextDays($doctor);
         return $doctor;
