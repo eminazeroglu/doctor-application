@@ -1692,18 +1692,6 @@
                     }
                 }
             }
-        },
-        {
-            "tag": "İstifadəçilər",
-            "description": "İstifadəçilər ilə əlaqəli API-lər",
-            "endpoints": {
-                "/common/user/profile": {
-                    "get": {
-                        "summary": "İstifadəçi məlumatlarını qaytarır",
-                        "description": "İstifadəçiyə aid bütün məlumatları qaytarır"
-                    }
-                }
-            }
         }
     ]
 }

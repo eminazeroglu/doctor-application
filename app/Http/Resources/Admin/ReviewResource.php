@@ -41,21 +41,17 @@ class ReviewResource extends JsonResource
             'patient' => $this->whenLoaded('patient', function() {
                 return [
                     'id' => $this->patient->id,
-                    'name' => $this->patient->name,
-                    'surname' => $this->patient->surname,
                     'full_name' => $this->patient->full_name,
-                    'photo' => $this->patient->photo,
+                    'photo' => $this->patient->user->photo,
                 ];
             }),
 
             'doctor' => $this->whenLoaded('doctor', function() {
                 return $this->doctor ? [
                     'id' => $this->doctor->id,
-                    'name' => $this->doctor->name,
-                    'surname' => $this->doctor->surname,
-                    'full_name' => $this->doctor->full_name,
-                    'photo' => $this->doctor->photo,
-                    'specialty' => $this->doctor->specialty,
+                    'user_id' => $this->doctor->user->id,
+                    'full_name' => $this->doctor->user->full_name,
+                    'photo' => $this->doctor->user->photo,
                 ] : null;
             }),
 

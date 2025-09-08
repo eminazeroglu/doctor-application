@@ -5,27 +5,28 @@ namespace App\Console\Commands;
 use App\Services\Module\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class SendScheduledNotificationsCommand extends Command
 {
     /**
      * The name and signature of the console command.
+     *
+     * @var string
      */
-    protected $signature = 'notifications:send-scheduled {--limit=100 : Maximum number of notifications to process}';
+    protected $signature = 'notifications:send-scheduled
+                           {--dry-run : Test run without actually sending}
+                           {--limit=100 : Maximum number of notifications to process}';
 
     /**
      * The console command description.
+     *
+     * @var string
      */
-    protected $description = 'Planlaşdırılmış notification-ları göndərir';
+    protected $description = 'Planlaşdırılmış notification-ları göndərmək';
 
-    /**
-     * NotificationService instance
-     */
     protected NotificationService $notificationService;
 
-    /**
-     * Create a new command instance.
-     */
     public function __construct(NotificationService $notificationService)
     {
         parent::__construct();
@@ -37,40 +38,50 @@ class SendScheduledNotificationsCommand extends Command
      */
     public function handle(): int
     {
-        $this->info('Planlaşdırılmış notification-lar göndərilir...');
+        $dryRun = $this->option('dry-run');
+        $limit = (int) $this->option('limit');
+
+        $this->info('Planlaşdırılmış notification-lar yoxlanılır...');
 
         try {
-            $startTime = microtime(true);
-
-            // Planlaşdırılmış notification-ları göndərmək
-            $sentCount = $this->notificationService->sendScheduledNotifications();
-
-            $endTime = microtime(true);
-            $executionTime = round($endTime - $startTime, 2);
-
-            if ($sentCount > 0) {
-                $this->info("✅ {$sentCount} notification uğurla göndərildi");
-                $this->info("⏱️  İcra müddəti: {$executionTime} saniyə");
-
-                Log::info('Scheduled notifications sent successfully', [
-                    'sent_count' => $sentCount,
-                    'execution_time' => $executionTime
-                ]);
+            if ($dryRun) {
+                $count = $this->checkScheduledNotifications($limit);
+                $this->info("Test rejimi: {$count} notification göndərilməyə hazırdır");
             } else {
-                $this->info('📭 Göndəriləcək planlaşdırılmış notification tapılmadı');
+                $count = $this->notificationService->sendScheduledNotifications();
+                $this->info("{$count} planlaşdırılmış notification uğurla göndərildi");
+
+                Log::info('Scheduled notifications sent', [
+                    'count' => $count,
+                    'command' => 'notifications:send-scheduled'
+                ]);
             }
 
-            return self::SUCCESS;
+            return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('❌ Planlaşdırılmış notification-lar göndərilə bilmədi: ' . $e->getMessage());
+            $this->error('Xəta baş verdi: ' . $e->getMessage());
 
-            Log::error('Failed to send scheduled notifications', [
+            Log::error('Scheduled notifications command failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return self::FAILURE;
+            return CommandAlias::FAILURE;
         }
+    }
+
+    /**
+     * Göndərilməyə hazır notification-ları yoxlayır (dry-run üçün)
+     */
+    protected function checkScheduledNotifications(int $limit): int
+    {
+        return \App\Models\Notification::where('is_sent', false)
+            ->where(function($q) {
+                $q->whereNull('send_at')
+                    ->orWhere('send_at', '<=', now());
+            })
+            ->limit($limit)
+            ->count();
     }
 }

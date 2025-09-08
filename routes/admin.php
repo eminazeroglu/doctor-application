@@ -87,6 +87,7 @@ Route::controller(NotificationController::class)->prefix('notifications')->group
     // Əsas CRUD əməliyyatları
     Route::get('/', 'index')->name('notifications.index');
     Route::post('/', 'store')->name('notifications.store');
+    Route::get('/filters', 'filters')->name('notifications.filters');
     Route::get('/{id}', 'show')->name('notifications.show');
     Route::delete('/{id}', 'destroy')->name('notifications.destroy');
 
@@ -96,7 +97,6 @@ Route::controller(NotificationController::class)->prefix('notifications')->group
     Route::post('/bulk-delete', 'bulkDelete')->name('notifications.bulkDelete');
 
     // Köməkçi route-lar
-    Route::get('/filters/data', 'filters')->name('notifications.filters');
     Route::get('/statistics/admin', 'statistics')->name('notifications.statistics');
     Route::post('/send-scheduled', 'sendScheduled')->name('notifications.sendScheduled');
     Route::post('/test', 'sendTest')->name('notifications.test');
@@ -119,16 +119,30 @@ Route::controller(NotificationTemplateController::class)->prefix('notification-t
     Route::delete('/{id}', 'destroy')->name('notification-templates.destroy');
     Route::post('/{id}/action', 'action')->name('notification-templates.action');
     Route::get('/filters/data', 'filters')->name('notification-templates.filters');
+
+    // Əlavə template əməliyyatları
+    Route::post('/{id}/preview', 'preview')->name('notification-templates.preview');
+    Route::post('/check-code', 'checkCode')->name('notification-templates.checkCode');
+    Route::post('/{id}/duplicate', 'duplicate')->name('notification-templates.duplicate');
+    Route::post('/backup', 'backup')->name('notification-templates.backup');
+    Route::post('/restore', 'restore')->name('notification-templates.restore');
 });
 
 /**
- * Notification Logs Routes (opsional)
+ * Notification Logs Routes
  */
 Route::controller(NotificationLogController::class)->prefix('notification-logs')->group(function () {
     Route::get('/', 'index')->name('notification-logs.index');
     Route::get('/filters/data', 'filters')->name('notification-logs.filters');
     Route::get('/statistics', 'statistics')->name('notification-logs.statistics');
     Route::delete('/cleanup', 'cleanup')->name('notification-logs.cleanup');
+
+    // Əlavə log əməliyyatları
+    Route::get('/channel-stats', 'channelStats')->name('notification-logs.channelStats');
+    Route::get('/daily-stats', 'dailyStats')->name('notification-logs.dailyStats');
+    Route::get('/failed-details', 'failedDetails')->name('notification-logs.failedDetails');
+    Route::post('/export', 'export')->name('notification-logs.export');
+    Route::get('/realtime-status', 'realtimeStatus')->name('notification-logs.realtimeStatus');
 });
 
 /**

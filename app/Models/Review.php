@@ -48,7 +48,7 @@ class Review extends Model
      * Avtomatik əlavə edilən atributlar.
      * @var array
      */
-    protected $appends = ['rating_stars', 'helpful_count', 'status', 'author_name'];
+    protected $appends = ['rating_stars', 'helpful_count', 'author_name'];
 
     /**
      * Qiymətləndirməni ulduz şəklində qaytarır.
@@ -68,27 +68,6 @@ class Review extends Model
     public function getHelpfulCountAttribute(): int
     {
         return $this->helpful()->where('is_helpful', true)->count();
-    }
-
-    /**
-     * Rəyin statusunu qaytarır.
-     * @return string
-     */
-    public function getStatusAttribute(): string
-    {
-        if (!$this->is_active) {
-            return 'Deaktiv';
-        }
-
-        if (!$this->is_moderated) {
-            return 'Moderasiya gözləyir';
-        }
-
-        if (!$this->is_verified) {
-            return 'Təsdiqlənməyib';
-        }
-
-        return 'Aktiv';
     }
 
     /**

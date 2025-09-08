@@ -137,7 +137,7 @@ class ReviewController extends ApiController
     /**
      * Store əməliyyatı üçün validasiya qaydaları
      */
-    protected function storeRules(): array
+    public function storeRules(): array
     {
         return [
             'patient_id' => 'required|exists:users,id',
@@ -156,7 +156,7 @@ class ReviewController extends ApiController
     /**
      * Update əməliyyatı üçün validasiya qaydaları
      */
-    protected function updateRules(): array
+    public function updateRules(): array
     {
         return [
             'patient_id' => 'sometimes|exists:users,id',
@@ -175,7 +175,7 @@ class ReviewController extends ApiController
     /**
      * Validasiya mesajları
      */
-    protected function commonMessages(): array
+    public function commonMessages(): array
     {
         return [
             'patient_id.required' => 'Xəstə seçimi tələb olunur',

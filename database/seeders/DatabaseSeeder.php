@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             $this->call(PaymentSeeder::class);
             $this->call(FaqSeeder::class);
             $this->call(BlogSeeder::class);
+            $this->call(SliderSeeder::class);
         }
     }
 }

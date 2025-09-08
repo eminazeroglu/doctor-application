@@ -8,7 +8,7 @@ final class NotificationTypeEnum extends Enum
 {
     const AppointmentCreated = 'appointment_created';
     const AppointmentConfirmed = 'appointment_confirmed';
-    const AppointmentCancelled = 'appointment_created';
+    const AppointmentCancelled = 'appointment_cancelled';
     const AppointmentReminder = 'appointment_reminder';
     const ReviewReceived = 'review_received';
     const ReviewResponse = 'review_response';
