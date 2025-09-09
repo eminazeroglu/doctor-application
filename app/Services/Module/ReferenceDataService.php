@@ -11,6 +11,7 @@ use App\Models\Language;
 use App\Models\Role;
 use App\Models\Service;
 use App\Models\Slider;
+use App\Models\Testimonial;
 use App\Models\User;
 use App\Repositories\Module\CategoryRepository;
 use App\Repositories\Module\CityRepository;
@@ -134,12 +135,26 @@ class ReferenceDataService
 
         $info = setting('info');
 
+        $testimonials = Testimonial::query()
+            ->active()
+            ->get()
+            ->map(function ($testimonial) {
+                return [
+                    'fullname' => $testimonial->fullname,
+                    'profession' => $testimonial->profession,
+                    'comment' => $testimonial->comment,
+                    'rating' => $testimonial->rating,
+                    'photo' => $testimonial->photo,
+                ];
+            });
+
         return [
             'app_link' => [
                 'google' => $info['google_app_link'],
                 'apple' => $info['apple_app_link'],
             ],
             'join_us_wallpaper' => $info['join_us_wallpaper_path'],
+            'testimonials' => $testimonials,
             'homeStatistic' => [
                 'clinic_count' => $homeStatistic['clinic_count'],
                 'doctor_count' => $homeStatistic['doctor_count'],

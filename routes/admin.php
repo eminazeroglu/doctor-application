@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Admin\ServiceController;
 use App\Http\Controllers\Api\Admin\SettingController;
 use App\Http\Controllers\Api\Admin\SliderController;
 use App\Http\Controllers\Api\Admin\SubwayController;
+use App\Http\Controllers\Api\Admin\TestimonialController;
 use App\Http\Controllers\Api\Admin\TranslationController;
 use App\Http\Controllers\Api\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -358,3 +359,7 @@ Route::resource('faqs', FaqController::class);
 
 // Slider
 Route::resource('sliders', SliderController::class);
+
+
+// Testimonial
+Route::resource('testimonials', TestimonialController::class);

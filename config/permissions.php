@@ -228,6 +228,13 @@ $permissionArr = [
         "slider_read",
         "slider_status",
     ],
+    "testimonial" => [
+        "testimonial_create",
+        "testimonial_update",
+        "testimonial_delete",
+        "testimonial_read",
+        "testimonial_status",
+    ],
 ];
 
 return [
