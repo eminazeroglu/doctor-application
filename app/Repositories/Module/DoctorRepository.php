@@ -7,6 +7,7 @@ use App\Repositories\BaseRepository;
 use App\Services\Filter\DoctorFilter;
 use App\Services\Module\DoctorService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DoctorRepository extends BaseRepository
 {
@@ -390,29 +391,39 @@ class DoctorRepository extends BaseRepository
         ];
     }
 
-    public function doctorSearch($request)
+    public function doctorSearch($request): LengthAwarePaginator
     {
-        return $this->executeQuery('searchDoctors', function ($query) use ($request) {
-            $query->with([
-                'user',
-                'category',
-                'subcategory',
-                'doctorClinics',
-                'clinics' => function($q) {
-                    $q->where('clinics.is_active', true);
-                },
-                'reviews'
-            ]);
+        $query = Doctor::with([
+            'user',
+            'category',
+            'subcategory',
+            'doctorClinics' => function($q) {
+                $q->where('is_active', true)->with('clinic');
+            },
+            'reviews'
+        ]);
+
+        // Filtrasiya tətbiq et
+        if ($this->filter) {
             $query = $this->filter->apply($query);
-            $doctors = $query->paginate($request->limit);
+        }
 
-            $doctors->getCollection()->transform(function ($doctor) {
-                $doctor->nearest_slots = app(DoctorService::class)->getNearestAvailableSlots($doctor);
-                return $doctor;
-            });
+        $doctors = $query->paginate($request->limit ?? 10);
 
-            return $doctors;
+        // Hər həkim üçün nearest slots və available days əlavə et
+        $doctorService = app(DoctorService::class);
+
+        $doctors->getCollection()->transform(function ($doctor) use ($doctorService) {
+            // Nearest slots əlavə et
+            $doctor->nearest_slots = $doctorService->getNearestAvailableSlots($doctor, 3);
+
+            // Available days əlavə et (opsional - performance üçün yalnız lazım olduqda)
+            $doctor->available_days = $doctorService->getAvailableDaysForNextDays($doctor, 7);
+
+            return $doctor;
         });
+
+        return $doctors;
     }
 
     public function doctorView($slug)

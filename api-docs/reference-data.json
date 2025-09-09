@@ -39,6 +39,12 @@
             "description": "Ana səhifəyə aid məlumatların siyahısını qaytarır"
         },
         {
+            "path": "/reference-data/time-of-day",
+            "method": "get",
+            "summary": "Günün müəyyən hissələri",
+            "description": "Günün müəyyən hissəsiələrini qaytarır"
+        },
+        {
             "path": "/reference-data/languages",
             "method": "get",
             "summary": "Dillərin siyahısı",

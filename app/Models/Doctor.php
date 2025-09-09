@@ -303,7 +303,18 @@ class Doctor extends BaseModel
      */
     public function activeClinics(): BelongsToMany
     {
-        return $this->clinics()->wherePivot('is_active', true);
+        return $this->belongsToMany(Clinic::class, 'doctor_clinic')
+            ->withPivot([
+                'id',
+                'work_time',
+                'is_main_workplace',
+                'profession',
+                'is_active',
+                'note',
+                'custom_clinic'
+            ])
+            ->wherePivot('is_active', true)
+            ->withTimestamps();
     }
 
     /**

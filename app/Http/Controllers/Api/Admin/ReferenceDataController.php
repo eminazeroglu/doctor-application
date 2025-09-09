@@ -48,6 +48,14 @@ class ReferenceDataController extends Controller
     }
 
     /**
+     * Home Page
+     * */
+    public function timeOfDay(): JsonResponse
+    {
+        return response()->json($this->service->timeOfDay());
+    }
+
+    /**
      * Languages
      * */
     public function languages(): JsonResponse

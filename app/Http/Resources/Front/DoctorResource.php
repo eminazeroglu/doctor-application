@@ -18,28 +18,23 @@ class DoctorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        //return parent::toArray($request);
-
         $profession = $this?->category?->name;
-        if ($this?->subcategoy?->name) {
-            $profession .= ', ' . $this?->subcategoy?->name;
+        if ($this?->subcategory?->name) { // subcategoy -> subcategory düzəltdim
+            $profession .= ', ' . $this?->subcategory?->name;
         }
 
         $main_workplace = $this->mainWorkplace();
 
-        $doctor = Doctor::find($this->id);
-
-        $services = [];
-
-        foreach ($doctor->doctorClinics()->get() as $clinic) {
-            foreach ($clinic->services()->get() as $item) {
-                $services[] = [
+        // Services-i daha səmərəli şəkildə əldə edirik
+        $services = $this->doctorClinics->flatMap(function ($clinic) {
+            return $clinic->services->map(function ($item) {
+                return [
                     'id' => $item->service->id,
                     'slug' => $item->service->slug,
                     'name' => $item->service->name,
                 ];
-            }
-        }
+            });
+        })->unique('id')->values();
 
         return [
             'id' => $this->id,
@@ -63,16 +58,25 @@ class DoctorResource extends JsonResource
                 'latitude' => $main_workplace['latitude'],
                 'longitude' => $main_workplace['longitude'],
             ] : [],
-            'services' => collect($services)->unique('id')->values(),
-            'nearest_appointments' => $this->formatNearestSlots(),
-            'available_days_for_next' => app(DoctorService::class)->getAvailableDaysForNextDays($doctor),
+            'services' => $services,
 
+            // Yalnız nearest_slots property-si varsa göstər
+            'nearest_appointments' => $this->when(
+                isset($this->nearest_slots),
+                fn() => $this->formatNearestSlots()
+            ),
+
+            // available_days yalnız nearest_slots ilə birlikdə lazım olduqda əlavə edilir
+            'available_days_for_next' => $this->when(
+                isset($this->available_days),
+                $this->available_days ?? []
+            ),
         ];
     }
 
     private function formatNearestSlots(): array
     {
-        if (!isset($this->nearest_slots)) {
+        if (!isset($this->nearest_slots) || !$this->nearest_slots) {
             return [];
         }
 

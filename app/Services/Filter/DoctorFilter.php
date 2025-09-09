@@ -2,7 +2,9 @@
 
 namespace App\Services\Filter;
 
+use App\Enums\TimeOfDayEnum;
 use App\Models\Attribute;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 
 class DoctorFilter extends BaseFilter
@@ -32,6 +34,8 @@ class DoctorFilter extends BaseFilter
         'date_range',
         'trashed',
         'attributes',
+        'availability_date_range',
+        'time_of_day',
     ];
 
     /**
@@ -49,14 +53,123 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterSearch(Builder $query, string $value): Builder
     {
-        return $query->where(function(Builder $q) use ($value) {
-            $q->whereHas('user', function($userQuery) use ($value) {
+        return $query->where(function (Builder $q) use ($value) {
+            $q->whereHas('user', function ($userQuery) use ($value) {
                 $userQuery->where('name', 'like', "%{$value}%")
                     ->orWhere('surname', 'like', "%{$value}%")
                     ->orWhereRaw("CONCAT(name, ' ', surname) LIKE ?", ["%{$value}%"]);
             })
                 ->orWhere('biography', 'like', "%{$value}%")
                 ->orWhere('title', 'like', "%{$value}%");
+        });
+    }
+
+    /**
+     * YENİ - Tarix aralığında müsait olan həkimləri tapır
+     *
+     * @param Builder $query
+     * @param array $value ['start_date' => 'Y-m-d', 'end_date' => 'Y-m-d']
+     * @return Builder
+     */
+    protected function filterAvailabilityDateRange(Builder $query, array $value): Builder
+    {
+        if (!isset($value['start_date']) || !isset($value['end_date'])) {
+            return $query;
+        }
+
+        $startDate = Carbon::parse($value['start_date']);
+        $endDate = Carbon::parse($value['end_date']);
+
+        // Həkimin verilən tarix aralığında ən azından bir aktiv schedule-ı olmalıdır
+        return $query->whereHas('schedules', function ($scheduleQuery) use ($startDate, $endDate) {
+            $scheduleQuery->where('is_active', true)
+                ->where(function ($q) use ($startDate, $endDate) {
+                    // Schedule-in başlanğıc tarixi aralığa düşür
+                    $q->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
+                        // və ya schedule aralığı daxilində və end_date yoxdur ya da bitməyib
+                        ->orWhere(function ($qq) use ($startDate, $endDate) {
+                            $qq->where('start_date', '<=', $startDate->toDateString())
+                                ->where(function ($qqq) use ($endDate) {
+                                    $qqq->whereNull('end_date')
+                                        ->orWhere('end_date', '>=', $endDate->toDateString());
+                                });
+                        });
+                })
+                // Həmçinin schedule-in frequency pattern-lərinə uyğun olmalıdır
+                ->where(function ($freqQuery) use ($startDate, $endDate) {
+                    $this->addFrequencyCheck($freqQuery, $startDate, $endDate);
+                });
+        });
+    }
+
+    /**
+     * Frequency pattern-lərini yoxlamaq üçün helper metod
+     */
+    private function addFrequencyCheck(Builder $query, Carbon $startDate, Carbon $endDate): void
+    {
+        // Bu məntiq mürəkkəbdir, sadə halda weekly pattern üçün
+        // Daha dəqiq implementation üçün DoctorService-dəki məntiq istifadə edilə bilər
+
+        $query->where(function ($freqQuery) use ($startDate, $endDate) {
+            // Daily frequency
+            $freqQuery->where('frequency', 'daily')
+                // Weekly frequency - gələcək günlər üçün days array-ini yoxla
+                ->orWhere(function ($weeklyQuery) use ($startDate, $endDate) {
+                    $weeklyQuery->where('frequency', 'weekly')
+                        ->where(function ($daysQuery) use ($startDate, $endDate) {
+                            // Aralıqdakı günlər üçün days array-ini yoxla
+                            $currentDate = $startDate->copy();
+                            while ($currentDate->lte($endDate)) {
+                                $dayOfWeek = $currentDate->dayOfWeek; // 0=Sunday, 1=Monday...
+                                $daysQuery->orWhereJsonContains('days', $dayOfWeek);
+                                $currentDate->addDay();
+                            }
+                        });
+                })
+                // Monthly frequency
+                ->orWhere('frequency', 'monthly');
+        });
+    }
+
+    /**
+     * YENİ - Günün müəyyən hissəsində işləyən həkimləri tapır
+     *
+     * @param Builder $query
+     * @param string|array $value TimeOfDayEnum dəyərləri
+     * @return Builder
+     */
+    protected function filterTimeOfDay(Builder $query, $value): Builder
+    {
+        // Çoxlu seçim ola bilər
+        $timeRanges = is_array($value) ? $value : [$value];
+
+        return $query->whereHas('schedules', function ($scheduleQuery) use ($timeRanges) {
+            $scheduleQuery->where('is_active', true)
+                ->where(function ($timeQuery) use ($timeRanges) {
+                    foreach ($timeRanges as $timeRange) {
+                        // Enum-dan vaxt aralığını əldə et
+                        $range = TimeOfDayEnum::getTimeRange($timeRange);
+
+                        $timeQuery->orWhere(function ($rangeQuery) use ($range) {
+                            // Schedule-in from_time və to_time-ı seçilən aralığa uyğun olmalıdır
+                            $rangeQuery->where(function ($q) use ($range) {
+                                // Schedule başlanğıc vaxtı seçilən aralığa düşür
+                                $q->where('from_time', '>=', $range['start'])
+                                    ->where('from_time', '<', $range['end']);
+                            })
+                                ->orWhere(function ($q) use ($range) {
+                                    // Schedule bitiş vaxtı seçilən aralığa düşür
+                                    $q->where('to_time', '>', $range['start'])
+                                        ->where('to_time', '<=', $range['end']);
+                                })
+                                ->orWhere(function ($q) use ($range) {
+                                    // Schedule seçilən aralığı tamamilə əhatə edir
+                                    $q->where('from_time', '<=', $range['start'])
+                                        ->where('to_time', '>=', $range['end']);
+                                });
+                        });
+                    }
+                });
         });
     }
 
@@ -81,7 +194,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterClinicId($query, $value): Builder
     {
-        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+        return $query->whereHas('clinics', function ($clinicQuery) use ($value) {
             $clinicQuery->where('clinic_id', $value);
         });
     }
@@ -91,7 +204,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterCityId($query, $value): Builder
     {
-        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+        return $query->whereHas('clinics', function ($clinicQuery) use ($value) {
             $clinicQuery->where('clinics.city_id', $value);
         });
     }
@@ -101,7 +214,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterRegionId($query, $value): Builder
     {
-        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+        return $query->whereHas('clinics', function ($clinicQuery) use ($value) {
             $clinicQuery->where('clinics.region_id', $value);
         });
     }
@@ -111,7 +224,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterSubwayId($query, $value): Builder
     {
-        return $query->whereHas('clinics', function($clinicQuery) use ($value) {
+        return $query->whereHas('clinics', function ($clinicQuery) use ($value) {
             $clinicQuery->where('clinics.subway_id', $value);
         });
     }
@@ -121,7 +234,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterServiceId(Builder $query, $value): Builder
     {
-        return $query->whereHas('services', function($serviceQuery) use ($value) {
+        return $query->whereHas('services', function ($serviceQuery) use ($value) {
             $serviceQuery->where('service_id', $value);
         });
     }
@@ -131,7 +244,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterIsVerified(Builder $query, $value): Builder
     {
-        return $query->where('is_verified', (bool) $value);
+        return $query->where('is_verified', (bool)$value);
     }
 
     /**
@@ -139,7 +252,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterIsFeatured(Builder $query, $value): Builder
     {
-        return $query->where('is_featured', (bool) $value);
+        return $query->where('is_featured', (bool)$value);
     }
 
     /**
@@ -147,7 +260,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterHomeVisit(Builder $query, $value): Builder
     {
-        if ((bool) $value) {
+        if ((bool)$value) {
             $query->where('available_for_home_visit', true);
         }
         return $query;
@@ -158,7 +271,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterOnlineConsultation(Builder $query, $value): Builder
     {
-        if ((bool) $value) {
+        if ((bool)$value) {
             $query->where('available_for_online_consultation', true);
         }
         return $query;
@@ -209,7 +322,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterRatingMin(Builder $query, $value): Builder
     {
-        $minRating = (float) $value;
+        $minRating = (float)$value;
         return $query->whereRaw('(average_rating / NULLIF(total_ratings, 0)) >= ?', [$minRating]);
     }
 
@@ -218,7 +331,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterLanguage(Builder $query, string $value): Builder
     {
-        return $query->whereHas('languages', function($langQuery) use ($value) {
+        return $query->whereHas('languages', function ($langQuery) use ($value) {
             $langQuery->where('language', $value);
         });
     }
@@ -228,7 +341,7 @@ class DoctorFilter extends BaseFilter
      */
     protected function filterGender(Builder $query, string $value): Builder
     {
-        return $query->whereHas('user', function($userQuery) use ($value) {
+        return $query->whereHas('user', function ($userQuery) use ($value) {
             $userQuery->where('gender', $value);
         });
     }
@@ -250,9 +363,9 @@ class DoctorFilter extends BaseFilter
             // Attributun tipindən asılı olaraq fərqli davranırıq
             if (is_array($value)) {
                 // Çoxlu seçim üçün
-                $query->whereHas('attributes', function($q) use ($attributeId, $value) {
+                $query->whereHas('attributes', function ($q) use ($attributeId, $value) {
                     $q->where('attribute_id', $attributeId)
-                        ->where(function($subQ) use ($value) {
+                        ->where(function ($subQ) use ($value) {
                             foreach ($value as $optionId) {
                                 // Əgər rəqəmdirsə, option_id kimi baxırıq
                                 if (is_numeric($optionId)) {
@@ -266,7 +379,7 @@ class DoctorFilter extends BaseFilter
                 });
             } else {
                 // Tək dəyər üçün
-                $query->whereHas('attributes', function($q) use ($attributeId, $value) {
+                $query->whereHas('attributes', function ($q) use ($attributeId, $value) {
                     $q->where('attribute_id', $attributeId);
 
                     // Əgər rəqəmdirsə, option_id kimi baxırıq
@@ -276,7 +389,7 @@ class DoctorFilter extends BaseFilter
                         // Range atributları üçün xüsusi davranış (min-max)
                         if (str_contains($value, '-') && preg_match('/^[\d\.]+-[\d\.]+$/', $value)) {
                             list($min, $max) = explode('-', $value);
-                            $q->where(function($rangeQ) use ($min, $max) {
+                            $q->where(function ($rangeQ) use ($min, $max) {
                                 $rangeQ->where('value', '>=', $min)
                                     ->where('value', '<=', $max);
                             });

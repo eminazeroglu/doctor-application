@@ -4,6 +4,7 @@ namespace App\Services\Module;
 
 use App\Enums\GenderEnum;
 use App\Enums\ImageWatermarkPositionEnum;
+use App\Enums\TimeOfDayEnum;
 use App\Enums\UserStatusEnum;
 use App\Enums\UserTypeEnum;
 use App\Http\Resources\Admin\BaseResource;
@@ -111,6 +112,17 @@ class ReferenceDataService
             'services' => $services,
             'doctors' => $doctors
         ];
+    }
+
+    /**
+     * Time Of Day
+     * */
+    public function timeOfDay(): \Illuminate\Support\Collection
+    {
+        return collect(TimeOfDayEnum::getValues())->map(fn($i) => [
+            'id' => $i,
+            'name' => TimeOfDayEnum::getDescription($i)
+        ]);
     }
 
     /**
