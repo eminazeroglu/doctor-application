@@ -481,7 +481,7 @@ class AuthService
         }
 
         $token = Str::random(60);
-        $code = Helper::generateNumber();
+        $code = Helper::generateNumber(4);
 
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $data['email']],
