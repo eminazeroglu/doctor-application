@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\UserTypeEnum;
 use App\Http\Requests\BaseRequest;
 
 class RegisterRequest extends BaseRequest
@@ -17,6 +18,7 @@ class RegisterRequest extends BaseRequest
             'birthdate' => 'nullable|date_format:Y-m-d',
             'gender' => 'required|in:male,female',
             'phone' => 'required',
+            'user_type' => ['nullable', 'in:' . implode(',', UserTypeEnum::getValues())],
         ];
     }
 }
