@@ -50,6 +50,7 @@ class User extends Authenticatable
         'photo_path',
         'status',
         'email_verified_at',
+        'user_type',
         'referral_code',
         'referral_balance',
         'main_balance'
