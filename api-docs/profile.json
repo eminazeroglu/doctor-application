@@ -144,8 +144,8 @@
                 "reason": {
                     "type": "select",
                     "required": true,
-                    "options": ["platform_dislike", "no_activity", "personal_reasons", "other"],
-                    "description": "Deaktivasiya səbəbi"
+                    "options": [],
+                    "description": "Deaktivasiya səbəbi - platform_dislike, no_activity, personal_reasons, other"
                 },
                 "custom_reason": {
                     "type": "text",
