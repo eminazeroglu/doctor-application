@@ -115,7 +115,7 @@
 </div>
 
 <script>
-    window.BASE_URL = `{{ url('/') }}`;
+    window.BASE_URL = `{{ env('APP_URL') }}`;
 </script>
 <script type="module" src="{{ asset('docs/js/main.js') }}"></script>
 </body>
