@@ -25,7 +25,7 @@ class CategoryController extends ApiController
         return [
             'translates' => ['required', 'array'],
             'translates.*.name' => ['required', 'string', 'max:255'],
-            'translates.*.description' => ['required', 'string'],
+            'translates.*.description' => ['nullable', 'string'],
             'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
             'terms_id' => ['nullable', 'integer', 'exists:terms,id'],
             'icon' => ['nullable', 'string'],

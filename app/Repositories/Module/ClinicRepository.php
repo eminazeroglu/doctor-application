@@ -13,6 +13,7 @@ class ClinicRepository extends BaseRepository
     {
         parent::__construct($model);
         $this->setFilter(new ClinicFilter(request()));
+        $this->with = ['categories'];
     }
 
     /**

@@ -16,6 +16,7 @@ class ClinicController extends ApiController
     public function __construct(ClinicService $service)
     {
         parent::__construct($service, 'clinic');
+        $this->setResource(ClinicResource::class);
     }
 
     /**
