@@ -20,9 +20,9 @@ class AppointmentResource extends JsonResource
             'patient' => $this->whenLoaded('patient', function () {
                 return [
                     'id' => $this->patient->id,
-                    'name' => $this->patient->user->name . ' ' . $this->patient->user->surname,
-                    'email' => $this->patient->user->email,
-                    'phone' => $this->patient->user->phone,
+                    'name' => $this->patient?->user?->name . ' ' . $this->patient?->user?->surname,
+                    'email' => $this->patient?->user?->email,
+                    'phone' => $this->patient?->user?->phone,
                 ];
             }),
 
