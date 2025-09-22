@@ -412,22 +412,22 @@ class ReviewSeeder extends Seeder
             $patient = $patients->random();
 
             // Eyni xəstə eyni rəyi bir dəfə qiymətləndirə bilər
-            $exists = ReviewHelpful::where('review_id', $review->id)
-                ->where('user_id', $patient->user_id)
-                ->exists();
-
-            if (!$exists) {
-                // Yüksək qiymətli rəylər daha çox faydalı hesab edilsin
-                $isHelpful = $review->rating >= 4 ? $faker->boolean(80) : $faker->boolean(40);
-
-                ReviewHelpful::create([
-                    'review_id' => $review->id,
-                    'user_id' => $patient->user_id,
-                    'is_helpful' => $isHelpful,
-                    'created_at' => $faker->dateTimeBetween($review->created_at, 'now'),
-                    'updated_at' => $faker->dateTimeBetween($review->created_at, 'now'),
-                ]);
-            }
+//            $exists = ReviewHelpful::where('review_id', $review->id)
+//                ->where('user_id', $patient->user_id)
+//                ->exists();
+//
+//            if (!$exists) {
+//                // Yüksək qiymətli rəylər daha çox faydalı hesab edilsin
+//                $isHelpful = $review->rating >= 4 ? $faker->boolean(80) : $faker->boolean(40);
+//
+//                ReviewHelpful::create([
+//                    'review_id' => $review->id,
+//                    'user_id' => $patient->user_id,
+//                    'is_helpful' => $isHelpful,
+//                    'created_at' => $faker->dateTimeBetween($review->created_at, 'now'),
+//                    'updated_at' => $faker->dateTimeBetween($review->created_at, 'now'),
+//                ]);
+//            }
         }
     }
 
