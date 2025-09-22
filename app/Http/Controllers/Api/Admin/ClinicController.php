@@ -126,7 +126,7 @@ class ClinicController extends ApiController
 
             // Əlaqə məlumatları
             'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:clinics,email',
+            'email' => 'nullable|email|max:255|unique:clinics,email,' . request()->id,
             'website' => 'nullable|url|max:255',
 
             // Ünvan məlumatları
