@@ -142,11 +142,11 @@ class Patient extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                if (!$this->user->birthdate) {
+                if (!$this?->user?->birthdate) {
                     return null;
                 }
 
-                return Carbon::parse(now())->diff($this->user->birthdate)->format('%y');
+                return Carbon::parse(now())->diff($this?->user?->birthdate)->format('%y');
             }
         );
     }

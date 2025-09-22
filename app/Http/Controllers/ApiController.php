@@ -15,6 +15,7 @@ abstract class ApiController extends Controller
     use HasAuthorizesRequests, HasValidatesRequests, HasHandlesResources, HasDispatchesEvents;
 
     protected $service;
+    protected bool $hasShowResource = false;
 
     public function __construct($service, ?string $permission = null, ?string $formRequestClass = null)
     {
@@ -54,7 +55,7 @@ abstract class ApiController extends Controller
         }
 
         $data = $this->service->findById($id);
-        return response()->json($data);
+        return response()->json($this->hasShowResource ? $this->toResource($data) : $data);
     }
 
     /**

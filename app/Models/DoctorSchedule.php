@@ -109,6 +109,24 @@ class DoctorSchedule extends BaseModel
         );
     }
 
+    public function formatedFromTime(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->from_time?->format('H:i');
+            }
+        );
+    }
+
+    public function formatedToTime(): AttributeAlias
+    {
+        return new AttributeAlias(
+            get: function () {
+                return $this->to_time?->format('H:i');
+            }
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes

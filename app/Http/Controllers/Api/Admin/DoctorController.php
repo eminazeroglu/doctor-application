@@ -14,6 +14,7 @@ class DoctorController extends ApiController
     {
         parent::__construct($service, 'doctor');
         $this->setResource(DoctorResource::class);
+        $this->setHasShowResource(true);
     }
 
     public function commonRules(): array

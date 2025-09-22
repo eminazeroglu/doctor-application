@@ -60,4 +60,9 @@ trait HasHandlesResources
 
         return new $resourceClass($data);
     }
+
+    public function setHasShowResource($value): void
+    {
+        $this->hasShowResource = $value;
+    }
 }

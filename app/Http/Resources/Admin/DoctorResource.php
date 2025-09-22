@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Http\Resources\Front\DoctorScheduleResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -90,7 +91,9 @@ class DoctorResource extends JsonResource
             'certificates' => $this->whenLoaded('certificates'),
             'languages' => $this->whenLoaded('languages'),
             'clinics' => $this->whenLoaded('clinics'),
-            'schedules' => $this->whenLoaded('schedules'),
+            'schedules' => $this->whenLoaded('schedules', function() {
+                return DoctorScheduleResource::collection($this->schedules);
+            }),
             'services' => $this->whenLoaded('services'),
 
             // Tarixlər

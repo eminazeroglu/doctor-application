@@ -24,7 +24,7 @@ class DoctorRepository extends BaseRepository
             'certificates',
             'languages',
             'clinics',
-            'schedules',
+            'schedules.clinic',
             'services'
         ];
     }
