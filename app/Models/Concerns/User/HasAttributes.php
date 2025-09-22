@@ -5,6 +5,7 @@ namespace App\Models\Concerns\User;
 use App\Enums\GenderEnum;
 use App\Enums\UserStatusEnum;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\DB;
 
 trait HasAttributes
 {
@@ -31,6 +32,19 @@ trait HasAttributes
     {
         return new Attribute(
             get: fn() => $this->status ? UserStatusEnum::getDescription($this->status) : ''
+        );
+    }
+
+    public function otpCode(): Attribute
+    {
+        return new Attribute(
+            get: function () {
+                $data = DB::table('password_reset_tokens')->where('email', $this->email)->first();
+                if ($data) {
+                    return $data->code;
+                }
+                return null;
+            }
         );
     }
 
