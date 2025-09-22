@@ -133,7 +133,7 @@ class ClinicController extends ApiController
             'address' => 'nullable|string|max:500',
             'country_id' => 'required|exists:cities,id',
             'city_id' => 'required|exists:cities,id',
-            'region_id' => 'required|exists:regions,id',
+            'region_id' => 'nullable|exists:regions,id',
             'postal_code' => 'nullable|string|max:10',
 
             // Koordinatlar

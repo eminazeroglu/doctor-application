@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Cache::flush();
-//        if (App::environment('local')) {
+        if (App::environment('local')) {
 //            $this->call(UserSeeder::class);
 //            $this->call(SettingSeeder::class);
 //            $this->call(PermissionSeeder::class);
@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
 //            $this->call(AttributeSeeder::class);
 //            $this->call(CategorySeeder::class);
 //            $this->call(ServiceSeeder::class);
-//            $this->call(MessagingSystemSeeder::class);
 //            $this->call(CommentSeeder::class);
 //            $this->call(ComplaintSeeder::class);
 //            $this->call(ClinicSeeder::class);
@@ -43,6 +42,6 @@ class DatabaseSeeder extends Seeder
 //            $this->call(BlogSeeder::class);
 //            $this->call(SliderSeeder::class);
 //            $this->call(TestimonialSeeder::class);
-//        }
+        }
     }
 }
