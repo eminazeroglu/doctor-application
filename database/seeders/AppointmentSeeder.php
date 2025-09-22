@@ -12,6 +12,7 @@ use App\Models\Clinic;
 use App\Models\Service;
 use App\Models\Payment;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
@@ -23,6 +24,7 @@ class AppointmentSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
         $faker = Faker::create();
 
         // Mövcud məlumatları götürürük
@@ -137,6 +139,8 @@ class AppointmentSeeder extends Seeder
 
         // Statistika göstər
         $this->showStatistics();
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
