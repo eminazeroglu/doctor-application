@@ -72,15 +72,15 @@ class Review extends Model
 
     /**
      * Rəy müəllifinin adını qaytarır.
-     * @return string
+     * @return string|null
      */
-    public function getAuthorNameAttribute(): string
+    public function getAuthorNameAttribute(): string|null
     {
         if ($this->is_anonymous) {
             return 'Anonim';
         }
 
-        return $this->patient->full_name;
+        return $this?->patient?->full_name;
     }
 
     /**
