@@ -17,21 +17,25 @@ class AppointmentResource extends JsonResource
             'uuid' => $this->uuid,
 
             // Xəstə məlumatları
-            'patient' => [
-                'id' => $this->patient->id,
-                'name' => $this->patient->user->name . ' ' . $this->patient->user->surname,
-                'email' => $this->patient->user->email,
-                'phone' => $this->patient->user->phone,
-            ],
+            'patient' => $this->whenLoaded('patient', function () {
+                return [
+                    'id' => $this->patient->id,
+                    'name' => $this->patient->user->name . ' ' . $this->patient->user->surname,
+                    'email' => $this->patient->user->email,
+                    'phone' => $this->patient->user->phone,
+                ];
+            }),
 
             // Həkim məlumatları
-            'doctor' => [
-                'id' => $this->doctor->id,
-                'name' => $this->doctor->full_name_with_title,
-                'specialty' => $this->doctor->category->name ?? null,
-                'email' => $this->doctor->user->email,
-                'phone' => $this->doctor->user->phone,
-            ],
+            'doctor' => $this->whenLoaded('doctor', function () {
+                return [
+                    'id' => $this->doctor->id,
+                    'name' => $this->doctor->full_name_with_title,
+                    'specialty' => $this->doctor->category->name ?? null,
+                    'email' => $this->doctor->user->email,
+                    'phone' => $this->doctor->user->phone,
+                ];
+            }),
 
             // Klinika məlumatları
             'clinic' => $this->when($this->clinic, [
