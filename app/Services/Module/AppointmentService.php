@@ -3,6 +3,7 @@
 namespace App\Services\Module;
 
 use App\Enums\AppointmentStatusEnum;
+use App\Enums\NotificationTypeEnum;
 use App\Exceptions\BaseException;
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
@@ -38,6 +39,15 @@ class AppointmentService extends BaseCrudService
 
         // Həkimin mövcudluğunu yoxla
         $this->checkDoctorAvailability($data);
+
+        if (!auth()->user()->hasPatient()) {
+            throw new BaseException('Sizin profiliniz pasient profili deyil');
+        }
+
+        $data['patient_id'] = auth()->user()->patient->id;
+
+        $data['appointment_status'] = AppointmentStatusEnum::Pending;
+
 
         DB::beginTransaction();
         try {
@@ -176,11 +186,12 @@ class AppointmentService extends BaseCrudService
 
         // Həkimin iş saatlarını yoxla
         $startTime = Carbon::parse($data['start_time']);
-        $dayOfWeek = $startTime->format('l'); // Monday, Tuesday, etc.
+        $dayOfWeek = (int)$startTime->format('N');
+
 
         $schedule = DoctorSchedule::query()
             ->where('doctor_id', $data['doctor_id'])
-            ->where('day_of_week', $dayOfWeek)
+            ->whereJsonContains('days', $dayOfWeek)
             ->where('is_active', true)
             ->first();
 
@@ -193,8 +204,8 @@ class AppointmentService extends BaseCrudService
         // Həkimin məşğulluğunu yoxla
         $unavailability = DoctorUnavailability::query()
             ->where('doctor_id', $data['doctor_id'])
-            ->where('start_datetime', '<=', $data['start_time'])
-            ->where('end_datetime', '>=', $data['start_time'])
+            ->where('start_time', '<=', $data['start_time'])
+            ->where('end_time', '>=', $data['start_time'])
             ->exists();
 
         if ($unavailability) {
@@ -213,7 +224,7 @@ class AppointmentService extends BaseCrudService
         $this->createReminders($appointment);
 
         // Bildirişlər göndər
-        $this->sendNotifications($appointment, 'created');
+        $this->sendNotifications($appointment);
     }
 
     /**
@@ -278,10 +289,29 @@ class AppointmentService extends BaseCrudService
     /**
      * Bildirişlər göndər
      */
-    private function sendNotifications($appointment, $type): void
+    private function sendNotifications($appointment): void
     {
         // Bu hissə bildiriş sisteminin tətbiqi üçündür
         // Mail, SMS və ya push bildirişləri göndərilə bilər
+        $appointment->doctor->user->notify(
+            type: NotificationTypeEnum::AppointmentCreated,
+            data: [
+                'title' => t('enums.notification_types.appointment_create'),
+                'content' => str(t('enums.notification_types.appointment_create_description'))
+                    ->replace(
+                        [
+                            '{fullname}',
+                            '{start_date}',
+                            '{end_date}',
+                        ],
+                        [
+                            $appointment->fullname,
+                            $appointment->start_time->format('d.m.Y H:i'),
+                            $appointment->end_time->format('d.m.Y H:i')
+                        ]
+                    ),
+            ]
+        );
     }
 
     /**
@@ -433,7 +463,7 @@ class AppointmentService extends BaseCrudService
                 'reminders'
             ])
             ->where('uuid', $uuid)
-            ->where($userType. '_id', $patientId)
+            ->where($userType . '_id', $patientId)
             ->first();
     }
 
@@ -491,7 +521,7 @@ class AppointmentService extends BaseCrudService
             $reasonTexts = [];
 
             foreach ($reasons as $reason) {
-                $reasonTexts[] = match($reason) {
+                $reasonTexts[] = match ($reason) {
                     'doctor_dislike' => 'Həkimi bəyənmirəm',
                     'time_conflict' => 'Vaxtım uyğun gəlmir',
                     'found_another_doctor' => 'Başqa həkim tapdım',

@@ -26,6 +26,10 @@ class AppointmentResource extends JsonResource
                 ];
             }),
 
+            'fullname' => $this->fullname,
+            'phone' => $this->phone,
+            'email' => $this->email,
+
             // Həkim məlumatları
             'doctor' => $this->whenLoaded('doctor', function () {
                 return [

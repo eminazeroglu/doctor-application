@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatusEnum;
 use App\Exceptions\BaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Front\AppointmentResource;
+use App\Rules\AzerbaijanPhoneRule;
 use App\Services\Module\AppointmentService;
 use App\Services\Module\ReviewService;
 use App\Traits\Controller\HasValidatesRequests;
@@ -17,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AppointmentExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Throwable;
 
 class AppointmentController extends Controller
 {
@@ -323,5 +325,37 @@ class AppointmentController extends Controller
                 'created_at' => $review->created_at
             ]
         ], 201);
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws Throwable
+     */
+    public function create(Request $request): JsonResponse
+    {
+        $validated = $this->validateRequest(
+            $request,
+            [
+                'doctor_id' => 'required|integer|exists:doctors,id',
+                'clinic_id' => 'required|integer|exists:clinics,id',
+                'service_id' => 'required|integer|exists:services,id',
+                'start_time' => ['required', 'date_format:Y-m-d H:i:s'],
+                'end_time' => ['required', 'date_format:Y-m-d H:i:s', 'after:start_time'],
+                'fullname' => ['required', 'string'],
+                'phone' => ['required', new AzerbaijanPhoneRule([
+                    'mobileOnly' => true,
+                    'strictFormat' => true
+                ])],
+                'email' => ['required', 'email'],
+                'note' => ['nullable', 'string'],
+            ]
+        );
+
+        $appointment = $this->appointmentService->create($validated);
+
+        return response()->json([
+            'status' => 'success',
+            'appointment' => $appointment
+        ]);
     }
 }

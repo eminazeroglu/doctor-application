@@ -27,7 +27,7 @@ class DoctorResource extends JsonResource
 
         // Services-i daha səmərəli şəkildə əldə edirik
         $services = $this->doctorClinics->flatMap(function ($clinic) {
-            return $clinic->services->map(function ($item) {
+            return $clinic->services->map(function ($item) use ($clinic) {
                 return [
                     'id' => $item->service->id,
                     'slug' => $item->service->slug,
@@ -35,6 +35,20 @@ class DoctorResource extends JsonResource
                 ];
             });
         })->unique('id')->values();
+
+        $clinics = $this->doctorClinics->map(function ($clinic) {
+            return [
+                'id' => $clinic->clinic?->id,
+                'name' => $clinic->clinic?->name,
+                'services' => $clinic->services->map(function ($item) {
+                    return [
+                        'id' => $item->service->id,
+                        'slug' => $item->service->slug,
+                        'name' => $item->service->name,
+                    ];
+                }),
+            ];
+        })->values();
 
         return [
             'id' => $this->id,
@@ -59,6 +73,7 @@ class DoctorResource extends JsonResource
                 'longitude' => $main_workplace['longitude'],
             ] : [],
             'services' => $services,
+            'clinics' => $clinics,
 
             // Yalnız nearest_slots property-si varsa göstər
             'nearest_appointments' => $this->when(

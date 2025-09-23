@@ -164,6 +164,9 @@ Route::controller(AppointmentController::class)
         // Randevu siyahısı
         Route::get('/', 'index')->name('appointments.index');
 
+        // Create
+        Route::post('/create', 'create')->name('appointments.create');
+
         // Filter seçimləri
         Route::get('/filters', 'getFilters')->name('appointments.filters');
 

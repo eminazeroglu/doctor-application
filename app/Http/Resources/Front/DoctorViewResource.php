@@ -60,30 +60,43 @@ class DoctorViewResource extends JsonResource
                 'description' => $i->description,
                 'is_verified' => $i->is_verified,
             ])),
-            'experiences' => $this->whenLoaded('experiences', $this->experiences->map(fn($i) => [
-                'name' => $i->workplace,
-                'position' => $i->position,
-                'duration' => $i->duration,
-                'location' => $i->location,
-            ])),
+//            'experiences' => $this->whenLoaded('experiences', $this->experiences->map(fn($i) => [
+//                'name' => $i->workplace,
+//                'position' => $i->position,
+//                'duration' => $i->duration,
+//                'location' => $i->location,
+//            ])),
             'educations' => $this->whenLoaded('educations', $this->educations->map(fn($i) => [
                 'name' => $i->university,
                 'faculty' => $i->faculty,
                 'degree' => $i->degree,
                 'duration' => $i->duration,
             ])),
-            'clinics' => $this->whenLoaded('clinics', $this->clinics->map(fn($i) => [
-                'name' => $i->name,
-                'address' => $i->address,
-                'working_hours' => $i->workingHours->map(fn($w) => [
-                    'day_of_week' => $w->day_of_week,
-                    'open_time' => $w->open_time,
-                    'close_time' => $w->close_time,
-                    'is_closed' => $w->is_closed,
-                    'day_name' => $w->day_name,
-                    'time_range' => $w->time_range,
-                ]),
-            ])),
+            'clinics' => $this->whenLoaded('doctorClinics', $this->doctorClinics->map(function($i) {
+                $clinic = $i->clinic;
+                return [
+                    'id' => $clinic->id,
+                    'name' => $clinic->name,
+                    'address' => $clinic->address,
+                    'profession' => $i->profession,
+                    'is_main_workplace' => $i->is_main_workplace,
+                    'working_hours' => $clinic->workingHours->map(fn($w) => [
+                        'day_of_week' => $w->day_of_week,
+                        'open_time' => $w->open_time,
+                        'close_time' => $w->close_time,
+                        'is_closed' => $w->is_closed,
+                        'day_name' => $w->day_name,
+                        'time_range' => $w->time_range,
+                    ]),
+                    'services' => $i->services->map(function ($item) {
+                        return [
+                            'id' => $item->service->id,
+                            'slug' => $item->service->slug,
+                            'name' => $item->service->name,
+                        ];
+                    })
+                ];
+            })),
             'main_workplace' => $main_workplace ? [
                 'slug' => $main_workplace['slug'],
                 'name' => $main_workplace['name'],

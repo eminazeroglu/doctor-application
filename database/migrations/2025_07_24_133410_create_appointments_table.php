@@ -23,6 +23,9 @@ return new class extends Migration
             $table->foreignId('clinic_id')->nullable()->constrained()->nullOnDelete(); // Klinika əlaqəsi
             $table->foreignId('service_id')->nullable()->constrained()->nullOnDelete(); // Xidmət əlaqəsi
             $table->string('appointment_status')->default(AppointmentStatusEnum::Pending); // Status əlaqəsi
+            $table->string('fullname')->nullable(); // Ad Soyad
+            $table->string('phone')->nullable(); // Telefon
+            $table->string('email')->nullable(); // Email
             $table->dateTime('start_time'); // Başlama vaxtı
             $table->dateTime('end_time'); // Bitmə vaxtı
             $table->text('complaint')->nullable(); // Şikayət

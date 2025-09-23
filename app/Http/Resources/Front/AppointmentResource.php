@@ -15,6 +15,10 @@ class AppointmentResource extends JsonResource
             'uuid' => $this->uuid,
             'id' => $this->id,
 
+            'fullname' => $this->fullname,
+            'email' => $this->email,
+            'phone' => $this->phone,
+
             // Həkim məlumatları (Screen 1 - Həkim kolonu)
             'doctor' => [
                 'id' => $this->doctor->id,

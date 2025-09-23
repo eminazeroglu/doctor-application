@@ -41,6 +41,55 @@
             "description": "Tək bir randevu-a aid bütün məlumatları əldə etmək üçün uuid göndəririk"
         },
         {
+            "path": "/app/appointments/create",
+            "method": "post",
+            "authorization": true,
+            "summary": "Randevuya yaratmaq",
+            "description": "Randevu yaratmaq üçün uuid ilə form parametirlərini göndəririk",
+            "formBody": {
+                "doctor_id": {
+                    "type": "number",
+                    "required": true,
+                    "description": "Həkim id"
+                },
+                "clinic_id": {
+                    "type": "number",
+                    "required": true,
+                    "description": "Klinika id"
+                },
+                "service_id": {
+                    "type": "number",
+                    "required": true,
+                    "description": "Xidmət id"
+                },
+                "fullname": {
+                    "type": "string",
+                    "required": true
+                },
+                "phone": {
+                    "type": "string",
+                    "required": true
+                },
+                "email": {
+                    "type": "string",
+                    "required": true
+                },
+                "note": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "date",
+                    "required": true,
+                    "description": "2025-09-02 17:20:00"
+                },
+                "end_time": {
+                    "type": "date",
+                    "required": true,
+                    "description": "2025-09-02 17:20:00"
+                }
+            }
+        },
+        {
             "path": "/app/appointments/{uuid}",
             "method": "delete",
             "authorization": true,

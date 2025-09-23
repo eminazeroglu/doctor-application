@@ -126,4 +126,20 @@ trait HasAttributes
             ->select('id')
             ->exists();
     }
+
+    /**
+     * İstifadəçinin patient sahib olub-olmadığını yoxlayır
+     *
+     * @return bool
+     */
+    public function hasPatient(): bool
+    {
+        if ($this->relationLoaded('patient')) {
+            return $this->patient !== null;
+        }
+
+        return $this->patient()
+            ->select('id')
+            ->exists();
+    }
 }
