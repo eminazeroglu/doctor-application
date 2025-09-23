@@ -81,6 +81,22 @@ class ClinicRepository extends BaseRepository
     }
 
     /**
+     * Klinika listəsini tapır
+     */
+    public function fetchClinicBySearch(): Collection
+    {
+        $query = $this->model->query();
+
+        if ($this->tableHasColumn('is_active')) {
+            $query->where('is_active', true);
+        }
+
+        $query = $this->filter->apply($query);
+
+        return $query->get();
+    }
+
+    /**
      * Filters üçün data
      */
     public function filters(): array

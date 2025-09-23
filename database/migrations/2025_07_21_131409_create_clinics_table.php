@@ -16,10 +16,14 @@ return new class extends Migration
         Schema::create('clinics', function (Blueprint $table) {
             $table->id(); // Klinikanın unikal ID-si
             $table->key(); // Unikal UUID
-            $table->string('name'); // Klinikanın adı
+            /*
+             * Name
+             * Description
+             * Address
+             * */
+            $table->translates();
             $table->string('slug')->unique(); // SEO-dostu URL
-            $table->text('description')->nullable(); // Klinika haqqında ətraflı məlumat
-            $table->string('address')->nullable(); // Klinikanın ünvanı
+            $table->foreignId('parent_id')->nullable()->constrained('clinics')->nullOnDelete(); // Əsas klinika (filiallar üçün)
             $table->foreignId('country_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('region_id')->nullable()->constrained()->nullOnDelete();
@@ -40,7 +44,6 @@ return new class extends Migration
             $table->boolean('is_featured')->default(false); // Önə çıxarılmış klinika?
             $table->boolean('is_active')->default(true); // Klinika aktivdir?
             $table->trackable(); // Yaradıcı istifadəçi
-            $table->foreignId('parent_id')->nullable()->constrained('clinics')->nullOnDelete(); // Əsas klinika (filiallar üçün)
             $table->timestamps(); // Yaradılma və yenilənmə vaxtları
             $table->softDeletes(); // Yumşaq silmə (soft delete) üçün
         });

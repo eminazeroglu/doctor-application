@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Model\HasImage;
+use App\Traits\Model\HasTranslate;
 use Illuminate\Database\Eloquent\Casts\Attribute as AttributeAlias;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Clinic extends BaseModel
 {
-    use HasImage, SoftDeletes;
+    use HasImage, SoftDeletes, HasTranslate;
 
     /**
      * Kütləvi təyin edilə bilən atributlar.
@@ -19,10 +20,8 @@ class Clinic extends BaseModel
      */
     protected $fillable = [
         'uuid',
-        'name',
         'slug',
-        'description',
-        'address',
+        'translates',
         'city_id',
         'region_id',
         'country_id',
@@ -75,6 +74,15 @@ class Clinic extends BaseModel
     protected function getSlugSourceColumn(): string
     {
         return 'name';
+    }
+
+    public function getTranslatableAttributes(): array
+    {
+        return [
+            'name',
+            'description',
+            'address',
+        ];
     }
 
     /**

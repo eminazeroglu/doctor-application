@@ -5,12 +5,14 @@ namespace App\Services\Module;
 use App\Enums\ActivityLogActionEnum;
 use App\Enums\CredentialTypeEnum;
 use App\Enums\UserStatusEnum;
+use App\Enums\UserTypeEnum;
 use App\Exceptions\BaseException;
 use App\Helpers\Helper;
 use App\Http\Resources\Admin\AuthResource;
 use App\Mail\PasswordResetMail;
 use App\Mail\WelcomeEmailMail;
 use App\Models\BlockedCredential;
+use App\Models\Patient;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Repositories\Module\UserRepository;
@@ -23,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Psr\Container\ContainerExceptionInterface;
@@ -131,6 +134,8 @@ class AuthService
 
                 $user = $this->userRepository->create($createData);
 
+                $this->createUserProfile($user);
+
                 // Qeydiyyat aktivliyini qeydə alırıq
                 $activityLogService->log(
                     action: ActivityLogActionEnum::REGISTER,
@@ -173,6 +178,90 @@ class AuthService
 
             throw $e;
         }
+    }
+
+    /**
+     * User tipinə görə müvafiq profil yaradır
+     *
+     * @param User $user
+     * @return void
+     * @throws Exception
+     */
+    private function createUserProfile(User $user): void
+    {
+        try {
+            match ($user->user_type) {
+                UserTypeEnum::Doctor => $this->createDoctorProfile($user),
+                UserTypeEnum::User => $this->createPatientProfile($user),
+                default => null
+            };
+        } catch (Exception $e) {
+            Log::error('User profili yaradılarkən xəta baş verdi', [
+                'user_id' => $user->id,
+                'user_type' => $user->user_type,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Doctor profili yaradır
+     *
+     * @param User $user
+     * @return void
+     */
+    private function createDoctorProfile(User $user): void
+    {
+        $user->doctor()->create([
+            'uuid' => Str::uuid(),
+            'biography' => null,
+            'consultation_fee' => 0,
+            'consultation_duration' => 30,
+            'working_days' => json_encode([]),
+            'is_verified' => false,
+            'is_featured' => false,
+            'years_of_experience' => null,
+            'practice_license_number' => null,
+            'title' => null,
+            'workplace' => json_encode([]),
+            'social_media_links' => json_encode([]),
+            'available_for_home_visit' => false,
+            'available_for_online_consultation' => false,
+            'home_visit_fee' => null,
+            'online_consultation_fee' => null,
+            'average_rating' => 0,
+            'total_ratings' => 0,
+            'total_patients' => 0,
+        ]);
+    }
+
+    /**
+     * Patient profili yaradır
+     *
+     * @param User $user
+     * @return void
+     */
+    private function createPatientProfile(User $user): void
+    {
+        $user->patient()->create([
+            'uuid' => Str::uuid(),
+            'medical_history' => null,
+            'allergies' => null,
+            'chronic_diseases' => null,
+            'current_medications' => null,
+            'family_medical_history' => null,
+            'additional_info' => json_encode([]),
+            'blood_type' => null,
+            'height' => null,
+            'weight' => null,
+            'emergency_contact_name' => null,
+            'emergency_contact_phone' => null,
+            'emergency_contact_relation' => null,
+            'insurance_provider' => null,
+            'insurance_policy_number' => null,
+            'insurance_expiry_date' => null,
+        ]);
     }
 
     /**

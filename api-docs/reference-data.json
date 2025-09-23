@@ -259,6 +259,18 @@
             "method": "get",
             "summary": "Attribute siyahısı",
             "description": "Bütün attributeların siyahısını qaytarır"
+        },
+        {
+            "path": "/reference-data/clinics",
+            "method": "get",
+            "summary": "Klinika siyahısı",
+            "description": "Bütün klinikaların siyahısını qaytarır",
+            "query": {
+                "search": {
+                    "type": "string",
+                    "description": "Bu ad, açıqlama və address üzrə axtarış edir"
+                }
+            }
         }
     ]
 }

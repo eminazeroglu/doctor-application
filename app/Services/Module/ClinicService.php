@@ -7,6 +7,7 @@ use App\Models\Clinic;
 use App\Repositories\Module\ClinicRepository;
 use App\Services\BaseCrudService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class ClinicService extends BaseCrudService
 {

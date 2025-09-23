@@ -150,6 +150,12 @@
                                 "required": true,
                                 "description": "İstifadəçinin şifrə təkrarı",
                                 "default": "eE12345!@#"
+                            },
+                            "user_type": {
+                                "type": "text",
+                                "required": false,
+                                "description": "İstifadəçinin şifrə təkrarı - 'user' or 'doctor'",
+                                "default": "user"
                             }
                         },
                         "responses": {
@@ -1253,13 +1259,8 @@
                             "reason": {
                                 "type": "select",
                                 "required": true,
-                                "options": [
-                                    "platform_dislike",
-                                    "no_activity",
-                                    "personal_reasons",
-                                    "other"
-                                ],
-                                "description": "Deaktivasiya səbəbi"
+                                "options": [],
+                                "description": "Deaktivasiya səbəbi - platform_dislike, no_activity, personal_reasons, other"
                             },
                             "custom_reason": {
                                 "type": "text",
@@ -1711,6 +1712,18 @@
                     "get": {
                         "summary": "Attribute siyahısı",
                         "description": "Bütün attributeların siyahısını qaytarır"
+                    }
+                },
+                "/reference-data/clinics": {
+                    "get": {
+                        "summary": "Klinika siyahısı",
+                        "description": "Bütün klinikaların siyahısını qaytarır",
+                        "query": {
+                            "search": {
+                                "type": "string",
+                                "description": "Bu ad, açıqlama və address üzrə axtarış edir"
+                            }
+                        }
                     }
                 }
             }

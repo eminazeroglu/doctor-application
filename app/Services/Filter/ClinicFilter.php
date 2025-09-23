@@ -26,7 +26,7 @@ class ClinicFilter extends BaseFilter
 
     protected function getSearchableFields(): array
     {
-        return ['name', 'description', 'address', 'phone', 'email'];
+        return ['name', 'description', 'address'];
     }
 
     /**
@@ -155,21 +155,6 @@ class ClinicFilter extends BaseFilter
         return $query->whereHas('workingHours', function ($q) use ($value) {
             $q->where('day_of_week', $value)
                 ->where('is_closed', false);
-        });
-    }
-
-    /**
-     * Çoxdilli məzmunda axtarış
-     */
-    protected function filterSearch(Builder $query, string $value): Builder
-    {
-        return $query->where(function (Builder $q) use ($value) {
-            // Əsas sahələrdə axtarış
-            $q->where('name', 'like', "%{$value}%")
-                ->orWhere('description', 'like', "%{$value}%")
-                ->orWhere('address', 'like', "%{$value}%")
-                ->orWhere('phone', 'like', "%{$value}%")
-                ->orWhere('email', 'like', "%{$value}%");
         });
     }
 }

@@ -19,29 +19,29 @@ class DatabaseSeeder extends Seeder
     {
         Cache::flush();
         if (App::environment('local')) {
-//            $this->call(UserSeeder::class);
-//            $this->call(SettingSeeder::class);
-//            $this->call(PermissionSeeder::class);
-//            $this->call(TranslationSeeder::class);
-//            $this->call(PageSeeder::class);
-//            $this->call(SeoLinkSeeder::class);
-//            $this->call(LocationSeeder::class);
-//            $this->call(AttributeSeeder::class);
-//            $this->call(CategorySeeder::class);
-//            $this->call(ServiceSeeder::class);
-//            $this->call(CommentSeeder::class);
-//            $this->call(ComplaintSeeder::class);
-//            $this->call(ClinicSeeder::class);
-//            $this->call(DoctorSeeder::class);
-//            $this->call(PatientSeeder::class);
-//            $this->call(AppointmentSeeder::class);
-//            $this->call(ReviewSeeder::class);
-//            $this->call(NotificationSeeder::class);
-//            $this->call(PaymentSeeder::class);
-//            $this->call(FaqSeeder::class);
-//            $this->call(BlogSeeder::class);
-//            $this->call(SliderSeeder::class);
-//            $this->call(TestimonialSeeder::class);
+            $this->call(UserSeeder::class);
+            $this->call(SettingSeeder::class);
+            $this->call(PermissionSeeder::class);
+            $this->call(TranslationSeeder::class);
+            $this->call(PageSeeder::class);
+            $this->call(SeoLinkSeeder::class);
+            $this->call(LocationSeeder::class);
+            $this->call(AttributeSeeder::class);
+            $this->call(CategorySeeder::class);
+            $this->call(ServiceSeeder::class);
+            $this->call(CommentSeeder::class);
+            $this->call(ComplaintSeeder::class);
+            $this->call(ClinicSeeder::class);
+            $this->call(DoctorSeeder::class);
+            $this->call(PatientSeeder::class);
+            $this->call(AppointmentSeeder::class);
+            $this->call(ReviewSeeder::class);
+            $this->call(NotificationSeeder::class);
+            $this->call(PaymentSeeder::class);
+            $this->call(FaqSeeder::class);
+            $this->call(BlogSeeder::class);
+            $this->call(SliderSeeder::class);
+            $this->call(TestimonialSeeder::class);
         }
     }
 }

@@ -74,9 +74,9 @@ class AppointmentController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'status' => 'not_found',
                 'message' => $e->getMessage()
-            ], 500);
+            ], 404);
         }
     }
 

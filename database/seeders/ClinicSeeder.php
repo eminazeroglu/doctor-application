@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\Helper;
 use App\Models\Category;
 use App\Models\Clinic;
 use App\Models\ClinicCategory;
@@ -11,6 +12,7 @@ use App\Models\ClinicWorkingHour;
 use App\Models\Country;
 use App\Models\Service;
 use App\Models\User;
+use App\Services\Module\TranslationService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -115,12 +117,19 @@ class ClinicSeeder extends Seeder
             $city = $country->cities()->inRandomOrder()->first();
             $region = $city->regions()->inRandomOrder()->first();
 
+            $translates = [];
+            foreach (app(TranslationService::class)->getActiveLanguages() as $lang) {
+                $translates[$lang->locale] = [
+                    'name' => $name . ' ' . $lang->locale,
+                    'description' => $lang->locale . '-' . $faker->paragraph(5),
+                    'address' => $lang->locale . '-' . $faker->address,
+                ];
+            }
+
             $clinic = Clinic::create([
-                'uuid' => (string) Str::uuid(),
-                'name' => $name,
+                'uuid' => (string)Str::uuid(),
+                'translates' => $translates,
                 'slug' => $slug,
-                'description' => $faker->paragraph(5),
-                'address' => $faker->address,
                 'city_id' => $city?->id,
                 'region_id' => $region?->id,
                 'country_id' => $country?->id,
@@ -322,7 +331,7 @@ class ClinicSeeder extends Seeder
 
                 // Yeni klinika yaradırıq (filial kimi)
                 $branch = Clinic::create([
-                    'uuid' => (string) Str::uuid(),
+                    'uuid' => (string)Str::uuid(),
                     'name' => $branchName,
                     'slug' => $branchSlug,
                     'description' => $faker->paragraph(3),

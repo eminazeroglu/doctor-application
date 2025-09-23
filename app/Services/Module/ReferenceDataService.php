@@ -297,7 +297,7 @@ class ReferenceDataService
      * */
     public function fetchClinics(): Collection
     {
-        return $this->clinicRepository->findActiveList();
+        return $this->clinicRepository->fetchClinicBySearch();
     }
 
 }
