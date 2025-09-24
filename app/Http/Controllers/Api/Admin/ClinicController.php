@@ -122,8 +122,10 @@ class ClinicController extends ApiController
     public function commonRules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'translates' => ['required', 'array'],
+            'translates.*.name' => ['required', 'string', 'max:255'],
+            'translates.*.description' => ['nullable', 'string'],
+            'translates.*.address' => ['nullable', 'string'],
 
             // Əlaqə məlumatları
             'phone' => 'nullable|string|max:20',
@@ -138,8 +140,9 @@ class ClinicController extends ApiController
             'postal_code' => 'nullable|string|max:10',
 
             // Koordinatlar
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'location' => ['nullable', 'array'],
+            'location.lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'location.lng' => ['nullable', 'numeric', 'between:-180,180'],
 
             // Media
             'logo_path' => 'nullable|string',
@@ -182,7 +185,7 @@ class ClinicController extends ApiController
     public function commonMessages(): array
     {
         return [
-            'name.required' => 'Klinika adı tələb olunur',
+
             'email.unique' => 'Bu email artıq istifadə olunur',
             'phone.max' => 'Telefon nömrəsi çox uzundur',
             'latitude.between' => 'Enlik dərəcəsi -90 ilə 90 arasında olmalıdır',

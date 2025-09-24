@@ -48,6 +48,7 @@ class ProfileController extends Controller
      * PUT /api/app/profile
      *
      * @throws ValidationException
+     * @throws Exception
      */
     public function update(Request $request): JsonResponse
     {
@@ -60,8 +61,8 @@ class ProfileController extends Controller
             'birthdate' => 'nullable|date'
         ]);
 
-        $user = $this->profileService->updateProfile(
-            auth()->user(),
+        $user = $this->profileService->updateGeneralInfo(
+            auth()->id(),
             $formFields
         );
 

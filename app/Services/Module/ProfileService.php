@@ -80,7 +80,8 @@ class ProfileService
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'phone' => $user->phone,
-                'address' => $user->address
+                'address' => $user->address,
+                'birthdate' => $user->birthdate,
             ];
 
             // Base64 şəkil yükləməsi üçün flag təyin et
