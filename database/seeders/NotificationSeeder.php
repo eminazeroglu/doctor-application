@@ -329,7 +329,7 @@ Doctap.az komandası',
      */
     private function createNotificationPreferences(): void
     {
-        $users = User::limit(20)->get(); // İlk 20 istifadəçi üçün
+        $users = User::query()->where('is_system', 0)->get();
 
         $preferenceTypes = [
             NotificationPreferenceTypeEnum::Appointment,
@@ -359,7 +359,7 @@ Doctap.az komandası',
      */
     private function createNotificationDevices(): void
     {
-        $users = User::limit(15)->get();
+        $users = User::query()->where('is_system', 0)->get();
 
         $deviceTypes = [
             NotificationDeviceTypeEnum::Ios,
@@ -405,7 +405,7 @@ Doctap.az komandası',
      */
     private function createSampleNotifications(): void
     {
-        $users = User::query()->where('is_system', 0)->where('user_type', UserTypeEnum::User)->limit(40)->get();
+        $users = User::query()->where('is_system', 0)->get();
 
         $notificationData = [
             [
@@ -501,7 +501,9 @@ Doctap.az komandası',
      */
     private function createNotificationLogs(): void
     {
-        $users = User::limit(20)->get();
+        $users = User::query()
+            ->where('is_system', false)
+            ->get();
         $templates = NotificationTemplate::all();
 
         $channels = [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Front;
 
+use App\Enums\AppointmentStatusEnum;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class AppointmentResource extends JsonResource
@@ -11,6 +12,14 @@ class AppointmentResource extends JsonResource
      */
     public function toArray($request): array
     {
+        $auto_declined = false;
+
+        if ($this->appointment_status === AppointmentStatusEnum::Pending &&
+            $this->start_time &&
+            $this->start_time->isPast()) {
+            $auto_declined = true;
+        }
+
         return [
             'uuid' => $this->uuid,
             'id' => $this->id,
@@ -41,6 +50,14 @@ class AppointmentResource extends JsonResource
                 'phone' => $this->clinic?->phone,
                 'logo' => $this->clinic?->logo,
             ]),
+
+            'patient' => [
+                'fullname' => $this->patient->full_name,
+                'age' => $this->patient->age,
+                'photo' => $this->patient?->user?->photo,
+                'gender' => $this->patient?->user?->gender,
+                'gender_text' => $this->patient?->user?->gender_text,
+            ],
 
             // Xidmət məlumatları
             'service' => $this->when($this->service, [
@@ -93,6 +110,8 @@ class AppointmentResource extends JsonResource
                 'cancelled_at' => $this->cancelled_at?->format('Y-m-d H:i:s'),
                 'cancelled_by' => $this->cancelled_by ?? 'patient',
             ]),
+
+            'auto_declined' => $auto_declined,
 
             // Qiymətləndir düyməsi üçün
             'can_review' => $this->canReview(),

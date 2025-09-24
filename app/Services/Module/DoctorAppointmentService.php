@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 class DoctorAppointmentService
 {
     /** user_id → doctor_id */
-    private function doctorIdByUser(int $userId): int
+    private function doctorIdByUser(int $userId)
     {
         return Doctor::where('user_id', $userId)->value('id');
     }
@@ -31,6 +31,8 @@ class DoctorAppointmentService
     public function list(int $userId, array $filters): LengthAwarePaginator
     {
         $doctorId = $this->doctorIdByUser($userId);
+
+
 
         $q = Appointment::query()
             ->with([
@@ -73,7 +75,7 @@ class DoctorAppointmentService
         if ($sort === 'start_time') {
             $q->orderBy('start_time', 'asc');
         } else {
-            $q->orderBy('start_time', 'desc');
+            $q->oldest();
         }
 
         $perPage = (int)($filters['per_page'] ?? 10);
