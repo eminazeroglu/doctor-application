@@ -413,7 +413,7 @@ class AppointmentService extends BaseCrudService
                 break;
             default:
                 // Default olaraq son 6 ay
-
+                $query->whereBetween('start_time', [$now->copy()->subMonths(6), $now]);
         }
     }
 

@@ -15,7 +15,7 @@
                 },
                 "date_range": {
                     "type": "text",
-                    "description": "Tarix aralığı"
+                    "description": "Tarix aralığı - last_week, last_month, last_three_months, last_six_months, last_year, all_time"
                 }
             }
         },
