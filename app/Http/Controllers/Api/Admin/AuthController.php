@@ -86,4 +86,13 @@ class AuthController extends Controller
         $this->authService->resendVerificationEmail($request->user());
         return response()->json(['message' => 'Verification email resent successfully']);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function loginWithToken($token): JsonResponse
+    {
+        $user = $this->authService->loginWithToken($token);
+        return response()->json($user);
+    }
 }

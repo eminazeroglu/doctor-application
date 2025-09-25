@@ -30,7 +30,7 @@
                             },
                             "date_range": {
                                 "type": "text",
-                                "description": "Tarix aralığı"
+                                "description": "Tarix aralığı - last_week, last_month, last_three_months, last_six_months, last_year, all_time"
                             }
                         }
                     }
@@ -422,6 +422,12 @@
                                 "key": "Zəhmət olmasa boş buraxmayın"
                             }
                         }
+                    }
+                },
+                "/auth/login-with-token/{token}": {
+                    "get": {
+                        "summary": "Token ilə daxil olma",
+                        "description": "Göndərilən token dəyəri ilə daxil olma"
                     }
                 }
             }

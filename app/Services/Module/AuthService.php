@@ -840,6 +840,27 @@ class AuthService
         $this->sendEmail($user, 'welcome');
     }
 
+    /**
+     * @throws Exception
+     */
+    public function loginWithToken($token): array
+    {
+        $user = User::query()->where('uuid', Helper::decrypt($token))->first();
+
+
+        if (!$user) {
+            throw new BaseException('Belə bir istifadəçi mövcud deyil');
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return [
+            'token' => $token,
+            'user' => new AuthResource($user),
+            'message' => t('notification.login_success')
+        ];
+    }
+
 
     public function sendEmail($user, $type, $params = []): void
     {

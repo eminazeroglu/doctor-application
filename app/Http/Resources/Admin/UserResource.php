@@ -15,10 +15,14 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $setting = setting('info');
+
+
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
-            'login_as' => Helper::encrypt($this->uuid),
+            'login_as' => $setting['front_url'] . '/login-with-token/' . Helper::encrypt($this->uuid),
             'photo' => $this->photo,
             'code' => $this->code,
             'email' => $this->email,

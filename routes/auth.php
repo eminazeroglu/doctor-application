@@ -14,6 +14,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('reset-password', 'resetPassword');
     Route::post('email/verify', 'verifyEmail');
     Route::post('email/resend', 'resendVerificationEmail')->middleware('auth:sanctum');
+    Route::get('login-with-token/{token}', 'loginWithToken')->middleware('auth:sanctum');
 
     Route::prefix('social')->group(function () {
         Route::post('redirect', [SocialLoginController::class, 'redirect'])

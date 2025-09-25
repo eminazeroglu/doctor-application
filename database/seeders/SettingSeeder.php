@@ -55,6 +55,7 @@ class SettingSeeder extends Seeder
                     'address' => 'Baku city',
                 ]
             ],
+            'front_url' => 'https://doctap.az/az',
             'logo' => 'logo.svg',
             'logo_dark' => 'logo.svg',
             'mobile_logo' => 'mobile_logo.svg',
