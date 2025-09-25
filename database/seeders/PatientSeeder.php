@@ -12,6 +12,8 @@ use App\Models\Patient;
 use App\Models\PatientAllergy;
 use App\Models\PatientDocument;
 use App\Models\PatientFamilyMember;
+use App\Models\PatientFavoriteClinic;
+use App\Models\PatientFavoriteDoctor;
 use App\Models\PatientMedicalRecord;
 use App\Models\PatientMedication;
 use App\Models\Service;
@@ -38,6 +40,13 @@ class PatientSeeder extends Seeder
             $categories = Category::take(10)->get();
 
             User::query()->where('user_type', UserTypeEnum::User)->where('is_system', false)->delete();
+            PatientAllergy::query()->truncate();
+            PatientDocument::query()->truncate();
+            PatientFamilyMember::query()->truncate();
+            PatientFavoriteClinic::query()->truncate();
+            PatientFavoriteDoctor::query()->truncate();
+            PatientMedicalRecord::query()->truncate();
+            PatientMedication::query()->truncate();
             Patient::query()->truncate();
 
             if ($doctors->isEmpty() || $clinics->isEmpty() || $services->isEmpty()) {
