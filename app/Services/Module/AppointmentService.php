@@ -380,7 +380,7 @@ class AppointmentService extends BaseCrudService
         $sortField = $filters['sort'] ?? 'start_time';
         $direction = $filters['direction'] ?? 'desc';
         //$query->orderBy($sortField, $direction);
-        $query->oldest();
+        $query->latest();
 
         return $query->paginate($filters['per_page'] ?? 15);
     }
@@ -413,7 +413,7 @@ class AppointmentService extends BaseCrudService
                 break;
             default:
                 // Default olaraq son 6 ay
-                $query->whereBetween('start_time', [$now->copy()->subMonths(6), $now]);
+                $query->whereBetween('start_time', [$now->copy()->subMonths(6), $now->copy()->addDay()]);
         }
     }
 
