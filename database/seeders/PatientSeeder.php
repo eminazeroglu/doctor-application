@@ -38,6 +38,7 @@ class PatientSeeder extends Seeder
             $categories = Category::take(10)->get();
 
             User::query()->where('user_type', UserTypeEnum::User)->where('is_system', false)->delete();
+            Patient::query()->truncate();
 
             if ($doctors->isEmpty() || $clinics->isEmpty() || $services->isEmpty()) {
                 $this->command->error('Doctors, Clinics və ya Services tapılmadı. Əvvəlcə onları yaradın.');
