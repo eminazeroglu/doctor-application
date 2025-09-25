@@ -6,6 +6,8 @@ use App\Enums\AppointmentStatusEnum;
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Models\Appointment;
+use App\Models\AppointmentRecurring;
+use App\Models\AppointmentReminder;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Clinic;
@@ -32,6 +34,10 @@ class AppointmentSeeder extends Seeder
         $patients = Patient::with('user')->get();
         $clinics = Clinic::get();
         $services = Service::get();
+
+        AppointmentRecurring::query()->truncate();
+        AppointmentReminder::query()->truncate();
+        Appointment::query()->truncate();
 
         if ($doctors->isEmpty() || $patients->isEmpty() || $clinics->isEmpty()) {
             $this->command->warn('Doctor, Patient və ya Clinic məlumatları tapılmadı. Əvvəlcə onları yaradın.');
