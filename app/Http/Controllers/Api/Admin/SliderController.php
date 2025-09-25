@@ -19,7 +19,7 @@ class SliderController extends ApiController
     public function commonRules(): array
     {
         return [
-            'photo_path' => ['required', 'string', new ImageBase64Rule, new Base64ImageControlRule],
+            'photo_path' => [request()->id ? 'nullable' : 'required', 'string', new ImageBase64Rule, new Base64ImageControlRule],
             'translates' => ['required', 'array'],
             'translates.*.title' => ['required', 'string', 'max:255'],
             'translates.*.description' => ['required', 'string'],
