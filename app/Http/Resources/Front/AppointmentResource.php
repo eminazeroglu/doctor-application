@@ -29,42 +29,50 @@ class AppointmentResource extends JsonResource
             'phone' => $this->phone,
 
             // Həkim məlumatları (Screen 1 - Həkim kolonu)
-            'doctor' => [
-                'id' => $this->doctor->id,
-                'uuid' => $this->doctor->uuid,
-                'name' => $this->doctor->user->fullname,
-                'title' => $this->doctor->title,
-                'full_name_with_title' => $this->doctor->full_name_with_title,
-                'photo' => $this->doctor->user->photo,
-                'specialization' => $this->doctor->category?->name,
-                'rating' => $this->doctor->rating_average,
-                'experience_years' => $this->doctor->years_of_experience,
-            ],
+            'doctor' => $this->whenLoaded('doctor', function () {
+                return [
+                    'id' => $this->doctor->id,
+                    'uuid' => $this->doctor->uuid,
+                    'name' => $this->doctor->user->fullname,
+                    'title' => $this->doctor->title,
+                    'full_name_with_title' => $this->doctor->full_name_with_title,
+                    'photo' => $this->doctor->user->photo,
+                    'specialization' => $this->doctor->category?->name,
+                    'rating' => $this->doctor->rating_average,
+                    'experience_years' => $this->doctor->years_of_experience,
+                ];
+            }),
 
             // Klinika məlumatları
-            'clinic' => $this->when($this->clinic, [
-                'id' => $this->clinic?->id,
-                'uuid' => $this->clinic?->uuid,
-                'name' => $this->clinic?->name,
-                'address' => $this->clinic?->address,
-                'phone' => $this->clinic?->phone,
-                'logo' => $this->clinic?->logo,
-            ]),
+            'clinic' => $this->whenLoaded('clinic', function () {
+                return [
+                    'id' => $this->clinic?->id,
+                    'uuid' => $this->clinic?->uuid,
+                    'name' => $this->clinic?->name,
+                    'address' => $this->clinic?->address,
+                    'phone' => $this->clinic?->phone,
+                    'logo' => $this->clinic?->logo,
+                ];
+            }),
 
-            'patient' => [
-                'fullname' => $this->patient->full_name,
-                'age' => $this->patient->age,
-                'photo' => $this->patient?->user?->photo,
-                'gender' => $this->patient?->user?->gender,
-                'gender_text' => $this->patient?->user?->gender_text,
-            ],
+            'patient' => $this->whenLoaded('patient', function () {
+                return [
+                    'fullname' => $this->patient->full_name,
+                    'age' => $this->patient->age,
+                    'photo' => $this->patient?->user?->photo,
+                    'gender' => $this->patient?->user?->gender,
+                    'gender_text' => $this->patient?->user?->gender_text,
+                ];
+            }),
 
             // Xidmət məlumatları
-            'service' => $this->when($this->service, [
-                'id' => $this->service?->id,
-                'name' => $this->service?->name,
-                'duration' => $this->service?->duration,
-            ]),
+            'service' => $this->whenLoaded('service', function () {
+                return [
+                    'id' => $this->service?->id,
+                    'name' => $this->service?->name,
+                    'duration' => $this->service?->duration,
+                ];
+            }),
 
             // Randevu vaxtı (Screen 1 - Randevu vaxtı kolonu)
             'appointment_time' => [
