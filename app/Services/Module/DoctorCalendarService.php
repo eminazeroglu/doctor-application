@@ -127,8 +127,8 @@ class DoctorCalendarService
             });
 
             foreach ($range as $d) {
-                $start = Carbon::parse($d->toDateString() . ' ' . $s->from_time);
-                $end = Carbon::parse($d->toDateString() . ' ' . $s->to_time);
+                $start = Carbon::parse($d->toDateString() . ' ' . $s->from_time->format('H:i:s'));
+                $end = Carbon::parse($d->toDateString() . ' ' . $s->to_time->format('H:i:s'));
                 $scheduleEvents->push([
                     'id' => $s->id,
                     'type' => 'schedule',

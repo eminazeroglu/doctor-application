@@ -15,7 +15,7 @@ class PasswordResetMail extends Mailable
     public $token;
     public $verificationUrl;
 
-    public function __construct($token, $code, $verificationUrl)
+    public function __construct($token, $code, $verificationUrl = null)
     {
         $this->token = $token;
         $this->code = $code;
@@ -31,7 +31,7 @@ class PasswordResetMail extends Mailable
             ->subject('Şifrə sıfırlamaq')
             ->with([
                 'code' => $this->code,
-                'resetLink' => $this->verificationUrl . '/auth/reset-password/'.$this->token
+                'resetLink' => $this->verificationUrl ? $this->verificationUrl . '/auth/reset-password/'.$this->token : null
             ]);
     }
 }
