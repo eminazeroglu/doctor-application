@@ -44,10 +44,11 @@ class UserSeeder extends Seeder
             'email' => 'user@example.com',
             'password' => bcrypt('password123'),
             'status' => UserStatusEnum::Active,
+            'is_system' => true,
         ]);
 
         // 50 adi istifadəçi yaratmaq
-        User::factory()->count(50)->create();
+       // User::factory()->count(50)->create();
 
         $this->createLoginHistory();
         $this->createPreferences();
