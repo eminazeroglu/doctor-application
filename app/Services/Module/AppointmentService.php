@@ -379,7 +379,8 @@ class AppointmentService extends BaseCrudService
         // Sıralama
         $sortField = $filters['sort'] ?? 'start_time';
         $direction = $filters['direction'] ?? 'desc';
-        $query->orderBy($sortField, $direction);
+        //$query->orderBy($sortField, $direction);
+        $query->oldest();
 
         return $query->paginate($filters['per_page'] ?? 15);
     }
