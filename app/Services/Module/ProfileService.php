@@ -549,14 +549,13 @@ class ProfileService
     public function getDoctorExperiences(Doctor $doctor): Collection
     {
         return $doctor->doctorClinics()->with('services')->get();
-        return $doctor->experiences()->orderBy('start_date', 'desc')->get();
     }
 
     /**
      * Həkimin bütün iş təcrübəsi məlumatlarını sinxronlaşdırır (bulk sync)
      * @throws Exception
      */
-    public function syncDoctorExperiences(Doctor $doctor, array $experiencesData)
+    public function syncDoctorExperiences(Doctor $doctor, array $experiencesData): Collection
     {
 
         try {

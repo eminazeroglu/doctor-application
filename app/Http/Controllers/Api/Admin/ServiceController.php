@@ -18,8 +18,8 @@ class ServiceController extends ApiController
         return [
             'category_id' => 'required|exists:categories,id',
             'translates' => 'required|array',
-            'translates.az.name' => 'required|string|max:255',
-            'translates.az.description' => 'required|string',
+            'translates.*.name' => 'required|string|max:255',
+            'translates.*.description' => 'required|string',
             'price' => 'nullable|numeric|min:0',
             'duration' => 'nullable|integer|min:1',
             'is_popular' => 'boolean',
