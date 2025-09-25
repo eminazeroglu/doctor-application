@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class PatientFavoriteDoctor extends Pivot
 {
+    protected $table = 'patient_favorite_doctors';
     /**
      * Kütləvi təyin edilə bilən atributlar.
      * @var array

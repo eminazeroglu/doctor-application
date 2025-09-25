@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class PatientSeeder extends Seeder
@@ -30,6 +31,7 @@ class PatientSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
         DB::beginTransaction();
 
         try {
@@ -95,6 +97,8 @@ class PatientSeeder extends Seeder
             $this->command->error('Xəta baş verdi: ' . $e->getMessage());
             throw $e;
         }
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
