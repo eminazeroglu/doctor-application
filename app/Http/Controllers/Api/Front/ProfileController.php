@@ -368,7 +368,12 @@ class ProfileController extends Controller
                 'clinic_id' => $i->clinic_id,
                 'profession' => $i->profession,
                 'work_time' => $i->work_time,
-                'services' => $i->services()->pluck('id')->toArray(),
+                'services' => $i->services()->with('service')->get()->map(function ($item) {
+                    return [
+                        'id' => $item->service->id,
+                        'name' => $item->service->name,
+                    ];
+                }),
             ];
 
             if (!$i->clinic_id && $i->custom_clinic && $i->custom_clinic->name) {
