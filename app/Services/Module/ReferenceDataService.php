@@ -2,11 +2,14 @@
 
 namespace App\Services\Module;
 
+use App\Enums\AppointmentDoctorCancelReason;
+use App\Enums\AppointmentUserCancelReason;
 use App\Enums\GenderEnum;
 use App\Enums\ImageWatermarkPositionEnum;
 use App\Enums\TimeOfDayEnum;
 use App\Enums\UserStatusEnum;
 use App\Enums\UserTypeEnum;
+use App\Exceptions\BaseException;
 use App\Http\Resources\Admin\BaseResource;
 use App\Models\Language;
 use App\Models\Role;
@@ -298,6 +301,30 @@ class ReferenceDataService
     public function fetchClinics(): Collection
     {
         return $this->clinicRepository->fetchClinicBySearch();
+    }
+
+    /**
+     * Appointment Cancel Reasons
+     *
+     * @throws BaseException
+     */
+    public function fetchAppointmentCancelReasons($type): \Illuminate\Support\Collection
+    {
+        if ($type === 'user') {
+            return collect(AppointmentUserCancelReason::getValues())->map(fn($i) => [
+                'id' => $i,
+                'name' => AppointmentUserCancelReason::getDescription($i)
+            ]);
+        }
+        else if ($type === 'doctor') {
+            return collect(AppointmentDoctorCancelReason::getValues())->map(fn($i) => [
+                'id' => $i,
+                'name' => AppointmentDoctorCancelReason::getDescription($i)
+            ]);
+        }
+        else {
+            throw new BaseException('Göndərilən type uyğun deyil');
+        }
     }
 
 }

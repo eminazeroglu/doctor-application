@@ -271,6 +271,12 @@
                     "description": "Bu ad, açıqlama və address üzrə axtarış edir"
                 }
             }
+        },
+        {
+            "path": "/reference-data/appointment-cancel-reasons/{type}",
+            "method": "get",
+            "summary": "Randevu ləğv səbəbləri",
+            "description": "Randevular üçün bütün ləğv səbəblərinin siyahısını qaytarır"
         }
     ]
 }

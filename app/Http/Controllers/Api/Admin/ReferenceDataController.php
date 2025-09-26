@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\BaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\CategoryAttributeResource;
 use App\Http\Resources\Admin\LocationResource;
@@ -242,5 +243,14 @@ class ReferenceDataController extends Controller
         return response()->json(ReferenceResource::collection($this->service->fetchClinics()));
     }
 
+    /**
+     * Appointment Cancel Reason
+     *
+     * @throws BaseException
+     */
+    public function appointmentCancelReasons($type): JsonResponse
+    {
+        return response()->json($this->service->fetchAppointmentCancelReasons($type));
+    }
 
 }

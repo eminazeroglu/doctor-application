@@ -35,4 +35,5 @@ Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/regions/{uuid}/subways', 'regionWithSubways')->name('regionWithSubways');
     Route::get('/regions/{uuid}/subways', 'regionWithSubways')->name('regionWithSubways');
     Route::get('/clinics', 'clinics')->name('clinics');
+    Route::get('/appointment-cancel-reasons/{type}', 'appointmentCancelReasons')->name('appointmentCancelReasons');
 });

@@ -1780,6 +1780,12 @@
                             }
                         }
                     }
+                },
+                "/reference-data/appointment-cancel-reasons/{type}": {
+                    "get": {
+                        "summary": "Randevu ləğv səbəbləri",
+                        "description": "Randevular üçün bütün ləğv səbəblərinin siyahısını qaytarır"
+                    }
                 }
             }
         }
