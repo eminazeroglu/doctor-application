@@ -165,16 +165,16 @@ class ReferenceDataService
 
         return [
             'app_link' => [
-                'google' => $info['google_app_link'],
-                'apple' => $info['apple_app_link'],
+                'google' => @$info['google_app_link'],
+                'apple' => @$info['apple_app_link'],
             ],
-            'join_us_wallpaper' => $info['join_us_wallpaper_path'],
+            'join_us_wallpaper' => @$info['join_us_wallpaper_path'],
             'testimonials' => $testimonials,
             'homeStatistic' => [
-                'clinic_count' => $homeStatistic['clinic_count'],
-                'doctor_count' => $homeStatistic['doctor_count'],
-                'patient_count' => $homeStatistic['patient_count'],
-                'practicing_doctor_count' => $homeStatistic['practicing_doctor_count']
+                'clinic_count' => @$homeStatistic['clinic_count'],
+                'doctor_count' => @$homeStatistic['doctor_count'],
+                'patient_count' => @$homeStatistic['patient_count'],
+                'practicing_doctor_count' => @$homeStatistic['practicing_doctor_count']
             ],
             'sliders' => $sliders
         ];
