@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         registerCustomMiddleware($middleware);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        if (Env::get('APP_ENV') === 'local') {
+        if (Env::get('APP_ENV') === 'local' || Env::get('APP_DEBUG') === true) {
             return $exceptions;
         }
 
