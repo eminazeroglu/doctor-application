@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Enums\AppointmentStatusEnum;
+use App\Enums\AppointmentUserCancelReason;
 use App\Exceptions\BaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Front\AppointmentResource;
@@ -209,7 +210,7 @@ class AppointmentController extends Controller
             $request,
             [
                 'reasons' => 'required|array|min:1',
-                'reasons.*' => 'string|in:doctor_dislike,time_conflict,found_another_doctor,personal_reason,other',
+                'reasons.*' => 'string|in:' . implode(',', AppointmentUserCancelReason::getValues()),
                 'custom_reason' => 'nullable|string|max:500',
                 'note' => 'nullable|string|max:1000'
             ],

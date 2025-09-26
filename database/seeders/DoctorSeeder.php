@@ -255,7 +255,7 @@ class DoctorSeeder extends Seeder
 
     private function createDoctors(int $count): void
     {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->where('parent_id', 0)->get();
         if ($categories->isEmpty()) {
             $this->command->info('Kateqoriya tapılmadı! Əvvəl CategorySeeder işə salın.');
             return;

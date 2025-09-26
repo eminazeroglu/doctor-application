@@ -2,6 +2,7 @@
 
 namespace App\Services\Module;
 
+use App\Enums\AttributeTypeEnum;
 use App\Enums\UserStatusEnum;
 use App\Exceptions\BaseException;
 use App\Mail\WelcomeEmailMail;
@@ -60,7 +61,7 @@ class ProfileService
      * @return Model
      * @throws Exception
      */
-    public function updateGeneralInfo(int $userId, array $data): Model
+    public function updateGeneralInfo(int $userId, array $data, $isAdmin): Model
     {
         try {
             DB::beginTransaction();
@@ -68,21 +69,31 @@ class ProfileService
             // İstifadəçini tap
             $user = $this->userRepository->findById($userId);
 
-            // Meta məlumatlarını hazırla
-            $metaData = [
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'updated_fields' => array_keys($data)
-            ];
+            if (!$isAdmin) {
+                // Meta məlumatlarını hazırla
+                $metaData = [
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'updated_fields' => array_keys($data)
+                ];
 
-            // Köhnə məlumatları saxla (log üçün)
-            $oldData = [
-                'name' => $user->name,
-                'surname' => $user->surname,
-                'phone' => $user->phone,
-                'address' => $user->address,
-                'birthdate' => $user->birthdate,
-            ];
+                // Köhnə məlumatları saxla (log üçün)
+                $oldData = [
+                    'name' => $user->name,
+                    'surname' => $user->surname,
+                    'phone' => $user->phone,
+                    'address' => $user->address,
+                    'birthdate' => $user->birthdate,
+                ];
+                // Activity log
+                $this->activityLogService->log(
+                    action: 'profile_general_updated',
+                    model: $user,
+                    oldData: $oldData,
+                    newData: $data,
+                    additionalData: $metaData
+                );
+            }
 
             // Base64 şəkil yükləməsi üçün flag təyin et
             if (isset($data['photo_path']) && str_starts_with($data['photo_path'], 'data:image')) {
@@ -91,15 +102,6 @@ class ProfileService
 
             // İstifadəçi məlumatlarını yenilə
             $user = $this->userRepository->update($userId, $data);
-
-            // Activity log
-            $this->activityLogService->log(
-                action: 'profile_general_updated',
-                model: $user,
-                oldData: $oldData,
-                newData: $data,
-                additionalData: $metaData
-            );
 
             DB::commit();
 
@@ -128,41 +130,44 @@ class ProfileService
      * @throws BaseException
      * @throws Exception
      */
-    public function updateAccountSettings(User $user, array $data): User
+    public function updateAccountSettings(User $user, array $data, $isAdmin): User
     {
         try {
             DB::beginTransaction();
 
             $oldEmail = $user->email;
             $emailChanged = isset($data['email']) && $data['email'] !== $oldEmail;
-            $passwordChanged = isset($data['password']) && !empty($data['password']);
+            $passwordChanged = !empty($data['password']);
 
             // Email və ya şifrə dəyişərkən current_password mütləqdir
-            if ($emailChanged || $passwordChanged) {
+            if (($emailChanged || $passwordChanged) && !$isAdmin) {
                 if (empty($data['current_password'])) {
                     throw new BaseException([
-                        'current_password' => t('validation.current_password.required')
+                        'current_password' => trans('validation.current_password.required')
                     ], 422);
                 }
 
                 if (!Hash::check($data['current_password'], $user->password)) {
                     throw new BaseException([
-                        'current_password' => t('validation.current_password.incorrect')
+                        'current_password' => trans('validation.current_password.incorrect')
                     ], 422);
                 }
             }
 
             // Şifrə dəyişirsə, hash-lə
+            $data['password'] = $user->password;
             if ($passwordChanged) {
                 $data['password'] = Hash::make($data['password']);
 
-                // Bütün tokenləri sil (təhlükəsizlik üçün)
-                $user->tokens()->delete();
+                if (!$isAdmin) {
+                    // Bütün tokenləri sil (təhlükəsizlik üçün)
+                    $user->tokens()->delete();
+                }
             }
 
             // Email dəyişibsə verification parametrlərini təyin et
             if ($emailChanged) {
-                $data['is_active'] = 0;
+                $data['status'] = UserStatusEnum::PendingMail;
                 $data['email_verified_at'] = null;
             }
 
@@ -225,7 +230,7 @@ class ProfileService
 
             // Hesabı deaktiv et
             $user->update([
-                'is_active' => false
+                'status' => UserStatusEnum::Inactive,
             ]);
 
             // Bütün tokenləri sil
@@ -433,10 +438,29 @@ class ProfileService
      */
     public function getDoctorSkills(Doctor $doctor): array
     {
+        $attributes = $doctor->attributes
+            ->groupBy('attribute_id')
+            ->map(function ($attributeGroup, $attributeId) {
+                $optionIds = $attributeGroup->pluck('attribute_option_id')->filter()->values();
+                $values = $attributeGroup->whereNull('attribute_option_id')->pluck('value')->filter()->values();
+
+                $firstItem = $attributeGroup->first();
+                $type = $firstItem?->attribute?->type;
+
+                $isMultiSelect = $type === AttributeTypeEnum::MultiSelect || $optionIds->count() > 1;
+
+                return [
+                    'attribute_id' => $attributeId,
+                    ...($isMultiSelect) ? ['attribute_option_id' => $optionIds->toArray()] : ['attribute_option_id' => $optionIds->first()],
+                    'value' => $values->first(),
+                ];
+            })
+            ->values();
+
         return [
             'category_id' => $doctor->category_id,
             'sub_category_id' => $doctor->sub_category_id,
-            'attributes' => $doctor->attributes,
+            'attributes' => $attributes,
         ];
     }
 
@@ -444,19 +468,33 @@ class ProfileService
      * Həkimin bütün xidmətlərini sinxronlaşdırır (bulk sync)
      * @throws BaseException|Exception
      */
-    public function syncDoctorSkills(Doctor $doctor, array $data): array
+    public function syncDoctorSkills(Doctor $doctor, array $data, $isAdmin): array
     {
         try {
             DB::beginTransaction();
 
             $doctor->update([
                 'category_id' => $data['category_id'],
-                'sub_category_id' => $data['sub_category_id'],
+                //'sub_category_id' => $data['sub_category_id'],
             ]);
 
-            $doctor->attributes()->delete();
+            if (count($data['attributes']) > 0) {
+                $doctor->attributes()->delete();
 
-            $doctor->attributes()->createMany($data['attributes']);
+                foreach ($data['attributes'] as $attribute) {
+                    if (is_array($attribute['attribute_option_id'])) {
+                        foreach ($attribute['attribute_option_id'] as $aoi) {
+                            $doctor->attributes()->create([
+                                'attribute_id' => $attribute['attribute_id'],
+                                'attribute_option_id' => $aoi,
+                            ]);
+                        }
+                    }
+                    else {
+                        $doctor->attributes()->create($attribute);
+                    }
+                }
+            }
 
             DB::commit();
 

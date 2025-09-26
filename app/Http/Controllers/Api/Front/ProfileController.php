@@ -11,6 +11,7 @@ use App\Http\Resources\Front\DoctorLanguageResource;
 use App\Http\Resources\Front\DoctorServiceResource;
 use App\Http\Resources\Front\UserResource;
 use App\Http\Resources\Admin\UserPreferenceResource;
+use App\Models\User;
 use App\Services\Module\ProfileService;
 use App\Traits\Controller\HasValidatesRequests;
 use Exception;
@@ -23,11 +24,14 @@ class ProfileController extends Controller
 {
     use HasValidatesRequests;
 
+    public $isAdmin = false;
+
     public ProfileService $profileService;
 
     public function __construct(ProfileService $profileService)
     {
         $this->profileService = $profileService;
+        $this->isAdmin = auth()->user()->hasPermission('doctor_update');
     }
 
     /**
@@ -52,18 +56,21 @@ class ProfileController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
+        $userId = $this->isAdmin ? request()->user_id : auth()->id();
+
         $formFields = $this->validateRequest($request, [
             'name' => 'required|string|max:255',
             'surname' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:users,phone,' . auth()->id(),
+            'phone' => 'required|string|max:20|unique:users,phone,' . $userId,
             'photo_path' => 'nullable|string',
             'gender' => 'nullable|in:male,female',
             'birthdate' => 'nullable|date'
         ]);
 
         $user = $this->profileService->updateGeneralInfo(
-            auth()->id(),
-            $formFields
+            $userId,
+            $formFields,
+            $this->isAdmin
         );
 
         return response()->json([
@@ -83,24 +90,29 @@ class ProfileController extends Controller
     {
         // Email və ya şifrə dəyişərkən current_password mütləqdir
         $currentUser = auth()->user();
+
+        if ($this->isAdmin && request()->has('user_id')) {
+            $currentUser = User::query()->findOrFail(request()->user_id);
+        }
+
         $emailChanging = $request->has('email') && $request->input('email') !== $currentUser->email;
         $passwordChanging = $request->has('password') && !empty($request->input('password'));
 
         $rules = [
-            'email' => 'required|string|email|max:255|unique:users,email,' . auth()->id(),
-            'password' => 'nullable|string|min:8|confirmed',
+            'email' => 'required|string|email|max:255|unique:users,email,' . ($this->isAdmin ? request()->user_id : auth()->id()),
+            'password' => 'nullable|string|min:8' . ($this->isAdmin ? '' : '|confirmed'),
         ];
 
         $messages = [
             'email.required' => t('validation.email.required'),
             'email.email' => t('validation.email.email'),
             'email.unique' => t('validation.email.unique'),
-            'password.min' => t('validation.password.min'),
+            'password.min' => t_replace('validation.password.min_length', [':length' => 8]),
             'password.confirmed' => t('validation.password.confirmed')
         ];
 
         // Email dəyişirsə və ya şifrə dəyişirsə current_password mütləqdir və düzgün olmalıdır
-        if ($emailChanging || $passwordChanging) {
+        if (($emailChanging || $passwordChanging) && !$this->isAdmin) {
             $rules['current_password'] = [
                 'required',
                 'string',
@@ -115,9 +127,14 @@ class ProfileController extends Controller
 
         $formFields = $this->validateRequest($request, $rules, $messages);
 
+        if ($this->isAdmin && request()->has('user_id')) {
+            $formFields['user_id'] = request()->user_id;
+        }
+
         $user = $this->profileService->updateAccountSettings(
-            auth()->user(),
-            $formFields
+            $currentUser,
+            $formFields,
+            $this->isAdmin
         );
 
         return response()->json([
@@ -186,7 +203,7 @@ class ProfileController extends Controller
      */
     public function updateAvatar(Request $request): JsonResponse
     {
-        $formFields = $this->validateRequest($request, [
+        $this->validateRequest($request, [
             'photo_path' => 'required|string'
         ]);
 
@@ -272,22 +289,32 @@ class ProfileController extends Controller
      * @throws BaseException
      * @throws ValidationException
      */
-    public function updateDoctorSkills(Request $request): JsonResponse
+    public function updateDoctorSkills(Request $request)
     {
         $this->ensureUserIsDoctor();
 
         $formFields = $this->validateRequest($request, [
             'category_id' => 'required|exists:categories,id',
-            'sub_category_id' => 'required|exists:categories,id',
+            //'sub_category_id' => 'required|exists:categories,id',
             'attributes' => 'required|array',
             'attributes.*.attribute_id' => 'required|exists:attributes,id',
             'attributes.*.attribute_option_id' => 'nullable|exists:attribute_options,id',
             'attributes.*.value' => 'nullable',
         ]);
 
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && $request->has('user_id')) {
+            $user = User::query()->find($request->user_id);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
         $skills = $this->profileService->syncDoctorSkills(
-            auth()->user()->doctor,
-            $formFields
+            $doctor,
+            $formFields,
+            $this->isAdmin
         );
 
         return response()->json($skills);
@@ -494,7 +521,13 @@ class ProfileController extends Controller
      */
     private function ensureUserIsDoctor(): void
     {
-        if (!auth()->user()->hasDoctor()) {
+        $user = auth()->user();
+
+        if ($this->isAdmin && request()->has('user_id')) {
+            $user = User::query()->find(request()->user_id);
+        }
+
+        if (!$user->hasDoctor()) {
             throw new BaseException(t('validation.user.not_doctor'), 403);
         }
     }

@@ -48,6 +48,7 @@ class User extends Authenticatable
         'address',
         'is_system',
         'photo_path',
+        'birthdate',
         'status',
         'email_verified_at',
         'user_type',

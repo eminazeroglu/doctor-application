@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Enums\AttributeTypeEnum;
 use App\Http\Resources\Front\DoctorScheduleResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -20,16 +21,19 @@ class DoctorResource extends JsonResource
             'uuid' => $this->uuid,
 
             // İstifadəçi məlumatları
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'surname' => $this->user->surname,
-                'fullname' => $this->user->fullname,
-                'email' => $this->user->email,
-                'phone' => $this->user->phone,
-                'gender' => $this->user->gender,
-                'photo' => $this->user->photo,
-            ],
+            'user' => $this->whenLoaded('user', function () {
+                return [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                    'surname' => $this->user->surname,
+                    'fullname' => $this->user->fullname,
+                    'email' => $this->user->email,
+                    'phone' => $this->user->phone,
+                    'gender' => $this->user->gender,
+                    'photo' => $this->user->photo,
+                    'birthdate' => $this->user->birthdate,
+                ];
+            }),
 
             // Əsas məlumatlar
             'title' => $this->title,
@@ -37,6 +41,29 @@ class DoctorResource extends JsonResource
             'biography' => $this->biography,
             'years_of_experience' => $this->years_of_experience,
             'practice_license_number' => $this->practice_license_number,
+
+
+            'attributes' => $this->whenLoaded('attributes', function () {
+                return $this->attributes
+                    ->groupBy('attribute_id')
+                    ->map(function ($attributeGroup, $attributeId) {
+                        $optionIds = $attributeGroup->pluck('attribute_option_id')->filter()->values();
+                        $values = $attributeGroup->whereNull('attribute_option_id')->pluck('value')->filter()->values();
+
+                        // İlk item-dan attribute type-ını al
+                        $firstItem = $attributeGroup->first();
+                        $type = $firstItem?->attribute?->type;
+
+                        $isMultiSelect = $type === AttributeTypeEnum::MultiSelect || $optionIds->count() > 1;
+
+                        return [
+                            'attribute_id' => $attributeId,
+                            ...($isMultiSelect) ? ['attribute_option_id' => $optionIds->toArray()] : ['attribute_option_id' => $optionIds->first()],
+                            'value' => $values->first(),
+                        ];
+                    })
+                    ->values();
+            }),
 
             // İxtisaslar
             'category' => $this->whenLoaded('category', function() {

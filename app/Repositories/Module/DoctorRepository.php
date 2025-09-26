@@ -22,6 +22,8 @@ class DoctorRepository extends BaseRepository
             'educations',
             'experiences',
             'certificates',
+            'certificates',
+            'attributes.attribute',
             'languages',
             'clinics',
             'schedules.clinic',

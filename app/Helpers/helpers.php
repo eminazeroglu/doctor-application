@@ -14,6 +14,20 @@ if (!function_exists('t')) {
     }
 }
 
+if (!function_exists('t_replace')) {
+    function t_replace($key, $replacement, $locale = null, $default = null)
+    {
+        $locale = $locale ?: Helper::language();
+        $translation = t($key, $locale, $default);
+        if (count($replacement) > 0) {
+            foreach ($replacement as $key => $value) {
+                $translation = str_replace($key, $value, $translation);
+            }
+        }
+        return $translation;
+    }
+}
+
 if (!function_exists('currentLang')) {
     function currentLang(): string
     {
