@@ -602,7 +602,33 @@ class ProfileService
             $doctor->doctorClinics()->delete();
 
             foreach ($experiencesData as $item) {
-                $doctor->doctorClinics()->create($item);
+                $doctorClinicId = DB::table('doctor_clinic')->insertGetId([
+                    'doctor_id' => $doctor->id,
+                    'clinic_id' => $item['clinic_id'],
+                    'profession' => $item['profession'],
+                    'work_time' => json_encode($item['work_time']),
+                    'is_main_workplace' => $item['is_main_workplace'] ?? false,
+                    'is_active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                if (is_array($item['services']) && !empty($item['services'])) {
+                    $servicesData = [];
+                    foreach ($item['services'] as $serviceId) {
+                        $servicesData[] = [
+                            'doctor_clinic_id' => $doctorClinicId,
+                            'service_id' => $serviceId,
+                            'is_active' => true,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ];
+                    }
+
+                    if (!empty($servicesData)) {
+                        DB::table('doctor_clinic_services')->insert($servicesData);
+                    }
+                }
             }
 
             DB::commit();
@@ -660,21 +686,50 @@ class ProfileService
         $saved = collect();
 
         foreach ($certificatesData as $item) {
-            $file = $item['document'];
+            $file = @$item['document'];
+            $id = @$item['id'];
 
-            $uploader = (new FileUploadService())
-                ->setFile($file)
-                ->setPath("doctor_certificates/{$doctor->id}");
+            $fileName = '';
 
-            $fileName = $uploader->upload();
 
-            if (!$fileName) {
+
+            if ($file) {
+                $uploader = (new FileUploadService())
+                    ->setFile($file)
+                    ->setName(str($item['name'])->slug() . '-' . str_shuffle(time()))
+                    ->setPath("doctor_certificates/{$doctor->id}");
+
+                $fileName = $uploader->upload();
+            }
+
+            $findDocument = $id ? $doctor->certificates()->find($id) : null;
+
+            if (!$fileName && !$id) {
                 throw new \Exception('File upload failed');
             }
 
-            $certificate = $doctor->certificates()->create([
-                'document_path' => $fileName,
-            ]);
+            if ($findDocument) {
+                $findDocument->update([
+                    'document_path' => $fileName ?: $findDocument->document_path,
+                    'name' => $item['name'],
+                    'issuing_organization' => $item['issuing_organization'],
+                    'issue_date' => $item['issue_date'],
+                    'expiry_date' => $item['expiry_date'],
+                    'description' => $item['description'],
+                ]);
+
+                $certificate = $findDocument->fresh();
+            }
+            else {
+                $certificate = $doctor->certificates()->create([
+                    'document_path' => $fileName,
+                    'name' => $item['name'],
+                    'issuing_organization' => $item['issuing_organization'],
+                    'issue_date' => $item['issue_date'],
+                    'expiry_date' => $item['expiry_date'],
+                    'description' => $item['description'],
+                ]);
+            }
 
             $saved->push($certificate);
         }

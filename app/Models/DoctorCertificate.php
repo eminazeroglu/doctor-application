@@ -64,7 +64,7 @@ class DoctorCertificate extends BaseModel
     {
         return new AttributeAlias(
             get: function () {
-                return $this->document_path ? asset('storage/' . $this->document_path) : null;
+                return $this->document_path ? url('uploads/files/doctor_certificates/' . $this->doctor_id . '/' . $this->document_path) : null;
             }
         );
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::controller(ReferenceDataController::class)->group(function () {
     Route::get('/permissions', 'permissions')->middleware(['auth:sanctum', 'auth:admin_control'])->name('permissions');
     Route::get('/genders', 'genders')->name('genders');
+    Route::get('/week-days', 'weekDays')->name('weeyDays');
     Route::get('/search/doctor-or-service', 'doctorOrService')->name('doctorOrService');
     Route::get('/home', 'home')->name('home');
     Route::get('/time-of-day', 'timeOfDay')->name('timeOfDay');

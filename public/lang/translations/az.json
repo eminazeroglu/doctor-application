@@ -2,6 +2,15 @@
     "enums": {
         "man": "Kişi",
         "woman": "Qadın",
+        "weekDays": {
+            "1": "Bazar ertəsi",
+            "2": "Çərşənbə axşamı",
+            "3": "Çərşənbə",
+            "4": "Cümə axşamı",
+            "5": "Cümə",
+            "6": "Şənbə",
+            "7": "Bazar"
+        },
         "credential_types": {
             "email": "Email",
             "phone": "Telefon nömrəsi",

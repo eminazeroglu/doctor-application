@@ -1478,7 +1478,30 @@
                                 "description": "Sertifikatların siyahısı",
                                 "default": [
                                     {
-                                        "document": "Sertifikat faylı (pdf, png, jpg, jpeg)"
+                                        "document": {
+                                            "type": "file",
+                                            "description": "Sertifikat faylı (pdf)"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Sertifikat adı"
+                                        },
+                                        "issuing_organization": {
+                                            "type": "string",
+                                            "description": "Verən təşkilat"
+                                        },
+                                        "issue_date": {
+                                            "type": "date",
+                                            "description": "Verilmə tarixi - 2022-09-01"
+                                        },
+                                        "expiry_date": {
+                                            "type": "date",
+                                            "description": "Bitmə tarixi - 2025-09-01"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Təsvir"
+                                        }
                                     }
                                 ]
                             }
@@ -1539,6 +1562,12 @@
                                 "description": "Burdada axtarılan mətin yazılır"
                             }
                         }
+                    }
+                },
+                "/reference-data/week-days": {
+                    "get": {
+                        "summary": "Həftənin günləri",
+                        "description": "Bütün həftə günlərinin siyahısını qaytarır"
                     }
                 },
                 "/reference-data/home": {

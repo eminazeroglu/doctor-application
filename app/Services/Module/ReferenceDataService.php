@@ -72,6 +72,14 @@ class ReferenceDataService
         ]);
     }
 
+    public function fetchWeekDays(): \Illuminate\Support\Collection
+    {
+        return collect([1, 2, 3, 4, 5, 6, 7])->map(fn($i) => [
+            'id' => $i,
+            'name' => t('enums.weekDays.' . $i)
+        ]);
+    }
+
     /**
      * Doctor Or Service
      * */
@@ -315,14 +323,12 @@ class ReferenceDataService
                 'id' => $i,
                 'name' => AppointmentUserCancelReason::getDescription($i)
             ]);
-        }
-        else if ($type === 'doctor') {
+        } else if ($type === 'doctor') {
             return collect(AppointmentDoctorCancelReason::getValues())->map(fn($i) => [
                 'id' => $i,
                 'name' => AppointmentDoctorCancelReason::getDescription($i)
             ]);
-        }
-        else {
+        } else {
             throw new BaseException('Göndərilən type uyğun deyil');
         }
     }

@@ -4,6 +4,7 @@ namespace App\Http\Resources\Admin;
 
 use App\Enums\AttributeTypeEnum;
 use App\Http\Resources\Front\DoctorScheduleResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -66,14 +67,14 @@ class DoctorResource extends JsonResource
             }),
 
             // İxtisaslar
-            'category' => $this->whenLoaded('category', function() {
+            'category' => $this->whenLoaded('category', function () {
                 return [
                     'id' => $this->category->id,
                     'name' => $this->category->name,
                     'slug' => $this->category->slug,
                 ];
             }),
-            'subcategory' => $this->whenLoaded('subcategory', function() {
+            'subcategory' => $this->whenLoaded('subcategory', function () {
                 return [
                     'id' => $this->subcategory->id,
                     'name' => $this->subcategory->name,
@@ -114,11 +115,32 @@ class DoctorResource extends JsonResource
 
             // Əlaqələr
             'educations' => $this->whenLoaded('educations'),
-            'experiences' => $this->whenLoaded('experiences'),
+            'experiences' => $this->whenLoaded('doctorClinics', function () {
+                return $this->doctorClinics->map(function ($i) {
+                    return [
+                        'id' => $i->id,
+                        'clinic_id' => $i->clinic_id,
+                        'clinic_name' => @$i->clinic->name,
+                        'profession' => $i->profession,
+                        'work_time' => [
+                            'start_day' => @$i->work_time->start_day,
+                            'start_time' => @$i->work_time->start_time ? Carbon::createFromFormat('H:i', $i->work_time->start_time)->toISOString() : '',
+                            'end_day' => @$i->work_time->end_day,
+                            'end_time' => @$i->work_time->end_time ? Carbon::createFromFormat('H:i', $i->work_time->end_time)->toISOString() : ''
+                        ],
+                        'services' => $i->services()->with('service')->get()->map(function ($item) {
+                            return [
+                                'id' => $item->service->id,
+                                'name' => $item->service->name,
+                            ];
+                        }),
+                    ];
+                });
+            }),
             'certificates' => $this->whenLoaded('certificates'),
             'languages' => $this->whenLoaded('languages'),
             'clinics' => $this->whenLoaded('clinics'),
-            'schedules' => $this->whenLoaded('schedules', function() {
+            'schedules' => $this->whenLoaded('schedules', function () {
                 return DoctorScheduleResource::collection($this->schedules);
             }),
             'services' => $this->whenLoaded('services'),

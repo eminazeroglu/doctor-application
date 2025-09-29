@@ -33,6 +33,12 @@
             }
         },
         {
+            "path": "/reference-data/week-days",
+            "method": "get",
+            "summary": "Həftənin günləri",
+            "description": "Bütün həftə günlərinin siyahısını qaytarır"
+        },
+        {
             "path": "/reference-data/home",
             "method": "get",
             "summary": "Ana səhifə",

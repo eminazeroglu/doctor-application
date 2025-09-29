@@ -365,8 +365,17 @@ class ProfileController extends Controller
             'educations.*.document_path' => 'nullable|string',
         ]);
 
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && $request->has('user_id')) {
+            $user = User::query()->find($request->user_id);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
         $educations = $this->profileService->syncDoctorEducations(
-            auth()->user()->doctor,
+            $doctor,
             $formFields['educations']
         );
 
@@ -384,11 +393,20 @@ class ProfileController extends Controller
      * GET /api/app/profile/doctor/experiences
      * @throws BaseException
      */
-    public function getDoctorExperiences(): JsonResponse
+    public function getDoctorExperiences($userId = false): JsonResponse
     {
         $this->ensureUserIsDoctor();
 
-        $experiences = $this->profileService->getDoctorExperiences(auth()->user()->doctor);
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && $userId) {
+            $user = User::query()->find($userId);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
+        $experiences = $this->profileService->getDoctorExperiences($doctor);
         $experiences = $experiences->map(function ($i) {
             $item = [
                 'id' => $i->id,
@@ -419,6 +437,7 @@ class ProfileController extends Controller
      * PUT /api/app/profile/doctor/experiences
      * @throws BaseException
      * @throws ValidationException
+     * @throws Exception
      */
     public function updateDoctorExperiences(Request $request): JsonResponse
     {
@@ -437,12 +456,21 @@ class ProfileController extends Controller
             'experiences.*.services.*' => 'required|exists:services,id',
         ]);
 
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && $request->has('user_id')) {
+            $user = User::query()->find($request->user_id);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
         $this->profileService->syncDoctorExperiences(
-            auth()->user()->doctor,
+            $doctor,
             $formFields['experiences']
         );
 
-        return $this->getDoctorExperiences();
+        return $this->getDoctorExperiences($request->user_id);
     }
 
     /*
@@ -476,11 +504,26 @@ class ProfileController extends Controller
 
         $form = $this->validateRequest($request, [
             'certificates' => 'required|array|min:1',
-            'certificates.*.document' => 'required|file|mimes:pdf,png,jpg,jpeg|max:20480',
+            'certificates.*.id' => 'nullable|exists:doctor_certificates,id',
+            'certificates.*.document' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:20480',
+            'certificates.*.name' => 'required|string|max:255',
+            'certificates.*.issuing_organization' => 'required|string|max:255',
+            'certificates.*.issue_date' => 'required|date',
+            'certificates.*.expiry_date' => 'required|date',
+            'certificates.*.description' => 'nullable',
         ]);
 
-        $certificates = $this->profileService->createDoctorCertificatesWithUpload(
-            auth()->user()->doctor,
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && $request->has('user_id')) {
+            $user = User::query()->find($request->user_id);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
+        $certificates = $this->profileService->createDoctorCertificate(
+            $doctor,
             $form['certificates']
         );
 
@@ -499,8 +542,17 @@ class ProfileController extends Controller
     {
         $this->ensureUserIsDoctor();
 
+        $doctor = auth()->user()->doctor;
+
+        if ($this->isAdmin && request()->has('user_id')) {
+            $user = User::query()->find(request()->user_id);
+            if ($user) {
+                $doctor = $user->doctor;
+            }
+        }
+
         $this->profileService->deleteDoctorCertificate(
-            auth()->user()->doctor,
+            $doctor,
             $id
         );
 

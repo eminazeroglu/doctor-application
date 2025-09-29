@@ -33,6 +33,14 @@ class ReferenceDataController extends Controller
     }
 
     /**
+     * Week Days
+    */
+    public function weekDays(): JsonResponse
+    {
+        return response()->json($this->service->fetchWeekDays());
+    }
+
+    /**
      * Doctor Or Service
      * */
     public function doctorOrService(): JsonResponse
