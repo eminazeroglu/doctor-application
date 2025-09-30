@@ -70,7 +70,7 @@ class TranslationSeeder extends Seeder
         // Bazada olan amma config-də olmayan dilləri silirik və tərcümələrini təmizləyirik
         foreach ($existingLanguages as $existingLanguage) {
             if (!in_array($existingLanguage->locale, $configuredLocales)) {
-                // Əvvəlcə tərcümələri silirik
+                // Əvvəlcə tərcümələri silirik (key-i web ilə başlayanlar istisna olmaqla)
                 $this->deleteAllTranslationsForLocale($existingLanguage->locale);
 
                 // Sonra dili silirik
@@ -115,6 +115,7 @@ class TranslationSeeder extends Seeder
                 $this->syncTranslationsForLocale($locale, $translations);
             } else {
                 // Əgər fayl mövcud deyilsə, bu dil üçün olan bütün tərcümələri silirik
+                // (key-i web ilə başlayanlar istisna olmaqla)
                 $this->deleteAllTranslationsForLocale($locale);
                 Log::warning("Translation file not found for locale: {$locale}. All translations for this language have been deleted.");
             }
@@ -180,15 +181,21 @@ class TranslationSeeder extends Seeder
      */
     protected function syncTranslationsForLocale(string $locale, array $translationsArray): void
     {
-        // Bazadan mövcud tərcümələri əldə edirik
-        $dbTranslations = Translate::where('locale', $locale)->get();
+        // Bazadan mövcud tərcümələri əldə edirik (yalnız key-i web ilə başlamayanları)
+        $dbTranslations = Translate::query()
+            ->where('locale', $locale)
+            ->where('key', 'NOT LIKE', 'web%')
+            ->get();
 
         // Mövcud tərcümələri yoxlayırıq
         foreach ($dbTranslations as $dbTranslation) {
             if (!array_key_exists($dbTranslation->key, $translationsArray)) {
                 // JSON-da olmayan tərcümələri silirik
-                $dbTranslation->forceDelete();
-                $this->translationService->clearTranslationCache($dbTranslation->key, $locale);
+                // AMMA əvvəlcə yenidən yoxlayırıq ki, key web ilə başlamır
+                if (!str_starts_with($dbTranslation->key, 'web')) {
+                    $dbTranslation->forceDelete();
+                    $this->translationService->clearTranslationCache($dbTranslation->key, $locale);
+                }
             } else {
                 // Dəyişmiş tərcümələri yeniləyirik
                 if ($dbTranslation->value !== $translationsArray[$dbTranslation->key]) {
@@ -202,25 +209,47 @@ class TranslationSeeder extends Seeder
 
         // Yeni tərcümələri əlavə edirik
         foreach ($translationsArray as $key => $value) {
-            Translate::create([
-                'key' => $key,
-                'value' => $value,
-                'locale' => $locale,
-                'is_system' => true
-            ]);
-            $this->translationService->clearTranslationCache($key, $locale);
+            // Əgər bu key artıq bazada varsa, onu yoxlayırıq
+            $existingTranslation = Translate::where('locale', $locale)
+                ->where('key', $key)
+                ->first();
+
+            if (!$existingTranslation) {
+                Translate::create([
+                    'key' => $key,
+                    'value' => $value,
+                    'locale' => $locale,
+                    'is_system' => true
+                ]);
+                $this->translationService->clearTranslationCache($key, $locale);
+            } elseif (!str_starts_with($existingTranslation->key, 'web')) {
+                // Əgər mövcud tərcümə web ilə başlamırsa, yeniləyirik
+                $existingTranslation->value = $value;
+                $existingTranslation->save();
+                $this->translationService->clearTranslationCache($key, $locale);
+            }
         }
     }
 
     /**
-     * Verilmiş dil üçün bütün tərcümələri silir
+     * Verilmiş dil üçün bütün tərcümələri silir (key-i web ilə başlayanlar istisna olmaqla)
      */
     protected function deleteAllTranslationsForLocale(string $locale): void
     {
-        $translations = Translate::where('locale', $locale)->get();
+        // Əvvəlcə keşi təmizləyirik
+        $translations = Translate::query()
+            ->where('locale', $locale)
+            ->where('key', 'NOT LIKE', 'web%')
+            ->get();
+
         foreach ($translations as $translation) {
             $this->translationService->clearTranslationCache($translation->key, $locale);
         }
-        Translate::where('locale', $locale)->forceDelete();
+
+        // Sonra tərcümələri silirik (key-i web ilə başlayanlar istisna olmaqla)
+        Translate::query()
+            ->where('locale', $locale)
+            ->where('key', 'NOT LIKE', 'web%')
+            ->forceDelete();
     }
 }

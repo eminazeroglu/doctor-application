@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Resources\Admin\PatientResource;
+use App\Models\Patient;
 use App\Services\Module\PatientService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,6 +80,28 @@ class PatientController extends ApiController
             return response()->json($this->toResource($data));
         }
         return response()->json(['message' => $this->forbiddenMessage], 403);
+    }
+
+    /**
+     * Resursu silir
+     *
+     * @param mixed $id
+     * @return JsonResponse
+     */
+    public function destroy(mixed $id): JsonResponse
+    {
+        if (!$this->authorizeAction('delete')) {
+            return $this->forbidden();
+        }
+
+        $patient = Patient::query()->findOrFail($id);
+
+        $data = $patient->user()->delete();
+
+        // Hadisəni işə salırıq
+        $this->dispatchEvent('destroy', $data);
+
+        return response()->json($data);
     }
 
     /**
