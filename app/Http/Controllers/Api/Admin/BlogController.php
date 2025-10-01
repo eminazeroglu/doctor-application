@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\ApiController;
+use App\Rules\Base64ImageControlRule;
+use App\Rules\ImageBase64Rule;
 use App\Services\Module\BlogService;
 
 class BlogController extends ApiController
@@ -23,7 +25,7 @@ class BlogController extends ApiController
             'translates.*.description' => 'required',
             'translates.*.content' => 'required',
             'category_id' => ['required', 'exists:categories,id'],
-            'photo'
+            'photo' => [request()->id ? 'nullable' : 'required', new ImageBase64Rule, new Base64ImageControlRule]
         ];
     }
 }
