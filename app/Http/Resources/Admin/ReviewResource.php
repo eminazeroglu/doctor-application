@@ -39,11 +39,11 @@ class ReviewResource extends JsonResource
 
             // Əlaqəli məlumatlar
             'patient' => $this->whenLoaded('patient', function() {
-                return [
+                return $this->patient ? [
                     'id' => $this->patient->id,
                     'full_name' => $this->patient->full_name,
                     'photo' => $this->patient->user->photo,
-                ];
+                ] : null;
             }),
 
             'doctor' => $this->whenLoaded('doctor', function() {
@@ -116,24 +116,6 @@ class ReviewResource extends JsonResource
             'updated_at' => $this->updated_at,
             'created_at_formatted' => $this->created_at?->format('d.m.Y H:i'),
             'created_at_human' => $this->created_at?->diffForHumans(),
-
-            // Əlavə məlumatlar (şərti)
-            'can_edit' => $this->when(
-                $request->user()?->hasPermission('review_update'),
-                true
-            ),
-            'can_delete' => $this->when(
-                $request->user()?->hasPermission('review_delete'),
-                true
-            ),
-            'can_moderate' => $this->when(
-                $request->user()?->hasPermission('review_status') && !$this->is_moderated,
-                true
-            ),
-            'can_verify' => $this->when(
-                $request->user()?->hasPermission('review_status') && !$this->is_verified,
-                true
-            ),
 
             // Rəy rəngi (frontend üçün)
             'rating_color' => match($this->rating) {
