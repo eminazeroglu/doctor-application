@@ -362,10 +362,39 @@
             }
         },
         {
-            "path": "/app/doctor/calendar/availability/recurring/{id}",
+            "path": "/app/doctor/calendar/availability/recurring/{id}/occurrence",
             "method": "delete",
-            "summary": "Delete recurring availability",
-            "authorization": true
+            "summary": "Delete specific occurrence from recurring schedule",
+            "description": "Recurring schedule-dan konkret bir günü silir (exception_dates-ə əlavə edir). Məsələn: Çərşənbə və Cümə günləri üçün yaradılmış schedule-dan yalnız 15 Oktyabr Cümə günü silmək.",
+            "authorization": true,
+            "formBody": {
+                "date": {
+                    "type": "date",
+                    "required": true,
+                    "description": "Silinəcək konkret tarix (YYYY-MM-DD)",
+                    "default": "2025-10-03"
+                }
+            }
+        },
+        {
+            "path": "/app/doctor/calendar/availability/recurring/{id}/occurrence",
+            "method": "post",
+            "summary": "Restore deleted occurrence",
+            "description": "Silinen occurrence-i bərpa edir (exception_dates-dən çıxarır)",
+            "authorization": true,
+            "formBody": {
+                "date": {
+                    "type": "date",
+                    "required": true,
+                    "description": "Bərpa ediləcək tarix (YYYY-MM-DD)",
+                    "default": "2025-10-03"
+                }
+            },
+            "responses": {
+                "200": {
+                    "message": "Occurrence successfully restored"
+                }
+            }
         },
         {
             "path": "/app/doctor/calendar/unavailability",

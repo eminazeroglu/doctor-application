@@ -892,10 +892,39 @@
                                 "default": 3
                             }
                         }
-                    },
+                    }
+                },
+                "/app/doctor/calendar/availability/recurring/{id}/occurrence": {
                     "delete": {
-                        "summary": "Delete recurring availability",
-                        "authorization": true
+                        "summary": "Delete specific occurrence from recurring schedule",
+                        "description": "Recurring schedule-dan konkret bir günü silir (exception_dates-ə əlavə edir). Məsələn: Çərşənbə və Cümə günləri üçün yaradılmış schedule-dan yalnız 15 Oktyabr Cümə günü silmək.",
+                        "authorization": true,
+                        "formBody": {
+                            "date": {
+                                "type": "date",
+                                "required": true,
+                                "description": "Silinəcək konkret tarix (YYYY-MM-DD)",
+                                "default": "2025-10-03"
+                            }
+                        }
+                    },
+                    "post": {
+                        "summary": "Restore deleted occurrence",
+                        "description": "Silinen occurrence-i bərpa edir (exception_dates-dən çıxarır)",
+                        "authorization": true,
+                        "formBody": {
+                            "date": {
+                                "type": "date",
+                                "required": true,
+                                "description": "Bərpa ediləcək tarix (YYYY-MM-DD)",
+                                "default": "2025-10-03"
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "message": "Occurrence successfully restored"
+                            }
+                        }
                     }
                 },
                 "/app/doctor/calendar/unavailability": {
@@ -1433,7 +1462,8 @@
                                             3,
                                             5,
                                             7
-                                        ]
+                                        ],
+                                        "is_main_workplace": false
                                     }
                                 ]
                             }
@@ -1475,33 +1505,15 @@
                             "certificates": {
                                 "type": "array",
                                 "required": true,
-                                "description": "Sertifikatların siyahısı",
+                                "description": "Sertifikatların siyahısı- document (type: file), name (type: string), issuing_organization (type: string), issue_date (type: date), expiry_date (type: date), description (type: string)",
                                 "default": [
                                     {
-                                        "document": {
-                                            "type": "file",
-                                            "description": "Sertifikat faylı (pdf)"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "description": "Sertifikat adı"
-                                        },
-                                        "issuing_organization": {
-                                            "type": "string",
-                                            "description": "Verən təşkilat"
-                                        },
-                                        "issue_date": {
-                                            "type": "date",
-                                            "description": "Verilmə tarixi - 2022-09-01"
-                                        },
-                                        "expiry_date": {
-                                            "type": "date",
-                                            "description": "Bitmə tarixi - 2025-09-01"
-                                        },
-                                        "description": {
-                                            "type": "string",
-                                            "description": "Təsvir"
-                                        }
+                                        "document": "",
+                                        "name": "",
+                                        "issuing_organization": "",
+                                        "issue_date": "",
+                                        "expiry_date": "",
+                                        "description": ""
                                     }
                                 ]
                             }

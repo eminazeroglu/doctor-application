@@ -29,6 +29,7 @@ class DoctorSchedule extends BaseModel
         'frequency',      // daily|weekly|monthly
         'every',          // 1,2,3...
         'days',           // json: [0..6]
+        'exception_dates',
 
         'is_active',
         'note',
@@ -44,6 +45,7 @@ class DoctorSchedule extends BaseModel
         'to_time'    => 'datetime:H:i:s',
         'every'      => 'integer',
         'days'       => 'array',
+        'exception_dates'       => 'array',
         'is_active'  => 'boolean',
     ];
 

@@ -278,7 +278,8 @@ Route::controller(DoctorCalendarController::class)
         // Recurring availability
         Route::post('/availability/recurring', 'storeRecurring');
         Route::put('/availability/recurring/{id}', 'updateRecurring');
-        Route::delete('/availability/recurring/{id}', 'destroyRecurring');
+        Route::delete('availability/recurring/{id}/occurrence', 'deleteOccurrence');
+        Route::post('availability/recurring/{id}/occurrence', 'restoreOccurrence');
 
         // Unavailability (busy)
         Route::post('/unavailability', 'storeUnavailability');

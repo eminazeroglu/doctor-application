@@ -33,6 +33,9 @@ return new class extends Migration
             // UI-də Mo..Su seçimi var → JSON massivi saxlayırıq
             $table->json('days')->nullable(); // [1,2,3] kimi
 
+            // Silinen konkret occurrences: ["2025-10-03", "2025-10-10"]
+            $table->json('exception_dates')->nullable();
+
             // İdarəetmə
             $table->boolean('is_active')->default(true);
             $table->text('note')->nullable();

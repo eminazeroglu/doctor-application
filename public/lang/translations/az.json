@@ -442,7 +442,9 @@
             "overlaps_locked_appointment": "Təsdiqlənmiş/tamamlanmış görüşlə üst-üstə düşür",
             "overlaps_existing_availability": "Bu tarix və saat üçün artıq mövcud uyğunluq var",
             "overlaps_unavailability": "Bu tarix və saat üçün artıq mövcud məşqulluq var",
-            "clinic_not_assigned_to_doctor": "Seçilmiş klinika həkimə aid deyil"
+            "clinic_not_assigned_to_doctor": "Seçilmiş klinika həkimə aid deyil",
+            "weekly_requires_days": "Həftəlik seçimində günlər tələb olunur",
+            "daily_cannot_have_days": "Gündəlik seçimində günlər göndərilə bilməz"
         }
     }
 }

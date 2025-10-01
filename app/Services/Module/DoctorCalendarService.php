@@ -12,11 +12,12 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DoctorCalendarService
 {
-    /** Tarih aralığını formalaşdır
+    /**
+     * Tarix aralığını formalaşdırır
      * @throws BaseException
      */
     public function resolveDateRange(?string $from, ?string $to): array
@@ -27,16 +28,27 @@ class DoctorCalendarService
         if ($end->lt($start)) {
             throw new BaseException(t('validation.date_range.invalid'), 422);
         }
+
         return [$start, $end];
     }
 
-    /** İstifadəçi → Doctor ID */
+    /**
+     * İstifadəçi → Doctor ID
+     */
     private function doctorIdByUser(int $userId): int
     {
-        return Doctor::where('user_id', $userId)->value('id');
+        $doctorId = Doctor::where('user_id', $userId)->value('id');
+
+        if (!$doctorId) {
+            throw new BaseException(t('validation.doctor.not_found'), 404);
+        }
+
+        return $doctorId;
     }
 
-    /** “Kilidli” statuslar: təsdiqlənmiş və ya tamamlanmış */
+    /**
+     * "Kilidli" statuslar: təsdiqlənmiş və tamamlanmış
+     */
     private function lockedStatuses(): array
     {
         return [
@@ -45,7 +57,526 @@ class DoctorCalendarService
         ];
     }
 
-    /** Overlap yoxlaması (appointments) */
+    /**
+     * Kalendar feed: appointments + schedules + unavailability
+     * Backend BÜTÜN event-ləri göndərir, frontend filter edir
+     */
+    public function getCalendarFeed(int $userId, $from, $to): array
+    {
+        $doctorId = $this->doctorIdByUser($userId);
+
+        $appointments = $this->getAppointmentsForDoctor($doctorId, $from, $to);
+        $schedules = $this->getSchedulesForDoctor($doctorId, $from, $to);
+        $unavailabilities = $this->getUnavailabilitiesForDoctor($doctorId, $from, $to);
+
+        $allEvents = $appointments
+            ->concat($schedules)
+            ->concat($unavailabilities)
+            ->sortBy('start')
+            ->values();
+
+        return [
+            'events' => $allEvents,
+            'summary' => [
+                'total' => $allEvents->count(),
+                'appointments' => $appointments->count(),
+                'schedules' => $schedules->count(),
+                'unavailabilities' => $unavailabilities->count(),
+            ]
+        ];
+    }
+
+    /**
+     * Həkimin appointment-lərini əldə edir
+     */
+    private function getAppointmentsForDoctor(int $doctorId, $from, $to): Collection
+    {
+        return Appointment::query()
+            ->with(['patient.user', 'clinic', 'service'])
+            ->where('doctor_id', $doctorId)
+            ->where(function ($q) use ($from, $to) {
+                $q->whereBetween('start_time', [$from, $to])
+                    ->orWhereBetween('end_time', [$from, $to])
+                    ->orWhere(function ($q2) use ($from, $to) {
+                        $q2->where('start_time', '<=', $from)
+                            ->where('end_time', '>=', $to);
+                    });
+            })
+            ->whereNotIn('appointment_status', [
+                AppointmentStatusEnum::Cancelled,
+                AppointmentStatusEnum::NoShow
+            ])
+            ->orderBy('start_time')
+            ->get()
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'type' => 'appointment',
+                'start' => $a->start_time->format('Y-m-d H:i:s'),
+                'end' => $a->end_time->format('Y-m-d H:i:s'),
+                'status' => $a->appointment_status,
+                'title' => trim(($a->patient?->user?->name ?? '') . ' ' . ($a->patient?->user?->surname ?? '')),
+                'patient' => [
+                    'fullname' => $a->patient?->user?->fullname,
+                    'photo' => $a->patient?->user?->photo,
+                    'email' => $a->patient?->user?->email,
+                    'phone' => $a->patient?->user?->phone,
+                ],
+                'service' => $a->service?->name,
+                'clinic_id' => $a->clinic_id,
+                'clinic_name' => $a->clinic?->name,
+            ]);
+    }
+
+    /**
+     * Həkimin recurring schedule-lərini əldə edir
+     */
+    private function getSchedulesForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
+    {
+        $schedules = DoctorSchedule::query()
+            ->with('clinic')
+            ->where('doctor_id', $doctorId)
+            ->where('is_active', true)
+            ->where('start_date', '<=', $to->toDateString())
+            ->where(function ($q) use ($from) {
+                $q->whereNull('end_date')
+                    ->orWhere('end_date', '>=', $from->toDateString());
+            })
+            ->get();
+
+        if ($schedules->isEmpty()) {
+            return collect();
+        }
+
+        $scheduleEvents = collect();
+
+        foreach ($schedules as $schedule) {
+            $scheduleStart = Carbon::parse($schedule->start_date)->startOfDay();
+            $scheduleEnd = $schedule->end_date
+                ? Carbon::parse($schedule->end_date)->endOfDay()
+                : $to->copy()->addYear()->endOfDay();
+
+            $windowStart = $from->greaterThan($scheduleStart) ? $from : $scheduleStart;
+            $windowEnd = $to->lessThan($scheduleEnd) ? $to : $scheduleEnd;
+
+            $period = CarbonPeriod::create($windowStart->toDateString(), $windowEnd->toDateString());
+
+            foreach ($period as $date) {
+                // Exception dates yoxlaması
+                if ($this->isExceptionDate($schedule, $date)) {
+                    continue;
+                }
+
+                // Frequency matching
+                if (!$this->isScheduleValidForDate($schedule, $date)) {
+                    continue;
+                }
+
+                $startTime = $this->parseScheduleTime($schedule->from_time, $date);
+                $endTime = $this->parseScheduleTime($schedule->to_time, $date);
+
+                if (!$startTime || !$endTime || $endTime->lte($startTime)) {
+                    continue;
+                }
+
+                $scheduleEvents->push([
+                    'id' => $schedule->id,
+                    'type' => 'schedule',
+                    'start' => $startTime->format('Y-m-d H:i:s'),
+                    'end' => $endTime->format('Y-m-d H:i:s'),
+                    'title' => 'Available',
+                    'clinic_id' => $schedule->clinic_id,
+                    'clinic_name' => $schedule->clinic?->name,
+                    'frequency' => $schedule->frequency,
+                    'is_recurring' => true,
+                ]);
+            }
+        }
+
+        return $scheduleEvents;
+    }
+
+    /**
+     * Həkimin məşğulluq intervallarını əldə edir
+     */
+    private function getUnavailabilitiesForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
+    {
+        return DoctorUnavailability::query()
+            ->where('doctor_id', $doctorId)
+            ->where(function ($q) use ($from, $to) {
+                $q->whereBetween('start_time', [$from, $to])
+                    ->orWhereBetween('end_time', [$from, $to])
+                    ->orWhere(function ($q2) use ($from, $to) {
+                        $q2->where('start_time', '<=', $from)
+                            ->where('end_time', '>=', $to);
+                    });
+            })
+            ->orderBy('start_time')
+            ->get()
+            ->map(fn($u) => [
+                'id' => $u->id,
+                'type' => 'unavailability',
+                'start' => $u->start_time->format('Y-m-d H:i:s'),
+                'end' => $u->end_time->format('Y-m-d H:i:s'),
+                'title' => 'Busy',
+                'note' => $u->note,
+                'clinic_id' => $u->clinic_id,
+            ]);
+    }
+
+    /**
+     * Schedule time-ı datetime-a çevirir
+     */
+    private function parseScheduleTime($timeValue, Carbon $date): ?Carbon
+    {
+        try {
+            if ($timeValue instanceof Carbon) {
+                return $date->copy()->setTime(
+                    $timeValue->hour,
+                    $timeValue->minute,
+                    $timeValue->second
+                );
+            }
+
+            if (is_string($timeValue)) {
+                $parts = explode(':', $timeValue);
+                $hour = (int)($parts[0] ?? 0);
+                $minute = (int)($parts[1] ?? 0);
+                $second = (int)($parts[2] ?? 0);
+
+                if ($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59) {
+                    return $date->copy()->setTime($hour, $minute, $second);
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error("Schedule time parsing error: " . $e->getMessage(), [
+                'time_value' => $timeValue,
+                'date' => $date->toDateString()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Tarixin exception list-də olub-olmadığını yoxlayır
+     */
+    private function isExceptionDate(DoctorSchedule $schedule, Carbon $date): bool
+    {
+        $exceptions = $schedule->exception_dates ?? [];
+        return in_array($date->toDateString(), $exceptions);
+    }
+
+    /**
+     * Schedule-in müəyyən tarixə uyğun olub-olmadığını yoxlayır
+     */
+    private function isScheduleValidForDate(DoctorSchedule $schedule, Carbon $date): bool
+    {
+        $frequency = $schedule->frequency ?? 'weekly';
+
+        return match ($frequency) {
+            'daily' => $this->isValidDaily($schedule, $date),
+            'weekly' => $this->isValidWeekly($schedule, $date),
+            'monthly' => $this->isValidMonthly($schedule, $date),
+            default => false,
+        };
+    }
+
+    private function isValidDaily(DoctorSchedule $schedule, Carbon $date): bool
+    {
+        $startDate = Carbon::parse($schedule->start_date)->startOfDay();
+        $daysDiff = $startDate->diffInDays($date->copy()->startOfDay());
+        $every = max($schedule->every ?? 1, 1);
+
+        return $daysDiff % $every === 0;
+    }
+
+    private function isValidWeekly(DoctorSchedule $schedule, Carbon $date): bool
+    {
+        $startDate = Carbon::parse($schedule->start_date)->startOfWeek();
+        $checkDate = $date->copy()->startOfWeek();
+        $weeksDiff = $startDate->diffInWeeks($checkDate);
+        $every = max($schedule->every ?? 1, 1);
+
+        if ($weeksDiff % $every !== 0) {
+            return false;
+        }
+
+        $days = is_array($schedule->days) ? $schedule->days : [];
+
+        if (empty($days)) {
+            return true;
+        }
+
+        return in_array($date->dayOfWeek, $days);
+    }
+
+    private function isValidMonthly(DoctorSchedule $schedule, Carbon $date): bool
+    {
+        $startDate = Carbon::parse($schedule->start_date)->startOfMonth();
+        $monthsDiff = $startDate->diffInMonths($date->copy()->startOfMonth());
+        $every = max($schedule->every ?? 1, 1);
+
+        if ($monthsDiff % $every !== 0) {
+            return false;
+        }
+
+        return $startDate->day === $date->day;
+    }
+
+    /**
+     * Recurring availability yaradır
+     * @throws BaseException
+     */
+    public function createRecurringAvailability(int $userId, array $data)
+    {
+        $doctorId = $this->doctorIdByUser($userId);
+
+        // ✅ Frequency validation
+        $this->validateFrequencyData($data);
+
+        if (Carbon::parse($data['start_date'])->lt(now()->startOfDay())) {
+            throw new BaseException(t('validation.calendar.cannot_create_in_past'), 422);
+        }
+
+        $this->assertDoctorHasClinic($doctorId, (int)$data['clinic_id']);
+        $this->assertNoLockedOverlapForRecurring($doctorId, $data);
+
+        if ($this->hasRecurringScheduleOverlap($doctorId, (int)$data['clinic_id'], $data, null)) {
+            throw new BaseException(t('validation.calendar.overlaps_existing_availability'), 422);
+        }
+
+        return DoctorSchedule::create([
+            'doctor_id' => $doctorId,
+            'clinic_id' => $data['clinic_id'],
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'] ?? null,
+            'from_time' => $data['from_time'],
+            'to_time' => $data['to_time'],
+            'frequency' => $data['frequency'],
+            'every' => $data['every'],
+            'days' => $data['days'] ?? [],
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Frequency data validation
+     */
+    private function validateFrequencyData(array $data): void
+    {
+        $frequency = $data['frequency'] ?? 'weekly';
+
+        switch ($frequency) {
+            case 'daily':
+                // Daily üçün days field olmamalıdır
+                if (!empty($data['days'])) {
+                    throw new BaseException(t('validation.calendar.daily_cannot_have_days'), 422);
+                }
+                break;
+
+            case 'weekly':
+                // Weekly üçün days MÜTLƏQ olmalıdır
+                if (empty($data['days']) || !is_array($data['days'])) {
+                    throw new BaseException(t('validation.calendar.weekly_requires_days'), 422);
+                }
+
+                // Days 0-6 arasında olmalıdır
+                foreach ($data['days'] as $day) {
+                    if ($day < 0 || $day > 6) {
+                        throw new BaseException(t('validation.calendar.invalid_day_of_week'), 422);
+                    }
+                }
+                break;
+
+            case 'monthly':
+                // Monthly üçün days field olmamalıdır
+                if (!empty($data['days'])) {
+                    throw new BaseException(t('validation.calendar.monthly_cannot_have_days'), 422);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Recurring availability yeniləyir
+     * @throws BaseException
+     */
+    public function updateRecurringAvailability(int $userId, int $id, array $data)
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
+
+        // ✅ Frequency validation
+        $this->validateFrequencyData($data);
+
+        if (Carbon::parse($data['start_date'])->lt(now()->startOfDay())) {
+            throw new BaseException(t('validation.calendar.cannot_edit_past'), 422);
+        }
+
+        $this->assertDoctorHasClinic($doctor->id, (int)$data['clinic_id']);
+        $this->assertNoLockedOverlapForRecurring($doctor->id, $data);
+
+        if ($this->hasRecurringScheduleOverlap($doctor->id, (int)$data['clinic_id'], $data, $rec->id)) {
+            throw new BaseException(t('validation.calendar.overlaps_existing_availability'), 422);
+        }
+
+        $rec->update([
+            'clinic_id' => $data['clinic_id'],
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'] ?? null,
+            'from_time' => $data['from_time'],
+            'to_time' => $data['to_time'],
+            'frequency' => $data['frequency'],
+            'every' => $data['every'],
+            'days' => $data['days'] ?? [],
+        ]);
+
+        return $rec;
+    }
+
+    /**
+     * Recurring availability silir (bütün schedule)
+     */
+    public function deleteRecurringAvailability(int $userId, int $id): void
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
+
+        if (Carbon::parse($rec->start_date)->lt(now()->startOfDay())) {
+            throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
+        }
+
+        if ($this->hasLockedAppointmentsForRecurringDelete($doctor->id, $rec)) {
+            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
+        }
+
+        $rec->delete();
+    }
+
+    /**
+     * Konkret occurrence-i silir (exception_dates-ə əlavə edir)
+     */
+    public function deleteOccurrence(int $userId, int $scheduleId, string $date): void
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $schedule = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($scheduleId);
+
+        $date = Carbon::parse($date)->toDateString();
+
+        if (Carbon::parse($date)->lt(now()->startOfDay())) {
+            throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
+        }
+
+        $startTime = $this->parseScheduleTime($schedule->from_time, Carbon::parse($date));
+        $endTime = $this->parseScheduleTime($schedule->to_time, Carbon::parse($date));
+
+        if ($this->hasLockedAppointmentsOverlap($doctor->id, $startTime, $endTime)) {
+            throw new BaseException(t('validation.calendar.occurrence_has_locked_appointment'), 422);
+        }
+
+        $exceptionDates = $schedule->exception_dates ?? [];
+
+        if (!in_array($date, $exceptionDates)) {
+            $exceptionDates[] = $date;
+            $schedule->update(['exception_dates' => $exceptionDates]);
+        }
+    }
+
+    /**
+     * Silinen occurrence-i restore edir
+     */
+    public function restoreOccurrence(int $userId, int $scheduleId, string $date): void
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $schedule = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($scheduleId);
+
+        $date = Carbon::parse($date)->toDateString();
+
+        $exceptionDates = $schedule->exception_dates ?? [];
+        $exceptionDates = array_values(array_diff($exceptionDates, [$date]));
+
+        $schedule->update(['exception_dates' => $exceptionDates]);
+    }
+
+    /**
+     * Unavailability yaradır
+     */
+    public function createUnavailability(int $userId, array $data)
+    {
+        $doctorId = $this->doctorIdByUser($userId);
+
+        $start = Carbon::parse($data['start']);
+        $end = Carbon::parse($data['end']);
+
+        if ($start->lt(now())) {
+            throw new BaseException(t('validation.calendar.cannot_create_in_past'), 422);
+        }
+
+        if ($this->hasLockedAppointmentsOverlap($doctorId, $start, $end)) {
+            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
+        }
+
+        if ($this->hasUnavailabilityOverlap($doctorId, $start, $end)) {
+            throw new BaseException(t('validation.calendar.overlaps_unavailability'), 422);
+        }
+
+        return DoctorUnavailability::create([
+            'doctor_id' => $doctorId,
+            'start_time' => $start,
+            'end_time' => $end,
+            'note' => $data['note'] ?? null,
+        ]);
+    }
+
+    /**
+     * Unavailability silir
+     */
+    public function deleteUnavailability(int $userId, int $id): void
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $item = DoctorUnavailability::where('doctor_id', $doctor->id)->findOrFail($id);
+
+        if (Carbon::parse($item->start_time)->lt(now())) {
+            throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
+        }
+
+        if ($this->hasLockedAppointmentsOverlap(
+            $doctor->id,
+            Carbon::parse($item->start_time),
+            Carbon::parse($item->end_time)
+        )) {
+            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
+        }
+
+        $item->delete();
+    }
+
+    /**
+     * Appointment statusunu yeniləyir
+     */
+    public function updateAppointmentStatus(int $userId, int $appointmentId, $status)
+    {
+        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
+        $appointment = Appointment::where('doctor_id', $doctor->id)->findOrFail($appointmentId);
+
+        $appointment->update(['appointment_status' => $status]);
+
+        return $appointment->fresh();
+    }
+
+    private function assertDoctorHasClinic(int $doctorId, int $clinicId): void
+    {
+        $exists = Doctor::query()
+            ->where('id', $doctorId)
+            ->whereHas('clinics', fn($q) => $q->where('clinics.id', $clinicId))
+            ->exists();
+
+        if (!$exists) {
+            throw new BaseException(t('validation.calendar.clinic_not_assigned_to_doctor'), 422);
+        }
+    }
+
     private function hasLockedAppointmentsOverlap(int $doctorId, Carbon $start, Carbon $end): bool
     {
         return Appointment::query()
@@ -62,126 +593,29 @@ class DoctorCalendarService
             ->exists();
     }
 
-    private function getAppointmentsForDoctor(int $doctorId, $from, $to): Collection
+    private function assertNoLockedOverlapForRecurring(int $doctorId, array $data): void
     {
-        return Appointment::query()
-            ->with(['patient.user', 'clinic:id,name'])
-            ->where('doctor_id', $doctorId)
-            ->where(function ($q) use ($from, $to) {
-                $q->whereBetween('start_time', [$from, $to])
-                    ->orWhereBetween('end_time', [$from, $to])
-                    ->orWhere(function ($q2) use ($from, $to) {
-                        $q2->where('start_time', '<=', $from)
-                            ->where('end_time', '>=', $to);
-                    });
-            })
-            ->get()
-            ->map(fn($a) => [
-                'id' => $a->id,
-                'type' => 'appointment',
-                'start' => $a->start_time,
-                'end' => $a->end_time,
-                'status' => $a->appointment_status,
-                'clinic_name' => $a->clinic?->name,
-                'title' => trim(($a->patient?->user?->name ?? '') . ' ' . ($a->patient?->user?->surname ?? '')),
-                'patient' => [
-                    'fullname' => $a->patient->user->fullname,
-                    'photo' => $a->patient->user->photo,
-                    'email' => $a->patient->user->email,
-                    'phone' => $a->patient->user->phone,
-                ],
-                'service' => $a->service->name,
-            ]);
-    }
+        $days = $data['days'] ?? [];
+        $period = CarbonPeriod::create(
+            Carbon::parse($data['start_date'])->startOfDay(),
+            Carbon::parse($data['end_date'] ?? $data['start_date'])->endOfDay()
+        );
 
-    private function getScheduleForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
-    {
-        // Schedules (recurring availability) — aralığa düşən occurence-ləri generasiya edirik
-        $schedules = DoctorSchedule::query()
-            ->where('doctor_id', $doctorId)
-            ->where(function ($q) use ($from, $to) {
-                $q->whereBetween('start_date', [$from->toDateString(), $to->toDateString()])
-                    ->orWhereBetween('end_date', [$from->toDateString(), $to->toDateString()])
-                    ->orWhere(function ($q2) use ($from, $to) {
-                        $q2->where('start_date', '<=', $from->toDateString())
-                            ->where('end_date', '>=', $to->toDateString());
-                    });
-            })
-            ->get();
+        foreach ($period as $d) {
+            if (($data['frequency'] ?? 'weekly') === 'weekly') {
+                if (!in_array((int)$d->dayOfWeek, $days, true)) continue;
+                if (!$this->weekStepMatches($data['start_date'], $d, (int)$data['every'])) continue;
+            }
 
-        $scheduleEvents = collect();
-        foreach ($schedules as $s) {
-            // Sadə: weekly üçün days-of-week massivinə görə periodu iterasiya edək
-            $range = CarbonPeriod::create(
-                Carbon::parse($s->start_date)->startOfDay(),
-                Carbon::parse($s->end_date)->endOfDay()
-            )->filter(function (Carbon $d) use ($s, $from, $to) {
-                // hər "every N week" filtrini və seçilmiş günləri nəzərə alırıq
-                if ($d->lt($from) || $d->gt($to)) return false;
-                if ($s->frequency === 'weekly') {
-                    $days = is_array($s->days) ? $s->days : json_decode($s->days ?? '[]', true);
-                    return in_array((int)$d->dayOfWeek, $days, true) && $this->weekStepMatches($s->start_date, $d, (int)$s->every);
-                }
-                // daily/monthly ssenariləri lazım olduqca genişlənə bilər
-                return true;
-            });
+            $start = Carbon::parse($d->toDateString() . ' ' . $data['from_time']);
+            $end = Carbon::parse($d->toDateString() . ' ' . $data['to_time']);
 
-            foreach ($range as $d) {
-                $start = Carbon::parse($d->toDateString() . ' ' . $s->from_time->format('H:i:s'));
-                $end = Carbon::parse($d->toDateString() . ' ' . $s->to_time->format('H:i:s'));
-                $scheduleEvents->push([
-                    'id' => $s->id,
-                    'type' => 'schedule',
-                    'start' => $start->toDateTimeString(),
-                    'end' => $end->toDateTimeString(),
-                    'clinic_name' => $s->clinic?->name ?? null,
-                    'title' => 'Available',
-                ]);
+            if ($this->hasLockedAppointmentsOverlap($doctorId, $start, $end)) {
+                throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
             }
         }
-
-        // Unavailability
-        $busy = DoctorUnavailability::query()
-            ->where('doctor_id', $doctorId)
-            ->where(function ($q) use ($from, $to) {
-                $q->whereBetween('start_time', [$from, $to])
-                    ->orWhereBetween('end_time', [$from, $to])
-                    ->orWhere(function ($q2) use ($from, $to) {
-                        $q2->where('start_time', '<=', $from)
-                            ->where('end_time', '>=', $to);
-                    });
-            })
-            ->get()
-            ->map(fn($u) => [
-                'id' => $u->id,
-                'type' => 'unavailability',
-                'start' => $u->start_time,
-                'end' => $u->end_time,
-                'title' => $u->note ?? 'Busy',
-            ]);
-
-        return $scheduleEvents->concat($busy)->values();
     }
 
-    /** Kalendar feed: appointments + schedules + unavailability */
-    public function getCalendarFeed(int $userId, $from, $to): array
-    {
-        $doctorId = $this->doctorIdByUser($userId);
-
-        $requestType = request()->get('is_agency');
-
-        if ($requestType === 'true') {
-            return [
-                'items' => $this->getAppointmentsForDoctor($doctorId, $from, $to)
-            ];
-        } else {
-            return [
-                'items' => $this->getScheduleForDoctor($doctorId, $from, $to)
-            ];
-        }
-    }
-
-    /** Weekly step helper: start_date-dən etibarən hər N həftə uyğun gəlirmi */
     private function weekStepMatches(string $startDate, Carbon $candidate, int $every): bool
     {
         $start = Carbon::parse($startDate)->startOfWeek();
@@ -189,152 +623,52 @@ class DoctorCalendarService
         return $diff % max($every, 1) === 0;
     }
 
-    /** Saat interval overlap? (HH:ii ilə) */
-    private function timeRangeOverlaps(string $fromA, string $toA, string $fromB, string $toB): bool
-    {
-        // "A_start < B_end && A_end > B_start" klassik yoxlama
-        return ($fromA < $toB) && ($toA > $fromB);
-    }
-
-    /** Tarix aralığı overlap? (Y-m-d ilə) */
-    private function dateRangeOverlaps(string $startA, string $endA, string $startB, string $endB): bool
-    {
-        return ($startA <= $endB) && ($endA >= $startB);
-    }
-
-    /** Weekly üçün gün kəsişməsi var? */
-    private function weekDaysIntersect(?array $daysA, ?array $daysB): bool
-    {
-        $a = is_array($daysA) ? $daysA : [];
-        $b = is_array($daysB) ? $daysB : [];
-        return count(array_intersect($a, $b)) > 0;
-    }
-
-    /**
-     * Mövcud recurring-lərlə overlap varmı?
-     * - eyni həkim
-     * - eyni klinika
-     * - tarix aralığı kəsişir
-     * - vaxt aralığı kəsişir
-     * - weekly üçün günlər kəsişir
-     */
-    private function hasRecurringScheduleOverlap(
-        int   $doctorId,
-        int   $clinicId,
-        array $data,
-        ?int  $excludeId = null
-    ): bool
+    private function hasRecurringScheduleOverlap(int $doctorId, int $clinicId, array $data, ?int $excludeId = null): bool
     {
         $q = DoctorSchedule::query()
             ->where('doctor_id', $doctorId)
             ->where('clinic_id', $clinicId);
 
-        if (!empty($excludeId)) {
+        if ($excludeId) {
             $q->where('id', '!=', $excludeId);
         }
 
-        // əvvəlcə tarix aralığı üzrə kəsişənləri götürək
         $candidates = $q->where(function ($q2) use ($data) {
-            $q2->whereBetween('start_date', [$data['start_date'], $data['end_date']])
-                ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
+            $q2->whereBetween('start_date', [$data['start_date'], $data['end_date'] ?? $data['start_date']])
+                ->orWhereBetween('end_date', [$data['start_date'], $data['end_date'] ?? $data['start_date']])
                 ->orWhere(function ($q3) use ($data) {
                     $q3->where('start_date', '<=', $data['start_date'])
-                        ->where('end_date', '>=', $data['end_date']);
+                        ->where('end_date', '>=', $data['end_date'] ?? $data['start_date']);
                 });
-        })
-            ->get();
+        })->get();
 
         foreach ($candidates as $ex) {
-            // vaxt kəsişməsi yoxsa keç
             if (!$this->timeRangeOverlaps($data['from_time'], $data['to_time'], $ex->from_time, $ex->to_time)) {
                 continue;
             }
 
-            // frequency fərqli ola bilər, minimal qayda: weekly üçün günlər kəsişməlidir
             if (($data['frequency'] === 'weekly') || ($ex->frequency === 'weekly')) {
                 if (!$this->weekDaysIntersect($data['days'] ?? [], $ex->days ?? [])) {
                     continue;
                 }
             }
 
-            // Bu nöqtəyə gəlmişiksə, eyni klinikada tarix+vaxt (və weekly-də gün) üzrə overlap var
             return true;
         }
 
         return false;
     }
 
-    /** Həkimin bu klinikada işlədiyini yoxla
-     * @throws BaseException
-     */
-    private function assertDoctorHasClinic(int $doctorId, int $clinicId): void
+    private function timeRangeOverlaps(string $fromA, string $toA, string $fromB, string $toB): bool
     {
-        $exists = Doctor::query()
-            ->where('id', $doctorId)
-            ->whereHas('clinics', fn($q) => $q->where('clinics.id', $clinicId))
-            ->exists();
-
-        if (!$exists) {
-            throw new BaseException(t('validation.calendar.clinic_not_assigned_to_doctor'), 422);
-        }
+        return ($fromA < $toB) && ($toA > $fromB);
     }
 
-    private function hasLockedAppointmentsForRecurringDelete(int $doctorId, DoctorSchedule $rec): bool
+    private function weekDaysIntersect(?array $daysA, ?array $daysB): bool
     {
-        $now = Carbon::now()->startOfDay();
-        $startDate = Carbon::parse($rec->start_date)->startOfDay();
-        $endDate = Carbon::parse($rec->end_date)->endOfDay();
-
-        // Yalnız gələcək hissəni nəzərə alaq
-        $windowStart = $now->greaterThan($startDate) ? $now : $startDate;
-
-        // Əvvəlcə həmin aralıqda eyni klinikada kilidli görüşlər varmı?
-        $locked = Appointment::query()
-            ->where('doctor_id', $doctorId)
-            ->where('clinic_id', $rec->clinic_id)
-            ->whereIn('appointment_status', $this->lockedStatuses()) // Confirmed və Completed
-            ->where(function ($q) use ($windowStart, $endDate) {
-                $q->whereBetween('start_time', [$windowStart, $endDate])
-                    ->orWhereBetween('end_time', [$windowStart, $endDate])
-                    ->orWhere(function ($q2) use ($windowStart, $endDate) {
-                        $q2->where('start_time', '<=', $windowStart)
-                            ->where('end_time', '>=', $endDate);
-                    });
-            })
-            ->get(['id', 'start_time', 'end_time']);
-
-        if ($locked->isEmpty()) {
-            return false;
-        }
-
-        // Occurence-ləri tarix üzrə gəz
-        $period = \Carbon\CarbonPeriod::create($windowStart, $endDate);
-        $days = is_array($rec->days) ? $rec->days : (json_decode($rec->days ?? '[]', true) ?: []);
-
-        foreach ($period as $d) {
-            // yalnız uyğun günləri burax
-            if ($rec->frequency === 'weekly') {
-                if (!in_array((int)$d->dayOfWeek, $days, true)) {
-                    continue;
-                }
-                if (!$this->weekStepMatches($rec->start_date, $d, (int)$rec->every)) {
-                    continue;
-                }
-            }
-            // (daily/monthly üçün eyni şablon genişlənə bilər; hazırda weekly əsas ssenaridir)
-
-            $occStart = Carbon::parse($d->toDateString() . ' ' . $rec->from_time);
-            $occEnd = Carbon::parse($d->toDateString() . ' ' . $rec->to_time);
-
-            foreach ($locked as $a) {
-                // Klassik vaxt overlap: A_start < B_end && A_end > B_start
-                if ($occStart->lt($a->end_time) && $occEnd->gt($a->start_time)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        $a = is_array($daysA) ? $daysA : [];
+        $b = is_array($daysB) ? $daysB : [];
+        return count(array_intersect($a, $b)) > 0;
     }
 
     private function hasUnavailabilityOverlap(int $doctorId, Carbon $start, Carbon $end, ?int $excludeId = null): bool
@@ -357,193 +691,55 @@ class DoctorCalendarService
         return $q->exists();
     }
 
-    /** Recurring availability create
-     * @throws BaseException
-     */
-    public function createRecurringAvailability(int $userId, array $data)
+    private function hasLockedAppointmentsForRecurringDelete(int $doctorId, DoctorSchedule $rec): bool
     {
-        $doctorId = $this->doctorIdByUser($userId);
+        $now = Carbon::now()->startOfDay();
+        $startDate = Carbon::parse($rec->start_date)->startOfDay();
+        $endDate = Carbon::parse($rec->end_date)->endOfDay();
 
-        // Keçmişə qadağa
-        if (Carbon::parse($data['start_date'])->lt(now()->startOfDay())) {
-            throw new BaseException(t('validation.calendar.cannot_create_in_past'), 422);
+        $windowStart = $now->greaterThan($startDate) ? $now : $startDate;
+
+        $locked = Appointment::query()
+            ->where('doctor_id', $doctorId)
+            ->where('clinic_id', $rec->clinic_id)
+            ->whereIn('appointment_status', $this->lockedStatuses())
+            ->where(function ($q) use ($windowStart, $endDate) {
+                $q->whereBetween('start_time', [$windowStart, $endDate])
+                    ->orWhereBetween('end_time', [$windowStart, $endDate])
+                    ->orWhere(function ($q2) use ($windowStart, $endDate) {
+                        $q2->where('start_time', '<=', $windowStart)
+                            ->where('end_time', '>=', $endDate);
+                    });
+            })
+            ->get(['id', 'start_time', 'end_time']);
+
+        if ($locked->isEmpty()) {
+            return false;
         }
 
-        // Həkim bu klinikada işləməlidir
-        $this->assertDoctorHasClinic($doctorId, (int)$data['clinic_id']);
-
-        // Locked görüşlə overlap
-        $this->assertNoLockedOverlapForRecurring($doctorId, $data);
-
-        // >>> YENİ: Mövcud recurring-lərlə overlapı qadağan et
-        if ($this->hasRecurringScheduleOverlap($doctorId, (int)$data['clinic_id'], $data, null)) {
-            throw new BaseException(t('validation.calendar.overlaps_existing_availability'), 422);
-        }
-
-        return DoctorSchedule::create([
-            'doctor_id' => $doctorId,
-            'clinic_id' => $data['clinic_id'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date'],
-            'from_time' => $data['from_time'],
-            'to_time' => $data['to_time'],
-            'frequency' => $data['frequency'],
-            'every' => $data['every'],
-            'days' => $data['days'] ?? [],
-        ]);
-    }
-
-    /** Recurring availability update
-     * @throws BaseException
-     */
-    public function updateRecurringAvailability(int $userId, int $id, array $data)
-    {
-        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
-
-        // Keçmişi dəyişmək olmaz
-        if (Carbon::parse($data['start_date'])->lt(now()->startOfDay())) {
-            throw new BaseException(t('validation.calendar.cannot_edit_past'), 422);
-        }
-
-        // Həkim bu klinikada işləməlidir
-        $this->assertDoctorHasClinic($doctor->id, (int)$data['clinic_id']);
-
-        // Locked overlap qadağası
-        $this->assertNoLockedOverlapForRecurring($doctor->id, $data);
-
-        // Mövcud recurring-lərlə overlapı qadağan et (özünü istisna et)
-        if ($this->hasRecurringScheduleOverlap($doctor->id, (int)$data['clinic_id'], $data, $rec->id)) {
-            throw new BaseException(t('validation.calendar.overlaps_existing_availability'), 422);
-        }
-
-        $rec->update([
-            'clinic_id' => $data['clinic_id'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date'],
-            'from_time' => $data['from_time'],
-            'to_time' => $data['to_time'],
-            'frequency' => $data['frequency'],
-            'every' => $data['every'],
-            'days' => $data['days'] ?? [],
-        ]);
-
-        return $rec;
-    }
-
-    /** Recurring availability delete
-     * @throws BaseException
-     */
-    public function deleteRecurringAvailability(int $userId, int $id): void
-    {
-        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $rec = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
-
-        // Keçmişdəki periodu silmək olmaz (tam keçmişsə)
-        if (Carbon::parse($rec->start_date)->lt(now()->startOfDay())) {
-            throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
-        }
-
-        // Gələcək occurence-lərlə Confirmed/Completed görüş kəsişməsi varsa — silmə!
-        if ($this->hasLockedAppointmentsForRecurringDelete($doctor->id, $rec)) {
-            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
-        }
-
-        $rec->delete();
-    }
-
-    /** Unavailability create
-     * @throws BaseException
-     */
-    public function createUnavailability(int $userId, array $data)
-    {
-        $doctorId = $this->doctorIdByUser($userId);
-
-        $start = Carbon::parse($data['start']);
-        $end = Carbon::parse($data['end']);
-
-        if ($start->lt(now())) {
-            throw new BaseException(t('validation.calendar.cannot_create_in_past'), 422);
-        }
-
-        // 1) Confirmed/Completed appointment ilə kəsişmə – qadağa
-        if ($this->hasLockedAppointmentsOverlap($doctorId, $start, $end)) {
-            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
-        }
-
-        // 2) Mövcud unavailability ilə kəsişmə – qadağa (eyni gün/eyni saat bir neçəsini yaratmasın)
-        if ($this->hasUnavailabilityOverlap($doctorId, $start, $end)) {
-            throw new BaseException(t('validation.calendar.overlaps_unavailability'), 422);
-        }
-
-        return DoctorUnavailability::create([
-            'doctor_id' => $doctorId,
-            'start_time' => $start,
-            'end_time' => $end,
-            'note' => $data['note'] ?? null,
-        ]);
-    }
-
-    /** Unavailability delete
-     * @throws BaseException
-     */
-    public function deleteUnavailability(int $userId, int $id): void
-    {
-        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-        $item = DoctorUnavailability::where('doctor_id', $doctor->id)->findOrFail($id);
-
-        if (Carbon::parse($item->start_time)->lt(now())) {
-            throw new BaseException(t('validation.calendar.cannot_delete_past'), 422);
-        }
-
-        if ($this->hasLockedAppointmentsOverlap($doctor->id,
-            Carbon::parse($item->start_time),
-            Carbon::parse($item->end_time)
-        )) {
-            throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
-        }
-
-        $item->delete();
-    }
-
-    /** Appointment status update (agenda) */
-    public function updateAppointmentStatus(int $userId, int $appointmentId, $status)
-    {
-        $doctor = Doctor::where('user_id', $userId)->firstOrFail();
-
-        $appointment = Appointment::where('doctor_id', $doctor->id)->findOrFail($appointmentId);
-
-        // Status `AppointmentStatusEnum`-dan gəlməlidir — burada sadəcə set edirik
-        $appointment->update(['appointment_status' => $status]);
-
-        return $appointment->fresh();
-    }
-
-    /** Recurring üçün overlap yoxlaması
-     * @throws BaseException
-     */
-    private function assertNoLockedOverlapForRecurring(int $doctorId, array $data): void
-    {
-        // Aralıqdakı seçilmiş günləri iterasiya edirik və hər gün üçün [from_time, to_time] intervalını yoxlayırıq
-        $days = $data['days'] ?? [];
-        $period = CarbonPeriod::create(
-            Carbon::parse($data['start_date'])->startOfDay(),
-            Carbon::parse($data['end_date'])->endOfDay()
-        );
+        $period = CarbonPeriod::create($windowStart, $endDate);
+        $days = is_array($rec->days) ? $rec->days : (json_decode($rec->days ?? '[]', true) ?: []);
 
         foreach ($period as $d) {
-            // weekly isə yalnız seçilmiş günlər + every N həftə
-            if (($data['frequency'] ?? 'weekly') === 'weekly') {
-                if (!in_array((int)$d->dayOfWeek, $days, true)) continue;
-                if (!$this->weekStepMatches($data['start_date'], $d, (int)$data['every'])) continue;
+            if ($rec->frequency === 'weekly') {
+                if (!in_array((int)$d->dayOfWeek, $days, true)) {
+                    continue;
+                }
+                if (!$this->weekStepMatches($rec->start_date, $d, (int)$rec->every)) {
+                    continue;
+                }
             }
 
-            $start = Carbon::parse($d->toDateString() . ' ' . $data['from_time']);
-            $end = Carbon::parse($d->toDateString() . ' ' . $data['to_time']);
+            $occStart = Carbon::parse($d->toDateString() . ' ' . $rec->from_time);
+            $occEnd = Carbon::parse($d->toDateString() . ' ' . $rec->to_time);
 
-            if ($this->hasLockedAppointmentsOverlap($doctorId, $start, $end)) {
-                throw new BaseException(t('validation.calendar.overlaps_locked_appointment'), 422);
+            foreach ($locked as $a) {
+                if ($occStart->lt($a->end_time) && $occEnd->gt($a->start_time)) {
+                    return true;
+                }
             }
         }
+
+        return false;
     }
 }

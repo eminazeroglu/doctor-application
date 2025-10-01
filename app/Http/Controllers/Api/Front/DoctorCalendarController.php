@@ -61,6 +61,19 @@ class DoctorCalendarController extends Controller
             'clinic_id'  => 'required|exists:clinics,id',
         ]);
 
+        // ✅ Conditional validation
+        if ($data['frequency'] === 'weekly' && empty($data['days'])) {
+            return response()->json([
+                'days' => [t('validation.calendar.weekly_requires_days')]
+            ], 422);
+        }
+
+        if ($data['frequency'] === 'daily' && !empty($data['days'])) {
+            return response()->json([
+                'days' => [t('validation.calendar.daily_cannot_have_days')]
+            ], 422);
+        }
+
         $recurring = $this->service->createRecurringAvailability(auth()->id(), $data);
 
         return response()->json([
@@ -88,6 +101,18 @@ class DoctorCalendarController extends Controller
             'clinic_id'  => 'required|exists:clinics,id',
         ]);
 
+        if ($data['frequency'] === 'weekly' && empty($data['days'])) {
+            return response()->json([
+                'days' => [t('validation.calendar.weekly_requires_days')]
+            ], 422);
+        }
+
+        if ($data['frequency'] === 'daily' && !empty($data['days'])) {
+            return response()->json([
+                'days' => [t('validation.calendar.daily_cannot_have_days')]
+            ], 422);
+        }
+
         $recurring = $this->service->updateRecurringAvailability(auth()->id(), $id, $data);
 
         return response()->json([
@@ -97,15 +122,39 @@ class DoctorCalendarController extends Controller
     }
 
     /**
-     * DELETE /api/doctor/calendar/availability/recurring/{id}
+     * DELETE /api/doctor/calendar/availability/recurring/{scheduleId}/occurrence
+     * Body: { date: "2025-10-03" }
      * @throws BaseException
+     * @throws ValidationException
      */
-    public function destroyRecurring(int $id): JsonResponse
+    public function deleteOccurrence(Request $request, int $scheduleId): JsonResponse
     {
-        $this->service->deleteRecurringAvailability(auth()->id(), $id);
+        $data = $this->validateRequest($request, [
+            'date' => 'required|date|after_or_equal:today'
+        ]);
+
+        $this->service->deleteOccurrence(auth()->id(), $scheduleId, $data['date']);
 
         return response()->json([
-            'message' => t('notification.calendar.recurring_deleted')
+            'message' => t('notification.calendar.occurrence_deleted')
+        ]);
+    }
+
+    /**
+     * POST /api/doctor/calendar/availability/recurring/{scheduleId}/occurrence
+     * Body: { date: "2025-10-03" }
+     * @throws ValidationException
+     */
+    public function restoreOccurrence(Request $request, int $scheduleId): JsonResponse
+    {
+        $data = $this->validateRequest($request, [
+            'date' => 'required|date'
+        ]);
+
+        $this->service->restoreOccurrence(auth()->id(), $scheduleId, $data['date']);
+
+        return response()->json([
+            'message' => t('notification.calendar.occurrence_restored')
         ]);
     }
 
