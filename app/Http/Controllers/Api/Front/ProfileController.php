@@ -412,7 +412,12 @@ class ProfileController extends Controller
                 'id' => $i->id,
                 'clinic_id' => $i->clinic_id,
                 'profession' => $i->profession,
-                'work_time' => $i->work_time,
+                'work_time' => [
+                    'start_day' => $i->work_time?->start_day ?? null,
+                    'start_time' => $i->work_time?->start_time ?? null,
+                    'end_day' => $i->work_time?->end_day ?? null,
+                    'end_time' => $i->work_time?->end_time ?? null,
+                ],
                 'services' => $i->services()->with('service')->get()->map(function ($item) {
                     return [
                         'id' => $item->service->id,
