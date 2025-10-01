@@ -32,6 +32,14 @@ class Blog extends BaseModel
         ];
     }
 
+    /**
+     * Get the source column for the slug.
+     */
+    protected function getSlugSourceColumn(): string
+    {
+        return $this->slugSource ?? 'title';
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
