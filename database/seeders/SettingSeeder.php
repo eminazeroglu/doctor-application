@@ -64,6 +64,7 @@ class SettingSeeder extends Seeder
             'wallpaper' => 'wallpaper.png',
             'watermark' => 'watermark.png',
             'join_us_wallpaper' => 'join_us_wallpaper.jpg',
+            'app_qr' => 'app_qr.jpg',
             'default_image' => 'default_image.png',
             'email' => 'info@example.com',
             'phone' => [

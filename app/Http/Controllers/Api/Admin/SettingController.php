@@ -108,6 +108,9 @@ class SettingController extends ApiController
                         $values[$field] = $image;
                     }
                 }
+                else {
+                    $values[$field] = $setting[$field] ?? null;
+                }
             }
 
             // Base64 şəkilləri yoxlayırıq
@@ -129,6 +132,12 @@ class SettingController extends ApiController
                     if ($image) {
                         $values[$field] = $image;
                     }
+                    else if ($setting[$field]) {
+                        $values[$field] = $setting[$field];
+                    }
+                }
+                else {
+                    $values[$field] = $setting[$field] ?? null;
                 }
             }
 
@@ -163,7 +172,7 @@ class SettingController extends ApiController
     private function getImageFields(string $key): array
     {
         return match($key) {
-            'info' => ['logo', 'logo_dark', 'mobile_logo', 'mobile_logo_dark', 'favicon', 'wallpaper', 'watermark', 'join_us_wallpaper', 'default_image'],
+            'info' => ['logo', 'logo_dark', 'mobile_logo', 'mobile_logo_dark', 'favicon', 'wallpaper', 'watermark', 'join_us_wallpaper', 'app_qr', 'default_image'],
             default => []
         };
     }

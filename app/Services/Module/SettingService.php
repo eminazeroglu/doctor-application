@@ -53,6 +53,7 @@ class SettingService extends BaseCrudService
                         'favicon',
                         'wallpaper',
                         'join_us_wallpaper',
+                        'app_qr',
                         'watermark'
                     ];
 

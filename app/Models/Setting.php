@@ -64,7 +64,10 @@ class Setting extends BaseModel
             'wallpaper' => [
                 'path' => 'setting',
             ],
-            'watermark' => [
+            'join_us_wallpaper' => [
+                'path' => 'setting',
+            ],
+            'app_qr' => [
                 'path' => 'setting',
             ]
         ];
