@@ -250,11 +250,6 @@
                 "to": {
                     "type": "text",
                     "description": "YYYY-MM-DD"
-                },
-                "is_agency": {
-                    "type": "boolean",
-                    "description": "Agendanın əldə edilməsi üçün true göndəririk",
-                    "default": false
                 }
             },
             "responses": {
