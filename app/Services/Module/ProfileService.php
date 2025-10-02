@@ -20,6 +20,7 @@ use App\Services\App\Upload\FileUploadService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -100,8 +101,16 @@ class ProfileService
                 $user->setUseBase64(true);
             }
 
+            $bio = Arr::pull($data, 'bio');
+
             // İstifadəçi məlumatlarını yenilə
             $user = $this->userRepository->update($userId, $data);
+
+            if ($user->hasDoctor() && $user->doctor) {
+                $user->doctor()->update([
+                    'biography' => $bio
+                ]);
+            }
 
             DB::commit();
 

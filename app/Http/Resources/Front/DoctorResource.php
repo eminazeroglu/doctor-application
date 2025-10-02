@@ -59,6 +59,7 @@ class DoctorResource extends JsonResource
             'profession' => $profession,
             'category_id' => $this->category_id,
             'sub_category_id' => $this->sub_category_id,
+            'biography' => $this->biography,
             'rating_average' => $this->rating_average,
             'suggested_by_people' => $this->suggested_by_people,
             'total_patients' => $this->total_patients,

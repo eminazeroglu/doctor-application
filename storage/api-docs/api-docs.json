@@ -774,11 +774,6 @@
                             "to": {
                                 "type": "text",
                                 "description": "YYYY-MM-DD"
-                            },
-                            "is_agency": {
-                                "type": "boolean",
-                                "description": "Agendanın əldə edilməsi üçün true göndəririk",
-                                "default": false
                             }
                         },
                         "responses": {
@@ -1223,6 +1218,10 @@
                             "birthdate": {
                                 "type": "date",
                                 "description": "Doğum tarixi"
+                            },
+                            "bio": {
+                                "type": "string",
+                                "description": "Ancaq həkimlər üçün istifadə edilir"
                             }
                         }
                     },

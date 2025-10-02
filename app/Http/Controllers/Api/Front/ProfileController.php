@@ -64,7 +64,8 @@ class ProfileController extends Controller
             'phone' => 'required|string|max:20|unique:users,phone,' . $userId,
             'photo_path' => 'nullable|string',
             'gender' => 'nullable|in:male,female',
-            'birthdate' => 'nullable|date'
+            'birthdate' => 'nullable|date',
+            'bio' => 'nullable|string',
         ]);
 
         $user = $this->profileService->updateGeneralInfo(
