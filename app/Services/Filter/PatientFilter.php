@@ -48,11 +48,7 @@ class PatientFilter extends BaseFilter
             $q
                 // Search in user fields
                 ->whereHas('user', function (Builder $userQuery) use ($value) {
-                    $userQuery
-                        ->fullName($value)
-                        ->orWhere('email', 'like', '%' . $value . '%')
-                        ->orWhere('phone', 'like', '%' . $value . '%')
-                        ->orWhere('username', 'like', '%' . $value . '%');
+                    $userQuery->fullField($value);
                 })
                 // Search in patient fields
                 ->orWhere('medical_history', 'like', '%' . $value . '%')

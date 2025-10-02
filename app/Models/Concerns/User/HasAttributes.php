@@ -89,6 +89,15 @@ trait HasAttributes
         });
     }
 
+    public function scopeFullField($query, $value)
+    {
+        return $query
+            ->fullName($value)
+            ->orWhere('email', 'like', '%' . $value . '%')
+            ->orWhere('phone', 'like', '%' . $value . '%')
+            ->orWhere('username', 'like', '%' . $value . '%');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | HELPER METHODS - Köməkçi metodlar
