@@ -104,14 +104,6 @@ class ProfileController extends Controller
             'password' => 'nullable|string|min:8' . ($this->isAdmin ? '' : '|confirmed'),
         ];
 
-        $messages = [
-            'email.required' => t('validation.email.required'),
-            'email.email' => t('validation.email.email'),
-            'email.unique' => t('validation.email.unique'),
-            'password.min' => t_replace('validation.password.min_length', [':length' => 8]),
-            'password.confirmed' => t('validation.password.confirmed')
-        ];
-
         // Email dəyişirsə və ya şifrə dəyişirsə current_password mütləqdir və düzgün olmalıdır
         if (($emailChanging || $passwordChanging) && !$this->isAdmin) {
             $rules['current_password'] = [
@@ -123,10 +115,9 @@ class ProfileController extends Controller
                     }
                 }
             ];
-            $messages['current_password.required'] = t('validation.current_password.required');
         }
 
-        $formFields = $this->validateRequest($request, $rules, $messages);
+        $formFields = $this->validateRequest($request, $rules);
 
         if ($this->isAdmin && request()->has('user_id')) {
             $formFields['user_id'] = request()->user_id;

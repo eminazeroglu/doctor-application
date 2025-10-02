@@ -163,8 +163,9 @@ class ProfileService
                 }
             }
 
+
+
             // Şifrə dəyişirsə, hash-lə
-            $data['password'] = $user->password;
             if ($passwordChanged) {
                 $data['password'] = Hash::make($data['password']);
 
@@ -172,6 +173,9 @@ class ProfileService
                     // Bütün tokenləri sil (təhlükəsizlik üçün)
                     $user->tokens()->delete();
                 }
+            }
+            else {
+                $data['password'] = $user->password;
             }
 
             // Email dəyişibsə verification parametrlərini təyin et
