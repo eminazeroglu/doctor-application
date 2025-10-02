@@ -78,33 +78,59 @@ class DoctorResource extends JsonResource
 
             // Yalnız nearest_slots property-si varsa göstər
             'nearest_appointments' => $this->when(
-                isset($this->nearest_slots),
-                fn() => $this->formatNearestSlots()
+                isset($this->nearest_days),
+                fn() => $this->formatNearestDays()
             ),
 
-            // available_days yalnız nearest_slots ilə birlikdə lazım olduqda əlavə edilir
+            // ✅ Modal view üçün: Tam kalendar
             'available_days_for_next' => $this->when(
                 isset($this->available_days),
-                $this->available_days ?? []
+                fn() => $this->formatAvailableDays()
             ),
         ];
     }
 
-    private function formatNearestSlots(): array
+    /**
+     * List view format: 3 gün, hər gündə 3 slot
+     */
+    private function formatNearestDays(): array
     {
-        if (!isset($this->nearest_slots) || !$this->nearest_slots) {
+        if (!isset($this->nearest_days) || empty($this->nearest_days)) {
             return [];
         }
 
-        return $this->nearest_slots->map(function($slot) {
+        return collect($this->nearest_days)->map(function($day) {
             return [
-                'date' => $slot['date'],
-                'day' => $slot['day_name'],
-                'month' => $slot['month_name'],
-                'time' => $slot['time'],
-                'display' => $slot['day_name'] . "\n" .
-                    Carbon::parse($slot['date'])->day . "\n" .
-                    $slot['month_name']
+                'date' => $day['date'],
+                'day_name' => $day['day_name'],
+                'month_name' => $day['month_name'],
+                'display_date' => $day['display_date'],
+                'slots' => collect($day['slots'])->map(fn($slot) => [
+                    'time' => $slot['time'],
+                    'clinic_id' => $slot['clinic_id']
+                ])->toArray()
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Modal view format: Tam kalendar
+     */
+    private function formatAvailableDays(): array
+    {
+        if (!isset($this->available_days) || empty($this->available_days)) {
+            return [];
+        }
+
+        return collect($this->available_days)->map(function($day) {
+            return [
+                'date' => $day['date'],
+                'day_name' => $day['day_name'] ?? Carbon::parse($day['date'])->format('D'),
+                'display_date' => $day['display_date'] ?? $day['date'],
+                'slots' => collect($day['slots'])->map(fn($slot) => [
+                    'time' => $slot['time'],
+                    'clinic_id' => $slot['clinic_id']
+                ])->toArray()
             ];
         })->toArray();
     }
