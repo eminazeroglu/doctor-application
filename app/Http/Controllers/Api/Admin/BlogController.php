@@ -25,7 +25,7 @@ class BlogController extends ApiController
             'translates.*.description' => 'required',
             'translates.*.content' => 'required',
             'category_id' => ['required', 'exists:categories,id'],
-            'photo' => [request()->id ? 'nullable' : 'required', new ImageBase64Rule, new Base64ImageControlRule]
+            'photo_path' => [request()->id ? 'nullable' : 'required', new ImageBase64Rule, new Base64ImageControlRule]
         ];
     }
 }
