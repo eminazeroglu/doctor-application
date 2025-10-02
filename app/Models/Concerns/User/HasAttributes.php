@@ -35,6 +35,23 @@ trait HasAttributes
         );
     }
 
+    public function profileIsCompleted(): Attribute
+    {
+        return new Attribute(
+            get: function () {
+                $category = $this->doctor->category_id ?? null;
+                $services = $this->doctor->services ?? null;
+                $clinics = $this->doctor->clinics ?? null;
+
+                if ($category && count($services) > 0 && count($clinics) > 0) {
+                    return true;
+                }
+
+                return false;
+            }
+        );
+    }
+
     public function otpCode(): Attribute
     {
         return new Attribute(

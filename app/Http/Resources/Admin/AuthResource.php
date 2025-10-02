@@ -26,6 +26,7 @@ class AuthResource extends JsonResource
             'user_type' => $this->user_type,
             'status' => $this->status,
             'status_text' => $this->status_text,
+            'profile_is_completed' => $this->profile_is_completed,
             $this->mergeWhen(count($this->getAllPermissions()) > 0, [
                 'role' => $this->role->group_name,
                 'permissions' => $this->getAllPermissions()->pluck('name'),

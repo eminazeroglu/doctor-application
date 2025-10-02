@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Doctor extends BaseModel
 {
@@ -236,13 +238,18 @@ class Doctor extends BaseModel
 
     /**
      * Həkimin təklif etdiyi xidmətlər əlaqəsi.
-     * @return BelongsToMany
+     * @return HasManyThrough
      */
-    public function services(): BelongsToMany
+    public function services(): HasManyThrough
     {
-        return $this->belongsToMany(Service::class, 'doctor_clinic_services', 'doctor_clinic_id', 'service_id')
-            ->withPivot(['price', 'duration', 'description', 'is_active'])
-            ->withTimestamps();
+        return $this->hasManyThrough(
+            DoctorClinicService::class,  // Final model
+            DoctorClinic::class,         // Intermediate model
+            'doctor_id',                 // Foreign key on doctor_clinic
+            'doctor_clinic_id',          // Foreign key on doctor_clinic_services
+            'id',                        // Local key on doctors
+            'id'                         // Local key on doctor_clinic
+        )->with('service');
     }
 
     /**
@@ -277,14 +284,21 @@ class Doctor extends BaseModel
     /**
      * Həkimin müəyyən bir klinikada təklif etdiyi xidmətləri qaytarır.
      * @param int $clinicId
-     * @return BelongsToMany
+     * @return Collection
      */
-    public function clinicServices(int $clinicId): BelongsToMany
+    public function clinicServices(int $clinicId): Collection
     {
-        return $this->belongsToMany(Service::class, 'doctor_clinic')
-            ->wherePivot('clinic_id', $clinicId)
-            ->withPivot(['price', 'duration', 'description', 'is_active'])
-            ->withTimestamps();
+        $doctorClinicId = $this->doctorClinics()
+            ->where('clinic_id', $clinicId)
+            ->value('id');
+
+        if (!$doctorClinicId) {
+            return collect();
+        }
+
+        return DoctorClinicService::where('doctor_clinic_id', $doctorClinicId)
+            ->with('service')
+            ->get();
     }
 
     /**
@@ -294,7 +308,7 @@ class Doctor extends BaseModel
      */
     public function clinicSchedules(int $clinicId): HasMany
     {
-        return $this->hasMany(DoctorSchedule::class)->where('clinic_id', $clinicId);
+        return $this->schedules()->where('clinic_id', $clinicId);
     }
 
     /**
@@ -303,18 +317,7 @@ class Doctor extends BaseModel
      */
     public function activeClinics(): BelongsToMany
     {
-        return $this->belongsToMany(Clinic::class, 'doctor_clinic')
-            ->withPivot([
-                'id',
-                'work_time',
-                'is_main_workplace',
-                'profession',
-                'is_active',
-                'note',
-                'custom_clinic'
-            ])
-            ->wherePivot('is_active', true)
-            ->withTimestamps();
+        return $this->clinics()->wherePivot('is_active', true);
     }
 
     /**
@@ -332,8 +335,10 @@ class Doctor extends BaseModel
      */
     public function todaySchedule(): HasMany
     {
-        $dayOfWeek = now()->format('l'); // Monday, Tuesday, etc.
-        return $this->schedules()->where('day_of_week', $dayOfWeek)->where('is_active', true);
+        $dayOfWeek = now()->format('l');
+        return $this->schedules()
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_active', true);
     }
 
     /**
@@ -346,10 +351,10 @@ class Doctor extends BaseModel
         $tomorrow = now()->addDay()->startOfDay();
 
         return $this->unavailabilities()
-            ->where(function($query) use ($today, $tomorrow) {
+            ->where(function ($query) use ($today, $tomorrow) {
                 $query->whereBetween('start_datetime', [$today, $tomorrow])
                     ->orWhereBetween('end_datetime', [$today, $tomorrow])
-                    ->orWhere(function($query) use ($today, $tomorrow) {
+                    ->orWhere(function ($query) use ($today, $tomorrow) {
                         $query->where('start_datetime', '<', $today)
                             ->where('end_datetime', '>', $tomorrow);
                     });
@@ -456,7 +461,7 @@ class Doctor extends BaseModel
      */
     public function scopeSearchByName(Builder $query, string $name): Builder
     {
-        return $query->whereHas('user', function($q) use ($name) {
+        return $query->whereHas('user', function ($q) use ($name) {
             $q->where('name', 'like', "%{$name}%")
                 ->orWhere('surname', 'like', "%{$name}%");
         });
@@ -469,7 +474,7 @@ class Doctor extends BaseModel
      */
     public function scopeIsActive(Builder $query): Builder
     {
-        return $query->whereHas('user', function($q) {
+        return $query->whereHas('user', function ($q) {
             $q->where('status', UserStatusEnum::Active);
         });
     }
@@ -504,7 +509,7 @@ class Doctor extends BaseModel
      */
     public function scopeByClinic(Builder $query, int $clinicId): Builder
     {
-        return $query->whereHas('clinics', function($q) use ($clinicId) {
+        return $query->whereHas('clinics', function ($q) use ($clinicId) {
             $q->where('clinic_id', $clinicId)
                 ->where('is_active', true);
         });
@@ -518,10 +523,7 @@ class Doctor extends BaseModel
      */
     public function scopeByService(Builder $query, int $serviceId): Builder
     {
-        return $query->whereHas('services', function($q) use ($serviceId) {
-            $q->where('service_id', $serviceId)
-                ->where('is_active', true);
-        });
+        return $query->whereHas('services', fn($q) => $q->where('service_id', $serviceId)->where('is_active', true));
     }
 
     /**
