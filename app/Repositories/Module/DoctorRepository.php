@@ -418,7 +418,7 @@ class DoctorRepository extends BaseRepository
 
         $doctors->getCollection()->transform(function ($doctor) use ($doctorService) {
             // Nearest slots əlavə et
-            $doctor->nearest_days = $doctorService->getNearestDaysWithLimitedSlots($doctor, 3, 3);
+            $doctor->nearest_slots = $doctorService->getNearestAvailableSlots($doctor, 3);
 
             // Available days əlavə et (opsional - performance üçün yalnız lazım olduqda)
             $doctor->available_days = $doctorService->getAvailableDaysForNextDays($doctor, 7);

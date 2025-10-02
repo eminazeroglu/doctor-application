@@ -238,63 +238,6 @@ class DoctorService extends BaseCrudService
         return $availableDays;
     }
 
-    /**
-     * List view üçün: 3 gün, hər gündə max 3 slot
-     */
-    public function getNearestDaysWithLimitedSlots(Doctor $doctor, int $daysLimit = 3, int $slotsPerDay = 3): array
-    {
-        $result = [];
-        $current = Carbon::now();
-        $deadline = $current->copy()->addDays(30);
-
-        $activeClinics = \App\Models\DoctorClinic::where('doctor_id', $doctor->id)
-            ->where('is_active', true)
-            ->with('clinic')
-            ->get();
-
-        if ($activeClinics->isEmpty()) {
-            return [];
-        }
-
-        while (count($result) < $daysLimit && $current->lte($deadline)) {
-            $daySlots = collect();
-
-            foreach ($activeClinics as $doctorClinic) {
-                if (!$doctorClinic->clinic) {
-                    continue;
-                }
-
-                $slots = $this->getAvailableTimeSlots($doctor, $doctorClinic->clinic->id, $current);
-
-                foreach ($slots as $slot) {
-                    $daySlots->push([
-                        'time' => $slot['start'],
-                        'clinic_id' => $doctorClinic->clinic->id
-                    ]);
-
-                    // Hər gün üçün max slotsPerDay
-                    if ($daySlots->count() >= $slotsPerDay) {
-                        break 2;
-                    }
-                }
-            }
-
-            if ($daySlots->isNotEmpty()) {
-                $result[] = [
-                    'date' => $current->format('Y-m-d'),
-                    'day_name' => $this->getAzerbaijaniDayName($current),
-                    'month_name' => $this->getAzerbaijaniMonthName($current),
-                    'display_date' => $this->formatDisplayDate($current),
-                    'slots' => $daySlots->take($slotsPerDay)->values()->all() // Max 3 slot
-                ];
-            }
-
-            $current->addDay();
-        }
-
-        return $result;
-    }
-
     public function getAvailableSlots($doctorId, $clinicId, Carbon $startDate, Carbon $endDate, $serviceId = null): array
     {
         $doctor = Doctor::findOrFail($doctorId);
