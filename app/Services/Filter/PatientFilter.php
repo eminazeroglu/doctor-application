@@ -44,25 +44,26 @@ class PatientFilter extends BaseFilter
      */
     protected function filterSearch(Builder $query, string $value): Builder
     {
-        return $query->where(function(Builder $q) use ($value) {
-            // Search in patient fields
-            $q->where('medical_history', 'like', '%' . $value . '%')
+        return $query->where(function (Builder $q) use ($value) {
+            $q
+                // Search in user fields
+                ->whereHas('user', function (Builder $userQuery) use ($value) {
+                    $userQuery
+                        ->fullName($value)
+                        ->orWhere('email', 'like', '%' . $value . '%')
+                        ->orWhere('phone', 'like', '%' . $value . '%')
+                        ->orWhere('username', 'like', '%' . $value . '%');
+                })
+                // Search in patient fields
+                ->orWhere('medical_history', 'like', '%' . $value . '%')
                 ->orWhere('allergies', 'like', '%' . $value . '%')
                 ->orWhere('chronic_diseases', 'like', '%' . $value . '%')
                 ->orWhere('current_medications', 'like', '%' . $value . '%')
                 ->orWhere('blood_type', 'like', '%' . $value . '%')
                 ->orWhere('insurance_provider', 'like', '%' . $value . '%')
                 ->orWhere('emergency_contact_name', 'like', '%' . $value . '%')
-                ->orWhere('emergency_contact_phone', 'like', '%' . $value . '%')
+                ->orWhere('emergency_contact_phone', 'like', '%' . $value . '%');
 
-                // Search in user fields
-                ->orWhereHas('user', function(Builder $userQuery) use ($value) {
-                    $userQuery->where('name', 'like', '%' . $value . '%')
-                        ->orWhere('surname', 'like', '%' . $value . '%')
-                        ->orWhere('email', 'like', '%' . $value . '%')
-                        ->orWhere('phone', 'like', '%' . $value . '%')
-                        ->orWhere('username', 'like', '%' . $value . '%');
-                });
         });
     }
 
@@ -79,7 +80,7 @@ class PatientFilter extends BaseFilter
      */
     protected function filterGender(Builder $query, string $value): Builder
     {
-        return $query->whereHas('user', function(Builder $q) use ($value) {
+        return $query->whereHas('user', function (Builder $q) use ($value) {
             $q->where('gender', $value);
         });
     }
@@ -106,7 +107,7 @@ class PatientFilter extends BaseFilter
         $minDate = Carbon::now()->subYears($maxAge)->format('Y-m-d');
         $maxDate = Carbon::now()->subYears($minAge)->format('Y-m-d');
 
-        return $query->whereHas('user', function(Builder $q) use ($minDate, $maxDate) {
+        return $query->whereHas('user', function (Builder $q) use ($minDate, $maxDate) {
             $q->whereBetween('birthdate', [$minDate, $maxDate]);
         });
     }
@@ -141,7 +142,7 @@ class PatientFilter extends BaseFilter
                 ->where('insurance_expiry_date', '<', Carbon::now());
         }
 
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('insurance_expiry_date')
                 ->orWhere('insurance_expiry_date', '>=', Carbon::now());
         });
@@ -169,7 +170,7 @@ class PatientFilter extends BaseFilter
                 ->where('chronic_diseases', '!=', '');
         }
 
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('chronic_diseases')
                 ->orWhere('chronic_diseases', '');
         });
@@ -181,18 +182,18 @@ class PatientFilter extends BaseFilter
     protected function filterHasActiveMedications(Builder $query, bool $value): Builder
     {
         if ($value) {
-            return $query->whereHas('medications', function(Builder $q) {
+            return $query->whereHas('medications', function (Builder $q) {
                 $q->where('is_active', true)
-                    ->where(function($inner) {
+                    ->where(function ($inner) {
                         $inner->whereNull('end_date')
                             ->orWhere('end_date', '>=', Carbon::now()->toDateString());
                     });
             });
         }
 
-        return $query->whereDoesntHave('medications', function(Builder $q) {
+        return $query->whereDoesntHave('medications', function (Builder $q) {
             $q->where('is_active', true)
-                ->where(function($inner) {
+                ->where(function ($inner) {
                     $inner->whereNull('end_date')
                         ->orWhere('end_date', '>=', Carbon::now()->toDateString());
                 });
@@ -205,13 +206,13 @@ class PatientFilter extends BaseFilter
     protected function filterHasUpcomingAppointments(Builder $query, bool $value): Builder
     {
         if ($value) {
-            return $query->whereHas('appointments', function(Builder $q) {
+            return $query->whereHas('appointments', function (Builder $q) {
                 $q->where('start_time', '>', Carbon::now())
                     ->whereIn('appointment_status', ['pending', 'confirmed', 'rescheduled']);
             });
         }
 
-        return $query->whereDoesntHave('appointments', function(Builder $q) {
+        return $query->whereDoesntHave('appointments', function (Builder $q) {
             $q->where('start_time', '>', Carbon::now())
                 ->whereIn('appointment_status', ['pending', 'confirmed', 'rescheduled']);
         });
@@ -227,7 +228,7 @@ class PatientFilter extends BaseFilter
                 ->whereNotNull('emergency_contact_phone');
         }
 
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('emergency_contact_name')
                 ->orWhereNull('emergency_contact_phone');
         });
@@ -293,7 +294,7 @@ class PatientFilter extends BaseFilter
      */
     protected function filterIsActive(Builder $query, $value): Builder
     {
-        return $query->whereHas('user', function(Builder $q) use ($value) {
+        return $query->whereHas('user', function (Builder $q) use ($value) {
             $q->where('status', $value ? 'active' : '!=', 'active');
         });
     }
@@ -320,7 +321,7 @@ class PatientFilter extends BaseFilter
     protected function filterLastAppointmentDate(Builder $query, array $value): Builder
     {
         if (isset($value['from']) || isset($value['to'])) {
-            $query->whereHas('appointments', function(Builder $q) use ($value) {
+            $query->whereHas('appointments', function (Builder $q) use ($value) {
                 if (isset($value['from'])) {
                     $q->whereDate('start_time', '>=', $value['from']);
                 }
