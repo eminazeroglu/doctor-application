@@ -297,7 +297,7 @@ class DoctorRepository extends BaseRepository
      */
     public function findByClinic(int $clinicId): Collection
     {
-        return $this->model->whereHas('clinics', function($query) use ($clinicId) {
+        return $this->model->whereHas('clinics', function ($query) use ($clinicId) {
             $query->where('clinic_id', $clinicId)
                 ->where('is_active', true);
         })->with($this->with)->get();
@@ -396,15 +396,17 @@ class DoctorRepository extends BaseRepository
 
     public function doctorSearch($request): LengthAwarePaginator
     {
-        $query = Doctor::with([
-            'user',
-            'category',
-            'subcategory',
-            'doctorClinics' => function($q) {
-                $q->where('is_active', true)->with('clinic');
-            },
-            'reviews'
-        ]);
+        $query = Doctor::query()
+            ->with([
+                'user',
+                'category',
+                'subcategory',
+                'doctorClinics' => function ($q) {
+                    $q->where('is_active', true)->with('clinic');
+                },
+                'reviews'
+            ])
+            ->where('is_verified', true);
 
         // Filtrasiya tətbiq et
         if ($this->filter) {
