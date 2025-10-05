@@ -130,7 +130,7 @@ class DoctorCalendarService
     /**
      * Həkimin recurring schedule-lərini əldə edir
      */
-    private function getSchedulesForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
+    private function getSchedulesForDoctor(int $doctorId, $from, $to): Collection
     {
         $schedules = DoctorSchedule::query()
             ->with('clinic')
@@ -198,7 +198,7 @@ class DoctorCalendarService
     /**
      * Həkimin məşğulluq intervallarını əldə edir
      */
-    private function getUnavailabilitiesForDoctor(int $doctorId, Carbon $from, Carbon $to): Collection
+    private function getUnavailabilitiesForDoctor(int $doctorId, $from, $to): Collection
     {
         return DoctorUnavailability::query()
             ->where('doctor_id', $doctorId)
