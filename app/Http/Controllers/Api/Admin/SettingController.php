@@ -9,6 +9,7 @@ use App\Services\Module\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SettingController extends ApiController
 {
@@ -64,6 +65,7 @@ class SettingController extends ApiController
      * Tənzimləməni yeniləyir.
      * ApiController-in update metodundan istifadə etmirik çünki
      * biz ID ilə deyil, key ilə yeniləmə edirik.
+     * @throws ValidationException
      */
     public function update(Request $request, mixed $id): JsonResponse
     {
@@ -108,9 +110,6 @@ class SettingController extends ApiController
                         $values[$field] = $image;
                     }
                 }
-                else {
-                    $values[$field] = $setting[$field] ?? null;
-                }
             }
 
             // Base64 şəkilləri yoxlayırıq
@@ -131,12 +130,10 @@ class SettingController extends ApiController
 
                     if ($image) {
                         $values[$field] = $image;
-                    }
-                    else if ($setting[$field]) {
+                    } else if ($setting[$field]) {
                         $values[$field] = $setting[$field];
                     }
-                }
-                else {
+                } else {
                     $values[$field] = $setting[$field] ?? null;
                 }
             }
@@ -171,7 +168,7 @@ class SettingController extends ApiController
      */
     private function getImageFields(string $key): array
     {
-        return match($key) {
+        return match ($key) {
             'info' => ['logo', 'logo_dark', 'mobile_logo', 'mobile_logo_dark', 'favicon', 'wallpaper', 'watermark', 'join_us_wallpaper', 'app_qr', 'default_image'],
             default => []
         };
@@ -179,7 +176,7 @@ class SettingController extends ApiController
 
     private function getSettingSpecificRules(string $key): array
     {
-        return match($key) {
+        return match ($key) {
             'info' => [
                 'values.email' => 'required|email'
             ],
