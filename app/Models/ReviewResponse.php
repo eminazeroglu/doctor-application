@@ -66,9 +66,9 @@ class ReviewResponse extends Model
     {
         return new AttributeAlias(
             get: function () {
-                if ($this->user->hasDoctor()) {
+                if ($this?->user?->hasDoctor()) {
                     return 'Həkim';
-                } elseif ($this->user->hasRole('admin')) {
+                } elseif ($this?->user?->hasRole('admin')) {
                     return 'Administrator';
                 } else {
                     return 'İstifadəçi';

@@ -64,10 +64,15 @@ class PageRepository extends BaseRepository
                         "JSON_UNQUOTE(JSON_EXTRACT(translates, '$.{$locale}.slug')) = ?",
                         [$slug]
                     );
-            })->firstOrFail();
+            })
+                ->where('is_active', true)
+                ->firstOrFail();
         }
 
-        return $query->where('slug', $slug)->firstOrFail();
+        return $query
+            ->where('is_active', true)
+            ->where('slug', $slug)
+            ->firstOrFail();
     }
 
     /**

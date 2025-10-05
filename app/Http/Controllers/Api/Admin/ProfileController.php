@@ -10,6 +10,7 @@ use App\Http\Requests\User\UpdateProfileRequest;
 use App\Http\Resources\Admin\AuthResource;
 use App\Http\Resources\Admin\UserPreferenceResource;
 use App\Services\Module\ProfileService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,9 +35,12 @@ class ProfileController extends Controller
         return response()->json(new AuthResource($user));
     }
 
+    /**
+     * @throws Exception
+     */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
-        $user = $this->profileService->updateProfile($request->user(), $request->validated());
+        $user = $this->profileService->updateGeneralInfo($request->user()->id, $request->validated(), false);
         return response()->json(new AuthResource($user));
     }
 

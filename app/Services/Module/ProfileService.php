@@ -197,33 +197,12 @@ class ProfileService
                 Mail::to($user->email)->send(new WelcomeEmailMail($user, $reactUrl));
             }
 
-            // Activity log
-            $this->activityLogService->log(
-                action: 'account_settings_updated',
-                model: $user,
-                oldData: ['email' => $oldEmail],
-                newData: array_diff_key($data, array_flip(['password'])), // Şifrəni loglamayırıq
-                additionalData: [
-                    'email_changed' => $emailChanged,
-                    'password_changed' => $passwordChanged,
-                    'verification_email_sent' => $emailChanged,
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent()
-                ]
-            );
-
             DB::commit();
 
             return $user;
 
         } catch (Exception $e) {
             DB::rollBack();
-
-            $this->activityLogService->logError(
-                action: 'account_settings_update_error',
-                message: $e->getMessage(),
-                model: $user
-            );
 
             throw $e;
         }
@@ -411,18 +390,6 @@ class ProfileService
 
             $preferences->fill($data);
             $preferences->save();
-
-            // Activity log
-            $this->activityLogService->log(
-                action: 'user_preferences_updated',
-                oldData: $oldData,
-                newData: $data,
-                additionalData: [
-                    'user_id' => $user->id,
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent()
-                ]
-            );
 
             DB::commit();
 

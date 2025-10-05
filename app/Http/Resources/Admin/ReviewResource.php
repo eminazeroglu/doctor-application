@@ -85,12 +85,12 @@ class ReviewResource extends JsonResource
                         'status' => $response->status,
                         'author_type' => $response->author_type,
                         'created_at' => $response->created_at,
-                        'user' => [
+                        'user' => $response->user ? [
                             'id' => $response->user->id,
                             'name' => $response->user->name,
                             'surname' => $response->user->surname,
                             'full_name' => $response->user->full_name,
-                        ]
+                        ] : []
                     ];
                 });
             }),

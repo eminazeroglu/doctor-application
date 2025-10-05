@@ -10,6 +10,6 @@ class ServiceFilter extends BaseFilter
 
     protected function filterName($query, $value)
     {
-        return $query->where('name', $value);
+        return $query->translationSearchInLanguage($value, 'name');
     }
 }
