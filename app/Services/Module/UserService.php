@@ -7,6 +7,7 @@ use App\Enums\UserStatusEnum;
 use App\Models\Role;
 use App\Models\User;
 use App\Repositories\Module\UserRepository;
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -91,9 +92,17 @@ class UserService
      *
      * @param int $id
      * @return bool
+     * @throws Exception
      */
     public function delete(int $id): bool
     {
+        $user = $this->repository->findById($id);
+
+        $user->setCustomFieldValue('old_email', $user->email);
+        $user->update(['email' => time()]);
+        $user->doctor()->delete();
+        $user->patient()->delete();
+
         return $this->repository->delete($id);
     }
 

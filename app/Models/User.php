@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Helper\HasCustomFields;
 use App\Models\Concerns\User\HasPermissions;
 use App\Models\Concerns\User\HasRelationships;
 use App\Models\Concerns\User\HasAttributes;
@@ -12,18 +13,21 @@ use App\Traits\Model\HasNotification;
 use App\Traits\Model\HasSlug;
 use App\Traits\Model\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasFactory,
+        SoftDeletes,
         HasNotification,
         HasApiTokens,
         HasUuid,
         HasSlug,
         HasCode,
         HasImage,
+        HasCustomFields,
         HasLoggable;
 
     // User modelinə aid concerns

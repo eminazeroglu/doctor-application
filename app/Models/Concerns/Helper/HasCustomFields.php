@@ -35,14 +35,50 @@ trait HasCustomFields
         // Yeni dəyəri əlavə edirik
         $customFields[$key] = $value;
 
-        // Bütün array-i geri təyin edirik
+        // Sadə təyin edirik
+        $this->custom_fields = $customFields;
+
+        // Avtomatik save edirik
+        $this->save();
+
+        return $this;
+    }
+
+    /**
+     * Custom fields sahəsinə dəyər əlavə edir və save etmir (yalnız memory-də saxlayır)
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function addCustomFieldValue(string $key, mixed $value): static
+    {
+        // Mövcud dəyərləri alırıq
+        $customFields = $this->custom_fields ?? [];
+
+        // Yeni dəyəri əlavə edirik
+        $customFields[$key] = $value;
+
+        // Sadə təyin edirik
         $this->custom_fields = $customFields;
 
         return $this;
     }
 
     /**
-     * Birdən çox custom field dəyərini təyin edir
+     * Custom field-i save edərək təyin edir (ayrı metod)
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return bool
+     */
+    public function saveCustomFieldValue(string $key, mixed $value): bool
+    {
+        return $this->addCustomFieldValue($key, $value)->save();
+    }
+
+    /**
+     * Birdən çox custom field dəyərini təyin edir və save edir
      *
      * @param array $fields
      * @return $this
@@ -57,11 +93,33 @@ trait HasCustomFields
 
         $this->custom_fields = $customFields;
 
+        // Avtomatik save edirik
+        $this->save();
+
         return $this;
     }
 
     /**
-     * Custom field-i silir
+     * Birdən çox custom field dəyərini təyin edir amma save etmir
+     *
+     * @param array $fields
+     * @return $this
+     */
+    public function addCustomFields(array $fields): static
+    {
+        $customFields = $this->custom_fields ?? [];
+
+        foreach ($fields as $key => $value) {
+            $customFields[$key] = $value;
+        }
+
+        $this->custom_fields = $customFields;
+
+        return $this;
+    }
+
+    /**
+     * Custom field-i silir və save edir
      *
      * @param string $key
      * @return $this
@@ -73,6 +131,9 @@ trait HasCustomFields
         if (isset($customFields[$key])) {
             unset($customFields[$key]);
             $this->custom_fields = $customFields;
+
+            // Avtomatik save edirik
+            $this->save();
         }
 
         return $this;
