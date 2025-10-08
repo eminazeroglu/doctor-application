@@ -84,7 +84,7 @@ class Doctor extends BaseModel
         return new AttributeAlias(
             get: function () {
                 $title = $this->title ? $this->title . ' ' : '';
-                return $title . $this->user->name . ' ' . $this->user->surname;
+                return $title . $this?->user?->name . ' ' . $this?->user?->surname;
             }
         );
     }

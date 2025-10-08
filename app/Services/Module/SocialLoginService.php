@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Repositories\Module\SocialLoginRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use InvalidArgumentException;
 
@@ -90,9 +91,9 @@ class SocialLoginService
      * Configures Socialite with provider-specific settings.
      *
      * @param string $provider
-     * @return \Laravel\Socialite\Contracts\Provider
+     * @return Provider
      */
-    private function configureSocialite(string $provider)
+    private function configureSocialite(string $provider): Provider
     {
         $socialite = Socialite::driver($provider)
             ->scopes(SocialProviderEnum::getScopes($provider));
@@ -111,7 +112,7 @@ class SocialLoginService
      * @param string $token
      * @return \Laravel\Socialite\Contracts\User
      */
-    private function getSocialUser(string $provider, string $token)
+    private function getSocialUser(string $provider, string $token): \Laravel\Socialite\Contracts\User
     {
         return Socialite::driver($provider)
             ->stateless()
@@ -125,7 +126,7 @@ class SocialLoginService
      * @param \Laravel\Socialite\Contracts\User $socialUser
      * @return User
      */
-    private function findOrCreateUser(string $provider, $socialUser): User
+    private function findOrCreateUser(string $provider, \Laravel\Socialite\Contracts\User $socialUser): User
     {
         $user = User::where('email', $socialUser->getEmail())->first();
 
@@ -141,7 +142,7 @@ class SocialLoginService
      * @param \Laravel\Socialite\Contracts\User $socialUser
      * @return User
      */
-    private function createNewUser(string $provider, $socialUser): User
+    private function createNewUser(string $provider, \Laravel\Socialite\Contracts\User $socialUser): User
     {
         $userData = [
             'email' => $socialUser->getEmail(),
@@ -167,7 +168,7 @@ class SocialLoginService
      * @param \Laravel\Socialite\Contracts\User $socialUser
      * @return User
      */
-    private function updateExistingUser(User $user, string $provider, $socialUser): User
+    private function updateExistingUser(User $user, string $provider, \Laravel\Socialite\Contracts\User $socialUser): User
     {
         $user->update([
             'provider' => $provider,

@@ -6,6 +6,7 @@ use App\Enums\SocialProviderEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AuthResource;
 use App\Services\Module\SocialLoginService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,7 @@ class SocialLoginController extends Controller
 
     /**
      * Sosial platformadan callback-i idarə edir
+     * @throws Exception
      */
     public function callback(Request $request): JsonResponse
     {

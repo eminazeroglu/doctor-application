@@ -429,6 +429,34 @@
                         "summary": "Token ilə daxil olma",
                         "description": "Göndərilən token dəyəri ilə daxil olma"
                     }
+                },
+                "/auth/social/redirect": {
+                    "post": {
+                        "summary": "Social Login",
+                        "description": "Sosial şəbəkələrlə daxil olma",
+                        "formBody": {
+                            "provider": {
+                                "type": "string",
+                                "description": "Burda hansı provider olacaqsa onu yazırıq. Provider-lar: google, facebook, linkedin, twitter, github"
+                            }
+                        }
+                    }
+                },
+                "/auth/social/callback": {
+                    "post": {
+                        "summary": "Social Login Callback",
+                        "description": "Sosial şəbəkələrlə daxil olmaq üçün callback",
+                        "formBody": {
+                            "token": {
+                                "type": "string",
+                                "description": "Providerdan əldə edilən token"
+                            },
+                            "provider": {
+                                "type": "string",
+                                "description": "Burda hansı provider olacaqsa onu yazırıq. Provider-lar: google, facebook, linkedin, twitter, github"
+                            }
+                        }
+                    }
                 }
             }
         },
