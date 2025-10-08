@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Language extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = ['name', 'locale', 'is_active', 'is_default'];
 
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
