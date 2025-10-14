@@ -168,7 +168,7 @@ class DoctorCalendarService
 
                 // Frequency matching
                 if (!$this->isScheduleValidForDate($schedule, $date)) {
-                    continue;
+                    //continue;
                 }
 
                 $startTime = $this->parseScheduleTime($schedule->from_time, $date);
