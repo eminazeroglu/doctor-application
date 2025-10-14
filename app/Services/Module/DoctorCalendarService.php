@@ -531,6 +531,7 @@ class DoctorCalendarService
 
     /**
      * Unavailability silir
+     * @throws BaseException
      */
     public function deleteUnavailability(int $userId, int $id): void
     {
