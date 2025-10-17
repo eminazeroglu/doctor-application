@@ -558,6 +558,23 @@ class ProfileController extends Controller
         ]);
     }
 
+    /**
+     * Sertifikatı silir
+     * DELETE /api/app/profile/doctor/certificates/{id}
+     * @throws BaseException
+     */
+    public function doctorClinics(): JsonResponse
+    {
+        $this->ensureUserIsDoctor();
+        $doctor = auth()->user()->doctor;
+        return response()->json($doctor->clinics->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+            ];
+        }));
+    }
+
     /*
     |--------------------------------------------------------------------------
     | HELPER METHODS - Köməkçi metodlar

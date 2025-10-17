@@ -369,6 +369,13 @@
                     "message": "Sertifikat uğurla silindi"
                 }
             }
+        },
+        {
+            "path": "/app/profile/doctor/clinics",
+            "method": "get",
+            "summary": "Həkim klinikaları",
+            "description": "Tokenə görə həkimin klinikalarını əldə edirik",
+            "authorization": true
         }
     ]
 }

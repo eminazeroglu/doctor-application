@@ -1566,6 +1566,13 @@
                             }
                         }
                     }
+                },
+                "/app/profile/doctor/clinics": {
+                    "get": {
+                        "summary": "Həkim klinikaları",
+                        "description": "Tokenə görə həkimin klinikalarını əldə edirik",
+                        "authorization": true
+                    }
                 }
             }
         },

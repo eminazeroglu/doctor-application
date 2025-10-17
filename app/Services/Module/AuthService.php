@@ -864,7 +864,7 @@ class AuthService
 
     public function sendEmail($user, $type, $params = []): void
     {
-        $reactUrl = request()->header('Origin') ?: 'https://your-default-react-app.com';
+        $reactUrl = request()->header('Origin') ?: setting('info.front_url') ?? null;
         if ($type === 'welcome') Mail::to($user->email)->send(new WelcomeEmailMail($user, $reactUrl));
         else if ($type === 'password-reset') Mail::to($user->email)->send(new PasswordResetMail($params['token'], $params['code'], $reactUrl));
     }

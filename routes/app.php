@@ -214,6 +214,7 @@ Route::controller(ProfileController::class)
         // Hesab idarəetməsi
         Route::post('/deactivate', 'deactivate')->name('profile.deactivate');
         Route::delete('/', 'destroy')->name('profile.destroy');
+        Route::get('/doctor/clinics', 'doctorClinics')->name('profile.doctorClinics');
 
         /*
         |--------------------------------------------------------------------------
