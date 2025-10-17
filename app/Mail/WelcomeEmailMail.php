@@ -31,7 +31,7 @@ class WelcomeEmailMail extends Mailable
     public function build(): WelcomeEmailMail
     {
         return $this->subject('Xoş Gəlmisiniz!')
-            ->subject('Profil təstiqi')
+            ->subject('Profil təsdiqi')
             ->view('emails.welcome');
     }
 }
